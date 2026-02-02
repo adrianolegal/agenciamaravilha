@@ -1,0 +1,213 @@
+:root{
+  --brand:#7a35ff;
+  --brand2:#ff3d7f;
+}
+
+body{
+  background:#0f1115;
+  color:#e9eef5;
+}
+
+/* LINKS */
+a{ color:#cbb7ff; }
+a:hover{ color:#ffffff; }
+
+/* NAVBAR */
+.navbar{
+  background: rgba(12,12,18,.9);
+  backdrop-filter: blur(10px);
+}
+.navbar .nav-link{ color:#d7def0; }
+.navbar .nav-link:hover,
+.navbar .nav-link.active{ color:#ffffff; }
+
+/* HERO (SEM TEXTO ESPECIAL) */
+.hero{
+  background:
+    radial-gradient(700px 280px at 15% 25%, rgba(122,53,255,.22), transparent 60%),
+    radial-gradient(700px 280px at 85% 35%, rgba(255,61,127,.16), transparent 60%);
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+/* TÍTULOS — SEM TRANSPARÊNCIA, SEM GRADIENTE */
+h1, h2, h3, h4, h5, h6{
+  color:#ffffff !important;
+  background:none !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+
+/* CARDS */
+.card{
+  background: rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.10);
+  border-radius:18px;
+}
+.card h1, .card h2, .card h3,
+.card h4, .card h5, .card h6{
+  color:#ffffff !important;
+}
+
+/* BOTÕES */
+.btn-brand{
+  background: linear-gradient(90deg, var(--brand), var(--brand2));
+  border:none;
+  color:#ffffff;
+}
+.btn-brand:hover{ filter:brightness(1.05); }
+
+.btn-outline-light{
+  border-color: rgba(255,255,255,.25) !important;
+}
+
+/* TEXTO AUXILIAR */
+.muted{ color:#b7c1d8; }
+.small-note{ color:#b7c1d8; font-size:.92rem; }
+
+/* TABELAS */
+.table{ color:#e9eef5; }
+.table th{
+  color:#ffffff;
+  border-color: rgba(255,255,255,.15);
+}
+.table td{
+  border-color: rgba(255,255,255,.10);
+}
+
+/* ACCORDION */
+.accordion-button{
+  color:#ffffff !important;
+}
+.accordion-button:not(.collapsed){
+  background: rgba(255,255,255,.06) !important;
+}
+.accordion-item{
+  background: transparent !important;
+}
+
+/* FOOTER */
+.footer{
+  background: rgba(12,12,18,.8);
+  border-top:1px solid rgba(255,255,255,.08);
+}
+/* ====== FIX: texto dentro de callout sempre visível ====== */
+.callout,
+.callout * {
+  color: #e9eef5 !important;
+  opacity: 1 !important;
+  -webkit-text-fill-color: #e9eef5 !important;
+  background: none !important;
+  filter: none !important;
+  mix-blend-mode: normal !important;
+}
+
+/* Subtítulos dos blocos (callout) */
+.callout .fw-semibold{
+  color: #60e937 !important;                /* cor principal */
+  -webkit-text-fill-color: #60e937 !important;
+  font-weight: 600;
+}
+/* Seções de política com destaque lateral */
+.doc-section{
+  position: relative;
+}
+
+.doc-section::before{
+  content:"";
+  position:absolute;
+  left:0;
+  top:0;
+  bottom:0;
+  width:4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, #7a35ff, #ff3d7f);
+}
+/* ===== TABELAS: DARK + GRADE VISÍVEL ===== */
+.table{
+  color:#e9eef5 !important;
+  background: rgba(255,255,255,.02);
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+/* Cabeçalho destacado */
+.table thead th{
+  background: rgba(122,53,255,.18);
+  color:#ffffff !important;
+  border-bottom: 1px solid rgba(255,255,255,.18) !important;
+}
+
+/* Linhas e colunas (grade) */
+.table > :not(caption) > * > *{
+  border-color: rgba(255,255,255,.14) !important;
+}
+
+/* Alternância de linhas para leitura */
+.table tbody tr:nth-child(odd){
+  background: rgba(255,255,255,.02);
+}
+.table tbody tr:nth-child(even){
+  background: rgba(255,255,255,.04);
+}
+
+/* Hover sutil */
+.table tbody tr:hover{
+  background: rgba(255,255,255,.06);
+}
+
+/* Responsivo sem “estourar” */
+.table-responsive{
+  border-radius: 14px;
+}
+/* ===== imagens de tabelas (tarefas e bônus) ===== */
+.table-shot{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.03);
+  overflow: hidden;
+  padding: 14px;
+}
+
+.table-shot img{
+  display:block;
+  width:100%;
+  height:auto;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.table-shot .cap{
+  margin-top: 10px;
+  color:#b7c1d8;
+  font-size: .92rem;
+}
+
+.table-shot a.zoom{
+  display:block;
+  cursor: zoom-in;
+}
+/* Melhor contraste no bloco Diferenciais (evita texto escuro/invisível) */
+.diferenciais, 
+.diferenciais * {
+  color: #e9eef5 !important;
+  opacity: 1 !important;
+}
+
+.diferenciais .muted {
+  color: #c9d3ea !important;
+}
+
+.diferenciais .card,
+.diferenciais .callout {
+  background: rgba(255,255,255,.06) !important;
+  border-color: rgba(255,255,255,.14) !important;
+}
+/* ===== PORTFÓLIO / EVENTOS / PREMIAÇÕES ===== */
+.thumb {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: 16px;
+  display: block;
+}
+
