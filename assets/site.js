@@ -13,17 +13,17 @@
     whatsapp: "https://wa.me/5547984719854",
     formGeral: "https://forms.gle/1XNh7gpLMoJcjhqWA",
 
-    // pastas principais do Drive (gerais)
-    driveKwai: "https://drive.google.com/drive/folders/PASTAKWAI",
+   // pastas principais do Drive (gerais)
+    driveKwai: "kwai/materiais/academia/",
     driveTiktok: "https://drive.google.com/drive/folders/PASTATIKTOK",
     driveKako: "https://drive.google.com/drive/folders/PASTAKAKO",
     driveCrush: "https://drive.google.com/drive/folders/PASTACRUSH",
 
     // HUB KWAI (cole links de PDFs/subpastas específicas)
-    kwaiPoliticas: ".kwai/regulamento",
+    kwaiPoliticas: "kwai/regulamento",
     kwaiMigracao: "https://forms.gle/51zngB2m3mAhASBX7",
     kwaiComeceAqui: "https://drive.google.com/drive/folders/PASTA_OU_PDF_COMECE_AQUI",
-    kwaiCursos: "https://drive.google.com/drive/folders/PASTA_CURSOS_KWAI",
+    kwaiCursos: "kwai/materiais/cursos/",
     kwaiAcademia: "https://drive.google.com/drive/folders/PASTA_ACADEMIA_STREAMER",
     kwaiEventos: "https://drive.google.com/drive/folders/PASTA_EVENTOS_KWAI",
     kwaiPremiacoes: "https://drive.google.com/drive/folders/PASTA_PREMIACOES",
@@ -38,3 +38,4 @@
     el.setAttribute("href", LINKS[key]);
   });
 })();
+
