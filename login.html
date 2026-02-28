@@ -6,26 +6,9 @@
 <title>Login - Agência Maravilha</title>
 <link rel="icon" type="image/png" href="assets/favicon.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
 <style>
-body {
-  background: linear-gradient(120deg, #0f172a, #1e293b);
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  font-family: Arial, sans-serif;
-}
-.login-card {
-  background:#1e293b;
-  padding:30px;
-  border-radius:12px;
-  width:100%;
-  max-width:400px;
-  text-align:center;
-  box-shadow:0 6px 20px rgba(0,0,0,0.4);
-}
+body { background: linear-gradient(120deg, #0f172a, #1e293b); color: white; display:flex; justify-content:center; align-items:center; height:100vh; font-family:Arial,sans-serif;}
+.login-card {background:#1e293b; padding:30px; border-radius:12px; width:100%; max-width:400px; text-align:center; box-shadow:0 6px 20px rgba(0,0,0,0.4);}
 .login-card input {margin-bottom:15px; padding:12px; border-radius:6px; border:none; width:100%;}
 .login-card button {width:100%; padding:12px; font-weight:bold; border-radius:6px; background:#2563eb; border:none; color:white;}
 .login-card button:hover {opacity:0.85;}
@@ -43,12 +26,13 @@ body {
 <button id="btnLogin">Entrar</button>
 <p id="msg"></p>
 </div>
-<!-- No head ou antes do seu script -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/supabase.min.js"></script>
-<script src="supabase.js"></script> <!-- seu JS com login/logout -->
-<script type="module">
-import { login } from './supabase.js';
 
+<!-- Supabase UMD bundle -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/supabase.min.js"></script>
+<!-- Seu JS com funções globais -->
+<script src="supabase.js"></script>
+
+<script>
 const btnLogin = document.getElementById("btnLogin");
 const msg = document.getElementById("msg");
 
@@ -66,7 +50,7 @@ btnLogin.addEventListener("click", async () => {
   msg.innerText = "Verificando...";
 
   try {
-    await login(email, password);
+    await login(email, password); // função global do supabase.js
     msg.style.color = "#16a34a";
     msg.innerText = "Login realizado! Redirecionando...";
     setTimeout(() => window.location.href = "importar.html", 800);
