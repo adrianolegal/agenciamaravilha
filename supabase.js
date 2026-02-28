@@ -1,26 +1,30 @@
 // supabase.js
-// Não usar export/import
-const SUPABASE_URL = "https://qgsfmiywdohybqlnxhdw.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnc2ZtaXl3ZG9oeWJxbG54aGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzg3MzAsImV4cCI6MjA4Nzg1NDczMH0.Ku7lQF-YzwyPqm_igXk3tYnfgmSalzsHNmmVBP9NCp0"; // coloque anon key apenas aqui
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/module/supabase.js";
 
-// Objeto global supabaseClient
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// 🔒 Configuração Supabase
+export const supabase = createClient(
+  "https://qgsfmiywdohybqlnxhdw.supabase.co",
+ "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnc2ZtaXl3ZG9oeWJxbG54aGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzg3MzAsImV4cCI6MjA4Nzg1NDczMH0.Ku7lQF-YzwyPqm_igXk3tYnfgmSalzsHNmmVBP9NCp0"; // coloque anon key apenas aqui
+ // apenas aqui, não no HTML
+);
 
-// Função de login
-function login(email, password) {
-  return supabaseClient.auth.signInWithPassword({ email, password })
-    .then(({ data, error }) => {
-      if (error) throw error;
-      return data.session;
-    });
+// 🔐 Protege página
+export async function protectPage() {
+  const { data } = await supabase.auth.getSession();
+  if (!data.session) {
+    window.location.href = "login.html";
+  }
 }
 
-// Função logout
-function logout() {
-  return supabaseClient.auth.signOut();
+// 📤 Função de login
+export async function login(email, password) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data.session;
 }
 
-// Função verificar sessão
-function checkAuth() {
-  return supabaseClient.auth.getSession().then(({ data }) => data.session);
+// 🚪 Logout
+export async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
 }
