@@ -27,12 +27,25 @@ body { background: linear-gradient(120deg, #0f172a, #1e293b); color: white; disp
 <p id="msg"></p>
 </div>
 
-<!-- Supabase UMD bundle -->
+<!-- 1️⃣ Bundle oficial UMD do Supabase -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/supabase.min.js"></script>
-<!-- Seu JS com funções globais -->
-<script src="supabase.js"></script>
 
 <script>
+// 2️⃣ Configuração Supabase
+const SUPABASE_URL = "https://qgsfmiywdohybqlnxhdw.supabase.co";
+const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; // só aqui no JS centralizado
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// 3️⃣ Função de login
+function login(email, password) {
+  return supabaseClient.auth.signInWithPassword({ email, password })
+    .then(({ data, error }) => {
+      if (error) throw error;
+      return data.session;
+    });
+}
+
+// 4️⃣ Botão de login
 const btnLogin = document.getElementById("btnLogin");
 const msg = document.getElementById("msg");
 
@@ -50,7 +63,7 @@ btnLogin.addEventListener("click", async () => {
   msg.innerText = "Verificando...";
 
   try {
-    await login(email, password); // função global do supabase.js
+    await login(email, password);
     msg.style.color = "#16a34a";
     msg.innerText = "Login realizado! Redirecionando...";
     setTimeout(() => window.location.href = "importar.html", 800);
