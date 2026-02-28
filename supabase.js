@@ -16,7 +16,11 @@ export async function checkUserSession() {
   } = await supabase.auth.getUser();
   return user;
 }
-
+// 🔒 ADICIONE ESTA FUNÇÃO
+export async function logout() {
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
+}
 // Redireciona automaticamente se o usuário não estiver logado
 export async function protectPage() {
   const user = await checkUserSession();
