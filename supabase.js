@@ -13,13 +13,13 @@ export async function login(email, password) {
   return data.session;
 }
 
-// Logout
-export async function logout() {
-  await supabaseClient.auth.signOut();
-}
-
-// Verificar sessão
+// Check session
 export async function checkAuth() {
   const { data } = await supabaseClient.auth.getSession();
   return data.session;
+}
+
+// Logout
+export async function logout() {
+  await supabaseClient.auth.signOut();
 }
