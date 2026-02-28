@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Login - Agência Maravilha</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+.box {
+  background:#1e1e1e;
+  padding:40px;
+  border-radius:12px;
+  width:300px;
+  text-align:center;
+}
+input {
+  width:100%;
+  padding:10px;
+  margin:10px 0;
+  border-radius:6px;
+  border:none;
+}
+button {
+  width:100%;
+  padding:10px;
+  background:#00c896;
+  border:none;
+  color:white;
+  font-weight:bold;
+  border-radius:6px;
+  cursor:pointer;
+}
+button:hover { opacity:0.8 }
+</style>
+</head>
+<body>
+
+<div class="box">
+<h2>Login Admin</h2>
+<input type="email" id="email" placeholder="Email">
+<input type="password" id="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="msg"></p>
+</div>
+
+<script>
+const supabase = supabase.createClient(
+  "https://qgsfmiywdohybqlnxhdw.supabase.co",
+  "sb_publishable_t366PTdSUCD0tqDfnyQ-Uw_2rQ32f_5"
+)
+
+async function login() {
+  const email = document.getElementById("email").value
+  const password = document.getElementById("password").value
+
+  const { error } = await supabase.auth.signInWithPassword({
+    email, password
+  })
+
+  if (error) {
+    document.getElementById("msg").innerText = "Login inválido"
+  } else {
+    window.location.href = "admin.html"
+  }
+}
+</script>
+
+</body>
+</html>
