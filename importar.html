@@ -12,17 +12,17 @@
 <link href="assets/styles.css" rel="stylesheet">
 
 <style>
-/* Ajustes locais */
+/* Ajustes locais extras */
 body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-family:Arial,sans-serif; padding:40px; }
 .container { max-width:700px; margin:auto; }
 .card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.3); }
 .status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
 .fade { animation: fade 0.5s ease-in-out; }
 @keyframes fade { from { opacity:0 } to { opacity:1 } }
-/* Botões estilo Kwai */
+/* Botões estilo Kwai grande */
 .btn-brand { background:#2563eb; color:white; font-weight:bold; border-radius:999px; padding:12px 28px; font-size:1.25rem; box-shadow:0 6px 18px rgba(0,0,0,0.3); transition: all 0.3s ease; }
 .btn-brand:hover { opacity:0.85; }
-.btn-logout { background:#dc2626; color:white; font-weight:bold; padding:10px 20px; border-radius:6px; }
+.btn-logout { background:#dc2626; color:white; font-weight:bold; padding:12px 28px; border-radius:999px; font-size:1.25rem; box-shadow:0 6px 18px rgba(0,0,0,0.3); transition: all 0.3s ease; }
 </style>
 </head>
 <body>
@@ -55,12 +55,10 @@ body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-fa
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
 
+// Protege a página
 protectPage();
 
-document.getElementById("btnLogout").addEventListener("click", logout);
-
-
-// Mostrar status
+// Função utilitária para status
 function showStatus(el, text, type) {
   el.className = `status fade ${type}`;
   el.innerText = text;
