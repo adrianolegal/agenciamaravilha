@@ -73,15 +73,15 @@ button {
 </div>
 
 <script>
-
-const supabase = supabase.createClient(
+// 🔑 CORREÇÃO: NÃO redeclarar 'supabase'
+const supabaseClient = supabase.createClient(
   "https://qgsfmiywdohybqlnxhdw.supabase.co",
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFnc2ZtaXl3ZG9oeWJxbG54aGR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIyNzg3MzAsImV4cCI6MjA4Nzg1NDczMH0.Ku7lQF-YzwyPqm_igXk3tYnfgmSalzsHNmmVBP9NCp0"
 )
 
-// 🔒 PROTEÇÃO
+// 🔒 Verificação de sessão
 async function checkAuth() {
-  const { data } = await supabase.auth.getSession()
+  const { data } = await supabaseClient.auth.getSession()
   if (!data.session) {
     window.location.href = "login.html"
   }
@@ -106,7 +106,7 @@ async function importHosts() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     const data = XLSX.utils.sheet_to_json(sheet)
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('hosts')
       .upsert(data, { onConflict: 'member_id' })
 
@@ -132,7 +132,7 @@ async function importReports() {
     const sheet = workbook.Sheets[workbook.SheetNames[0]]
     const data = XLSX.utils.sheet_to_json(sheet)
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('host_reports')
       .insert(data)
 
@@ -145,8 +145,9 @@ async function importReports() {
   reader.readAsBinaryString(file)
 }
 
+// Logout
 async function logout() {
-  await supabase.auth.signOut()
+  await supabaseClient.auth.signOut()
   window.location.href = "login.html"
 }
 
