@@ -55,8 +55,10 @@ body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-fa
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
 
-// Protege página
 protectPage();
+
+document.getElementById("btnLogout").addEventListener("click", logout);
+
 
 // Mostrar status
 function showStatus(el, text, type) {
