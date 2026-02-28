@@ -3,117 +3,106 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Importar - Agência Maravilha</title>
+<title>Importar Hosts - Agência Maravilha</title>
 <link rel="icon" href="assets/logo.jpg">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="assets/styles.css" rel="stylesheet">
-
 <style>
 body {
   background: linear-gradient(120deg, #0f172a, #1e293b);
   color: white;
   font-family: Arial, sans-serif;
-  padding: 40px;
 }
-.container { max-width: 800px; margin:auto; }
-.card {
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
+.container-import {
+  max-width: 600px;
+  margin: 50px auto;
+  background: #1e293b;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.4);
 }
-button {
-  font-weight:bold;
-  cursor:pointer;
-  border:none;
-  border-radius:6px;
-  padding:10px 20px;
-  margin-top:10px;
-}
-.btn-brand { background:#2563eb; color:white; }
-.btn-success { background:#16a34a; color:white; }
-.btn-error { background:#dc2626; color:white; }
-.status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
-.fade { animation: fade 0.5s ease-in-out; }
-@keyframes fade { from { opacity:0 } to { opacity:1 } }
+h2 { text-align:center; margin-bottom:20px; }
+input[type=file] { margin-bottom:15px; }
+#msg { margin-top:15px; font-weight:bold; text-align:center; }
+.btn-brand { background:#2563eb; color:white; font-weight:bold; }
+.btn-brand:hover { opacity:0.85; }
+.btn-lg { padding:12px 24px; font-size:1.1rem; border-radius:8px; }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-  <h2>Importação de Dados V.01.0</h2>
-
-  <div class="card">
-    <h3>Importar Hosts (Tabela 1)</h3>
-    <input type="file" id="fileHosts" accept=".xlsx">
-    <button class="btn btn-brand" id="btnImportHosts">Importar Hosts</button>
-    <div id="statusHosts" class="status"></div>
-  </div>
-
-  <div class="card">
-    <h3>Importar Relatórios Lives (Tabela 2)</h3>
-    <input type="file" id="fileReports" accept=".xlsx">
-    <button class="btn btn-brand" id="btnImportReports">Importar Reports</button>
-    <div id="statusReports" class="status"></div>
-  </div>
-
-  <button class="btn btn-error" id="btnLogout">Logout</button>
+<div class="container-import">
+  <img src="assets/logo.jpg" alt="Logo" class="d-block mx-auto mb-3" width="100">
+  <h2>Importar Hosts</h2>
+  <input type="file" id="fileInput" accept=".xlsx" class="form-control">
+  <button id="btnImport" class="btn btn-brand btn-lg w-100">Inserir XLS</button>
+  <p id="msg"></p>
 </div>
 
 <script type="module">
-import { supabase, protectPage, logout } from "./supabase.js";
-import * as XLSX from "https://esm.sh/xlsx@0.18.5";
+import { supabase } from "./supabase.js";
+import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.mjs";
 
-await protectPage(); // protege a página
+const fileInput = document.getElementById("fileInput");
+const btnImport = document.getElementById("btnImport");
+const msg = document.getElementById("msg");
 
-function showStatus(element, text, type="") {
-  element.className = "status fade " + type;
-  element.innerText = text;
+btnImport.addEventListener("click", async () => {
+  const file = fileInput.files[0];
+  if (!file) {
+    showMsg("Selecione um arquivo XLSX.", "danger");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: "array" });
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+      // Mapeamento explícito para nomes exatos da tabela hosts
+      const mapped = jsonData.map(r => ({
+        "member_Id": Number(r["member_Id"]),
+        "Apelido de streamer": r["Apelido de streamer"],
+        "kwaiId": r["kwaiId"],
+        "Status de streamer": r["Status de streamer"],
+        "Data de entrada": r["Data de entrada"],
+        "Última transmissão ao vivo em": r["Última transmissão ao vivo em"],
+        "Última publicação em": r["Última publicação em"],
+        "Fluxo da transmissão ao vivo este  mês": Number(r["Fluxo da transmissão ao vivo este  mês"]),
+        "Duração da transmissão ao vivo  este mês": r["Duração da transmissão ao vivo  este mês"],
+        "Dias válidos de transmissão ao  vivo este mês": Number(r["Dias válidos de transmissão ao  vivo este mês"])
+      }));
+
+      const { data: result, error } = await supabase
+        .from("hosts")
+        .upsert(mapped, { onConflict: "member_Id" });
+
+      if (error) {
+        console.error(error);
+        showMsg("Erro ao importar: " + error.message, "danger");
+      } else {
+        showMsg("Importação concluída com sucesso!", "success");
+      }
+
+    } catch (err) {
+      console.error(err);
+      showMsg("Erro ao processar o arquivo XLSX.", "danger");
+    }
+  };
+  reader.readAsArrayBuffer(file);
+});
+
+function showMsg(text, type="info") {
+  msg.textContent = text;
+  msg.className = "";
+  msg.classList.add("alert", `alert-${type}`);
+  setTimeout(() => { msg.textContent = ""; msg.className=""; }, 4000);
 }
-
-// 📤 IMPORT HOSTS
-document.getElementById("btnImportHosts").addEventListener("click", async () => {
-  const file = document.getElementById("fileHosts").files[0];
-  const status = document.getElementById("statusHosts");
-  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet);
-
-    const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
-  };
-  reader.readAsBinaryString(file);
-});
-
-// 📤 IMPORT REPORTS
-document.getElementById("btnImportReports").addEventListener("click", async () => {
-  const file = document.getElementById("fileReports").files[0];
-  const status = document.getElementById("statusReports");
-  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet);
-
-    const { error } = await supabase.from('host_reports').insert(data);
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
-  };
-  reader.readAsBinaryString(file);
-});
-
-// 🚪 LOGOUT
-document.getElementById("btnLogout").addEventListener("click", logout);
-
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
