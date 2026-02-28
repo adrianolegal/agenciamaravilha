@@ -8,50 +8,19 @@
 
 <!-- Bootstrap -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<!-- CSS global -->
+<!-- Seu CSS padrão -->
 <link href="assets/styles.css" rel="stylesheet">
 
 <style>
-body {
-  font-family: Arial, sans-serif;
-  background: linear-gradient(120deg,#0f172a,#1e293b);
-  color: white;
-  padding: 40px;
-}
-.container {
-  max-width: 700px;
-  margin: auto;
-}
-.card {
-  background:#1e293b;
-  padding:20px;
-  border-radius:12px;
-  margin-bottom:20px;
-  box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-}
-.status {
-  margin-top:10px;
-  font-weight:bold;
-  transition: all 0.3s ease;
-}
-.fade {
-  animation: fade 0.5s ease-in-out;
-}
-@keyframes fade {
-  from { opacity:0 }
-  to { opacity:1 }
-}
-/* Botões grandes estilo Kwai */
-.btn-brand {
-  background:#2563eb;
-  color:white;
-  font-weight:bold;
-  border-radius:999px;
-  padding:12px 28px;
-  font-size:1.25rem;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
-  transition: all 0.3s ease;
-}
+/* Ajustes locais */
+body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-family:Arial,sans-serif; padding:40px; }
+.container { max-width:700px; margin:auto; }
+.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; box-shadow:0 6px 20px rgba(0,0,0,0.3); }
+.status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
+.fade { animation: fade 0.5s ease-in-out; }
+@keyframes fade { from { opacity:0 } to { opacity:1 } }
+/* Botões estilo Kwai */
+.btn-brand { background:#2563eb; color:white; font-weight:bold; border-radius:999px; padding:12px 28px; font-size:1.25rem; box-shadow:0 6px 18px rgba(0,0,0,0.3); transition: all 0.3s ease; }
 .btn-brand:hover { opacity:0.85; }
 .btn-logout { background:#dc2626; color:white; font-weight:bold; padding:10px 20px; border-radius:6px; }
 </style>
@@ -61,7 +30,6 @@ body {
 <div class="container">
   <h2 class="mb-4 text-center">Painel Admin</h2>
 
-  <!-- Import Hosts -->
   <div class="card">
     <h4>Importar Hosts (Tabela 1)</h4>
     <input type="file" id="fileHosts" accept=".xlsx" class="form-control my-2">
@@ -69,7 +37,6 @@ body {
     <div id="statusHosts" class="status"></div>
   </div>
 
-  <!-- Import Reports -->
   <div class="card">
     <h4>Importar Relatório Lives (Tabela 2)</h4>
     <input type="file" id="fileReports" accept=".xlsx" class="form-control my-2">
@@ -82,15 +49,16 @@ body {
   </div>
 </div>
 
-<!-- XLSX ESM -->
+<!-- XLSX global -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
 <script type="module">
-import { read, utils } from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/es/xlsx.mjs";
 import { supabase, protectPage, logout } from "./supabase.js";
 
-// 🔒 Protege página
+// Protege página
 protectPage();
 
-// Função para mostrar status
+// Mostrar status
 function showStatus(el, text, type) {
   el.className = `status fade ${type}`;
   el.innerText = text;
@@ -104,15 +72,15 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = read(e.target.result, { type:'binary' });
+    const workbook = XLSX.read(e.target.result, { type:'binary' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = utils.sheet_to_json(sheet);
+    const data = XLSX.utils.sheet_to_json(sheet);
 
     const { error } = await supabase
       .from('hosts')
       .upsert(data, { onConflict: 'member_id' });
 
-    if (error) showStatus(status, "Erro ao importar: "+error.message, "error");
+    if (error) showStatus(status, "Erro: " + error.message, "error");
     else showStatus(status, "Importado com sucesso ✓", "success");
   };
   reader.readAsBinaryString(file);
@@ -126,15 +94,15 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = read(e.target.result, { type:'binary' });
+    const workbook = XLSX.read(e.target.result, { type:'binary' });
     const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = utils.sheet_to_json(sheet);
+    const data = XLSX.utils.sheet_to_json(sheet);
 
     const { error } = await supabase
       .from('host_reports')
       .insert(data);
 
-    if (error) showStatus(status, "Erro ao importar: "+error.message, "error");
+    if (error) showStatus(status, "Erro: " + error.message, "error");
     else showStatus(status, "Importado com sucesso ✓", "success");
   };
   reader.readAsBinaryString(file);
