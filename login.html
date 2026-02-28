@@ -43,7 +43,9 @@ body {
 <button id="btnLogin">Entrar</button>
 <p id="msg"></p>
 </div>
-
+<!-- No head ou antes do seu script -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/supabase.min.js"></script>
+<script src="supabase.js"></script> <!-- seu JS com login/logout -->
 <script type="module">
 import { login } from './supabase.js';
 
