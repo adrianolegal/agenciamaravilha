@@ -19,7 +19,7 @@ body { background: linear-gradient(120deg, #0f172a, #1e293b); color: white; disp
 <body>
 
 <div class="login-card">
-<img src="assets/logo.jpg" class="logo">
+<img src="assets/logo.jpg" class="logo" alt="Logo">
 <h3>Login</h3>
 <input type="email" id="email" placeholder="Email" class="form-control">
 <input type="password" id="password" placeholder="Senha" class="form-control">
@@ -27,25 +27,9 @@ body { background: linear-gradient(120deg, #0f172a, #1e293b); color: white; disp
 <p id="msg"></p>
 </div>
 
-<!-- 1️⃣ Bundle oficial UMD do Supabase -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.34.0/dist/supabase.min.js"></script>
+<script type="module">
+import { login } from "./supabase.js";
 
-<script>
-// 2️⃣ Configuração Supabase
-const SUPABASE_URL = "https://qgsfmiywdohybqlnxhdw.supabase.co";
-const SUPABASE_ANON_KEY = "SUA_ANON_KEY_AQUI"; // só aqui no JS centralizado
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// 3️⃣ Função de login
-function login(email, password) {
-  return supabaseClient.auth.signInWithPassword({ email, password })
-    .then(({ data, error }) => {
-      if (error) throw error;
-      return data.session;
-    });
-}
-
-// 4️⃣ Botão de login
 const btnLogin = document.getElementById("btnLogin");
 const msg = document.getElementById("msg");
 
