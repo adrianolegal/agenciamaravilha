@@ -33,44 +33,16 @@ button {
 .btn-brand { background:#2563eb; color:white; }
 .btn-success { background:#16a34a; color:white; }
 .btn-error { background:#dc2626; color:white; }
-
 .status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
 .fade { animation: fade 0.5s ease-in-out; }
-
 @keyframes fade { from { opacity:0 } to { opacity:1 } }
-
-/* 🔥 Correção visual inputs */
-input[type="file"],
-select,
-input[type="number"] {
-  background:#0f172a;
-  color:white;
-  border:1px solid #334155;
-  padding:8px;
-  border-radius:6px;
-}
-
-input::file-selector-button {
-  background:#2563eb;
-  color:white;
-  border:none;
-  padding:6px 10px;
-  border-radius:6px;
-  cursor:pointer;
-}
-
-.modal-content {
-  background:#1e293b;
-  color:white;
-  border-radius:12px;
-}
 </style>
 </head>
 
 <body>
 
 <div class="container">
-  <h2>Importação de Dados V.01.3</h2>
+  <h2>Importação de Dados V.01.4</h2>
 
   <div class="card">
     <h3>Importar Hosts (Tabela 1)</h3>
@@ -82,52 +54,85 @@ input::file-selector-button {
   <div class="card">
     <h3>Importar Relatórios Lives (Tabela 2)</h3>
     <input type="file" id="fileReports" accept=".xlsx">
-    <button class="btn btn-brand" id="btnOpenModal">Importar Reports</button>
+    <button class="btn btn-brand" id="btnImportReports">Importar Reports</button>
     <div id="statusReports" class="status"></div>
   </div>
 
   <button class="btn btn-error" id="btnLogout">Logout</button>
 </div>
-
-<!-- 🔥 MODAL MÊS/ANO -->
-<div class="modal fade" id="periodModal" tabindex="-1">
+<!-- Modal Mês/Ano -->
+<div class="modal fade" id="modalPeriodo" tabindex="-1">
   <div class="modal-dialog">
-    <div class="modal-content p-3">
-      <h4>Selecionar Período</h4>
-
-      <label>Mês:</label>
-      <select id="mesSelect" class="form-control mb-3">
-        <option value="1">Janeiro</option>
-        <option value="2">Fevereiro</option>
-        <option value="3">Março</option>
-        <option value="4">Abril</option>
-        <option value="5">Maio</option>
-        <option value="6">Junho</option>
-        <option value="7">Julho</option>
-        <option value="8">Agosto</option>
-        <option value="9">Setembro</option>
-        <option value="10">Outubro</option>
-        <option value="11">Novembro</option>
-        <option value="12">Dezembro</option>
-      </select>
-
-      <label>Ano:</label>
-      <input type="number" id="anoInput" class="form-control mb-3" value="2026">
-
-      <button class="btn btn-success" id="confirmImport">Confirmar Importação</button>
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header">
+        <h5 class="modal-title">Selecionar Mês e Ano</h5>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label>Mês</label>
+          <select id="mesInput" class="form-select">
+            <option value="1">Janeiro</option>
+            <option value="2">Fevereiro</option>
+            <option value="3">Março</option>
+            <option value="4">Abril</option>
+            <option value="5">Maio</option>
+            <option value="6">Junho</option>
+            <option value="7">Julho</option>
+            <option value="8">Agosto</option>
+            <option value="9">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+          </select>
+        </div>
+        <div>
+          <label>Ano</label>
+          <input type="number" id="anoInput" class="form-control" value="2025">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-success" id="confirmarPeriodo">Confirmar</button>
+      </div>
     </div>
   </div>
 </div>
-
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
-await protectPage();
+await protectPage(); // protege a página
 
 function showStatus(element, text, type="") {
   element.className = "status fade " + type;
   element.innerText = text;
+}
+
+// normaliza IDs e datas
+function normalizeData(data) {
+  return data.map(row => {
+    const normalized = { ...row };
+
+    // member_Id sempre número
+    if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
+
+    // campos de data
+    const dateFields = [
+      "Data de entrada",
+      "Última transmissão ao vivo em",
+      "Última publicação em"
+    ];
+
+    dateFields.forEach(field => {
+      if (normalized[field]) {
+        const d = new Date(normalized[field]);
+        normalized[field] = isNaN(d.getTime()) ? null : d.toISOString();
+      } else {
+        normalized[field] = null;
+      }
+    });
+
+    return normalized;
+  });
 }
 
 // 📤 IMPORT HOSTS
@@ -138,76 +143,104 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet);
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let data = XLSX.utils.sheet_to_json(sheet);
 
-    const { error } = await supabase
-      .from('hosts')
-      .upsert(data, { onConflict: 'member_Id' });
+      data = normalizeData(data);
 
-    if (error) showStatus(status, error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
+      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+      else showStatus(status, "Importado com sucesso ✓", "btn-success");
+    } catch (err) {
+      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
+    }
   };
   reader.readAsBinaryString(file);
 });
 
-// 🔥 ABRE MODAL
-document.getElementById("btnOpenModal").addEventListener("click", () => {
-  const modal = new bootstrap.Modal(document.getElementById("periodModal"));
+// 📤 IMPORT REPORTS (VERSÃO CORRETA COM MAPEAMENTO)
+document.getElementById("btnImportReports").addEventListener("click", () => {
+  const modal = new bootstrap.Modal(document.getElementById("modalPeriodo"));
   modal.show();
 });
 
-// 📤 IMPORT REPORTS COM MES/ANO + UPSERT
-document.getElementById("confirmImport").addEventListener("click", async () => {
+document.getElementById("confirmarPeriodo").addEventListener("click", async () => {
+
+  const mes = Number(document.getElementById("mesInput").value);
+  const ano = Number(document.getElementById("anoInput").value);
 
   const file = document.getElementById("fileReports").files[0];
   const status = document.getElementById("statusReports");
-  const mes = Number(document.getElementById("mesSelect").value);
-  const ano = Number(document.getElementById("anoInput").value);
 
-  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
+  if (!file) {
+    showStatus(status, "Selecione um arquivo", "btn-error");
+    return;
+  }
 
   const reader = new FileReader();
 
   reader.onload = async (e) => {
 
-    const dataArray = new Uint8Array(e.target.result);
-    const workbook = XLSX.read(dataArray, { type: "array" });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const json = XLSX.utils.sheet_to_json(sheet);
+    try {
 
-    const now = new Date().toISOString();
+      const dataArray = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(dataArray, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let json = XLSX.utils.sheet_to_json(sheet);
 
-    const formatted = json.map(row => ({
-      member_id: Number(row.member_Id) || null,
-      apelido_streamer: row["Apelido de streamer"] || null,
-      fluxo_presentes: row["Fluxo de presentes"] || null,
-      novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
-      receita_video: row["Receita de live de vídeo"] || null,
-      receita_audio: row["Receita de presentes de live de áudio"] || null,
-      mes: mes,
-      ano: ano,
-      updated_at: now
-    }));
+      const formatted = json.map(row => ({
+        member_id: Number(row.member_Id) || null,
+        kwai_id: row.kwaiId || null,
+        agencia_id: row["ID da agência"] || null,
+        nome_agencia: row["Nome da Agência"] || null,
+        apelido_streamer: row["Apelido de streamer"] || null,
+        nome_agente: row["Nome do agente"] || null,
+        duracao_transmissao: row["Duração da transmissão ao vivo"] || null,
+        dias_transmissao: row["Dia(s) da transmissão ao vivo"] || null,
+        dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
+        fluxo_presentes: row["Fluxo de presentes"] || null,
+        novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
+        duracao_video: row["Duração de live de vídeo"] || null,
+        duracao_audio: row["Duração de live de áudio"] || null,
+        receita_video: row["Receita de live de vídeo"] || null,
+        receita_audio: row["Receita de presentes de live de áudio"] || null,
+        dias_video: row["Dias efetivos de live de vídeo"] || null,
+        presentes_convidado_video: row["Presentes recebidos como convidado de live em grupo de vídeo"] || null,
+        presentes_streamer_video: row["Presentes recebidos como streamer de live em grupo de vídeo"] || null,
+        presentes_convidado_audio: row["Presentes recebidos como convidado de live em grupo de áudio"] || null,
+        presentes_streamer_audio: row["Presentes recebidos como streamer de live em grupo de áudio"] || null,
+        duracao_chat: row["A duração da transmissão ao vivo da sala de bate-papo"] || null,
+        sala_chat: row["Sala de chat com transmissão ao vivo"] || null,
+        fluxo_caixa_magica: row["Fluxo de Caixa Mágica"] || null,
+        mes: mes,
+        ano: ano,
+        updated_at: new Date().toISOString()
+      }));
 
-    const { error } = await supabase
-      .from("host_reports")
-      .upsert(formatted, {
-        onConflict: "member_id,mes,ano"
-      });
+      const { error } = await supabase
+        .from("host_reports")
+        .upsert(formatted, {
+          onConflict: "member_id,mes,ano"
+        });
 
-    if (error) {
-      showStatus(status, "Erro: " + error.message, "btn-error");
-      return;
+      if (error) {
+        showStatus(status, "Erro: " + error.message, "btn-error");
+        return;
+      }
+
+      showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
+
+    } catch (err) {
+      showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
 
-    showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
   };
 
   reader.readAsArrayBuffer(file);
-});
 
+});  // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
 
