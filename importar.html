@@ -218,7 +218,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
         ano: ano,
         updated_at: new Date().toISOString()
       }));
-
+console.log(formatted);
       const { error } = await supabase
         .from("host_reports")
         .upsert(formatted, {
