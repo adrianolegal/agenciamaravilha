@@ -42,7 +42,7 @@ button {
 <body>
 
 <div class="container">
-  <h2>Importação de Dados V.01.1</h2>
+  <h2>Importação de Dados V.01.2</h2>
 
   <div class="card">
     <h3>Importar Hosts (Tabela 1)</h3>
@@ -125,34 +125,80 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
   reader.readAsBinaryString(file);
 });
 
-// 📤 IMPORT REPORTS
+// 📤 IMPORT REPORTS (VERSÃO CORRETA COM MAPEAMENTO)
 document.getElementById("btnImportReports").addEventListener("click", async () => {
+
   const file = document.getElementById("fileReports").files[0];
   const status = document.getElementById("statusReports");
-  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
+
+  if (!file) {
+    showStatus(status, "Selecione um arquivo", "btn-error");
+    return;
+  }
+
+  showStatus(status, "Lendo arquivo...");
 
   const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
 
-      data = normalizeData(data);
+  reader.onload = async (e) => {
+
+    try {
+
+      const dataArray = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(dataArray, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let json = XLSX.utils.sheet_to_json(sheet);
+
+      const formatted = json.map(row => ({
+        member_id: Number(row.member_Id) || null,
+        kwai_id: row.kwaiId || null,
+        agencia_id: row["ID da agência"] || null,
+        nome_agencia: row["Nome da Agência"] || null,
+        apelido_streamer: row["Apelido de streamer"] || null,
+        nome_agente: row["Nome do agente"] || null,
+        duracao_transmissao: row["Duração da transmissão ao vivo"] || null,
+        dias_transmissao: row["Dia(s) da transmissão ao vivo"] || null,
+        dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
+        fluxo_presentes: row["Fluxo de presentes"] || null,
+        novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
+        duracao_video: row["Duração de live de vídeo"] || null,
+        duracao_audio: row["Duração de live de áudio"] || null,
+        receita_video: row["Receita de live de vídeo"] || null,
+        receita_audio: row["Receita de presentes de live de áudio"] || null,
+        dias_video: row["Dias efetivos de live de vídeo"] || null,
+        presentes_convidado_video: row["Presentes recebidos como convidado de live em grupo de vídeo"] || null,
+        presentes_streamer_video: row["Presentes recebidos como streamer de live em grupo de vídeo"] || null,
+        presentes_convidado_audio: row["Presentes recebidos como convidado de live em grupo de áudio"] || null,
+        presentes_streamer_audio: row["Presentes recebidos como streamer de live em grupo de áudio"] || null,
+        duracao_chat: row["A duração da transmissão ao vivo da sala de bate-papo"] || null,
+        sala_chat: row["Sala de chat com transmissão ao vivo"] || null,
+        fluxo_caixa_magica: row["Fluxo de Caixa Mágica"] || null,
+        data_entrada: row["Data de entrada"] || null,
+        ultima_live: row["Última transmissão ao vivo em"] || null,
+        ultima_publicacao: row["Última publicação em"] || null
+      }));
 
       const { error } = await supabase
-  .from('host_reports')
-  .insert(data);
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
-    }
-  };
-  reader.readAsBinaryString(file);
-});
+        .from("host_reports")
+        .insert(formatted);
 
-// 🚪 LOGOUT
+      if (error) {
+        showStatus(status, "Erro: " + error.message, "btn-error");
+        return;
+      }
+
+      showStatus(status, "Importação concluída ✓", "btn-success");
+
+    } catch (err) {
+      showStatus(status, "Erro inesperado: " + err.message, "btn-error");
+    }
+
+  };
+
+  reader.readAsArrayBuffer(file);
+
+});
+  // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
 
