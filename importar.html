@@ -40,8 +40,9 @@ button {
 </head>
 
 <body>
+
 <div class="container">
-  <h2>Importação de Dados V.02.0</h2>
+  <h2>Importação de Dados V.01.1</h2>
 
   <div class="card">
     <h3>Importar Hosts (Tabela 1)</h3>
@@ -60,10 +61,9 @@ button {
   <button class="btn btn-error" id="btnLogout">Logout</button>
 </div>
 
-<!-- Biblioteca XLSX -->
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-0.19.0/package/xlsx.mjs";
+import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
 await protectPage(); // protege a página
 
@@ -72,31 +72,15 @@ function showStatus(element, text, type="") {
   element.innerText = text;
 }
 
-// Função para tratar dados problemáticos do Excel
-function normalizeData(sheetData) {
-  return sheetData.map(row => {
-    let newRow = {...row};
-    if ('member_Id' in newRow) {
-      // força member_Id como string sem notação científica
-      newRow.member_Id = String(Math.floor(Number(newRow.member_Id)));
-    }
-    // se houver datas em Excel, converte para ISO (opcional)
-    if ('Data de entrada' in newRow) newRow['Data de entrada'] = newRow['Data de entrada'] ? new Date(newRow['Data de entrada']).toISOString() : null;
-    if ('Última transmissão ao vivo em' in newRow) newRow['Última transmissão ao vivo em'] = newRow['Última transmissão ao vivo em'] ? new Date(newRow['Última transmissão ao vivo em']).toISOString() : null;
-    if ('Última publicação em' in newRow) newRow['Última publicação em'] = newRow['Última publicação em'] ? new Date(newRow['Última publicação em']).toISOString() : null;
-    return newRow;
-  });
-}
-  function normalizeData(data) {
+// normaliza IDs e datas
+function normalizeData(data) {
   return data.map(row => {
     const normalized = { ...row };
 
-    // 1️⃣ member_Id sempre número (corrige notação científica)
-    if (normalized.member_Id) {
-      normalized.member_Id = Number(normalized.member_Id);
-    }
+    // member_Id sempre número
+    if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
 
-    // 2️⃣ Datas — tenta converter string para ISO, se falhar mantém null
+    // campos de data
     const dateFields = [
       "Data de entrada",
       "Última transmissão ao vivo em",
@@ -124,20 +108,19 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rawData = XLSX.utils.sheet_to_json(sheet);
-    const data = normalizeData(rawData);
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let data = XLSX.utils.sheet_to_json(sheet);
 
-    const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
-  
-// normaliza antes de enviar
-data = normalizeData(data);
+      data = normalizeData(data);
 
-const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-    
+      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+      else showStatus(status, "Importado com sucesso ✓", "btn-success");
+    } catch (err) {
+      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
+    }
   };
   reader.readAsBinaryString(file);
 });
@@ -150,14 +133,19 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rawData = XLSX.utils.sheet_to_json(sheet);
-    const data = normalizeData(rawData);
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let data = XLSX.utils.sheet_to_json(sheet);
 
-    const { error } = await supabase.from('host_reports').insert(data);
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
+      data = normalizeData(data);
+
+      const { error } = await supabase.from('host_reports').insert(data);
+      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+      else showStatus(status, "Importado com sucesso ✓", "btn-success");
+    } catch (err) {
+      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
+    }
   };
   reader.readAsBinaryString(file);
 });
