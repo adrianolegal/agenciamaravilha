@@ -33,7 +33,12 @@ button {
 .btn-brand { background:#2563eb; color:white; }
 .btn-success { background:#16a34a; color:white; }
 .btn-error { background:#dc2626; color:white; }
-.status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
+.status { 
+  margin-top:10px; 
+  font-weight:bold; 
+  transition: all 0.3s ease; 
+  opacity:1;
+}
 .fade { animation: fade 0.5s ease-in-out; }
 @keyframes fade { from { opacity:0 } to { opacity:1 } }
 </style>
@@ -63,39 +68,32 @@ button {
 
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
+import * as XLSX from "https://esm.sh/xlsx@0.18.5";
 
-await protectPage(); // protege a página
+// Protege a página
+await protectPage(); 
 
+// Função de status com visibilidade prolongada
 function showStatus(element, text, type="") {
   element.className = "status fade " + type;
   element.innerText = text;
+  setTimeout(() => { element.innerText = ""; }, 4000); // 4 segundos
 }
 
-// normaliza IDs e datas
+// Normaliza dados do Excel (member_id grande e datas)
 function normalizeData(data) {
   return data.map(row => {
     const normalized = { ...row };
-
-    // member_Id sempre número
-    if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
-
-    // campos de data
-    const dateFields = [
-      "Data de entrada",
-      "Última transmissão ao vivo em",
-      "Última publicação em"
-    ];
-
-    dateFields.forEach(field => {
-      if (normalized[field]) {
-        const d = new Date(normalized[field]);
-        normalized[field] = isNaN(d.getTime()) ? null : d.toISOString();
-      } else {
-        normalized[field] = null;
+    if (normalized.member_Id) {
+      // Corrige notação científica
+      normalized.member_Id = Number(normalized.member_Id.toString().replace(/[^0-9]/g,''));
+    }
+    // Converte datas para ISO
+    Object.keys(normalized).forEach(key => {
+      if (normalized[key] instanceof Date) {
+        normalized[key] = normalized[key].toISOString();
       }
     });
-
     return normalized;
   });
 }
@@ -108,19 +106,13 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
+    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = normalizeData(XLSX.utils.sheet_to_json(sheet));
 
-      data = normalizeData(data);
-
-      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
-    }
+    const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+    else showStatus(status, "Hosts importados com sucesso ✓", "btn-success");
   };
   reader.readAsBinaryString(file);
 });
@@ -133,27 +125,21 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
+    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = normalizeData(XLSX.utils.sheet_to_json(sheet));
 
-      data = normalizeData(data);
-
-      const { error } = await supabase.from('host_reports').insert(data);
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
-    }
+    const { error } = await supabase.from('host_reports').insert(data);
+    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+    else showStatus(status, "Relatórios importados com sucesso ✓", "btn-success");
   };
   reader.readAsBinaryString(file);
 });
 
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
-</script>
 
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
