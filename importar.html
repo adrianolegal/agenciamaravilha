@@ -87,6 +87,34 @@ function normalizeData(sheetData) {
     return newRow;
   });
 }
+  function normalizeData(data) {
+  return data.map(row => {
+    const normalized = { ...row };
+
+    // 1️⃣ member_Id sempre número (corrige notação científica)
+    if (normalized.member_Id) {
+      normalized.member_Id = Number(normalized.member_Id);
+    }
+
+    // 2️⃣ Datas — tenta converter string para ISO, se falhar mantém null
+    const dateFields = [
+      "Data de entrada",
+      "Última transmissão ao vivo em",
+      "Última publicação em"
+    ];
+
+    dateFields.forEach(field => {
+      if (normalized[field]) {
+        const d = new Date(normalized[field]);
+        normalized[field] = isNaN(d.getTime()) ? null : d.toISOString();
+      } else {
+        normalized[field] = null;
+      }
+    });
+
+    return normalized;
+  });
+}
 
 // 📤 IMPORT HOSTS
 document.getElementById("btnImportHosts").addEventListener("click", async () => {
@@ -104,6 +132,12 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
     if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
     else showStatus(status, "Importado com sucesso ✓", "btn-success");
+  
+// normaliza antes de enviar
+data = normalizeData(data);
+
+const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+    
   };
   reader.readAsBinaryString(file);
 });
