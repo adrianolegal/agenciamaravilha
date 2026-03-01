@@ -142,7 +142,7 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
       const { error } = await supabase
   .from('host_reports')
-  .upsert(data, { onConflict: 'member_Id' });
+  .insert(data);
       if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
       else showStatus(status, "Importado com sucesso ✓", "btn-success");
     } catch (err) {
