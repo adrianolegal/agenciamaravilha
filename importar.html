@@ -40,8 +40,9 @@ button {
 </head>
 
 <body>
+
 <div class="container">
-  <h2>Importação de Dados V.01.0</h2>
+  <h2>Importação de Dados V.01.1</h2>
 
   <div class="card">
     <h3>Importar Hosts (Tabela 1)</h3>
@@ -60,18 +61,32 @@ button {
   <button class="btn btn-error" id="btnLogout">Logout</button>
 </div>
 
-<!-- JS Libraries -->
-<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
+import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.mjs";
 
-await protectPage();
+await protectPage(); // protege a página
 
 function showStatus(element, text, type="") {
   element.className = "status fade " + type;
   element.innerText = text;
+}
+
+// Função para normalizar dados do Excel
+function normalizeData(data) {
+  return data.map(row => {
+    const newRow = {};
+    for (const key in row) {
+      let value = row[key];
+      if (value === undefined || value === null) value = '';
+      // Converte member_Id ou números grandes para string
+      if (key.toLowerCase().includes("member")) value = value.toString();
+      // Mantém datas como string no formato ISO
+      if (value instanceof Date) value = value.toISOString();
+      newRow[key] = value;
+    }
+    return newRow;
+  });
 }
 
 // 📤 IMPORT HOSTS
@@ -82,18 +97,18 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet, { raw: false });
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const dataRaw = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: '' });
+      const data = normalizeData(dataRaw);
 
-    // Corrige member_Id
-    data.forEach(row => {
-      if(row.member_Id) row.member_Id = row.member_Id.toString();
-    });
-
-    const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
+      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+      else showStatus(status, "Importado com sucesso ✓", "btn-success");
+    } catch(err) {
+      showStatus(status, "Erro na leitura do Excel: " + err.message, "btn-error");
+    }
   };
   reader.readAsBinaryString(file);
 });
@@ -106,20 +121,26 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    const workbook = XLSX.read(e.target.result, { type: 'binary' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(sheet, { raw: false });
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'binary' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const dataRaw = XLSX.utils.sheet_to_json(sheet, { raw: false, defval: '' });
+      const data = normalizeData(dataRaw);
 
-    const { error } = await supabase.from('host_reports').insert(data);
-    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-    else showStatus(status, "Importado com sucesso ✓", "btn-success");
+      const { error } = await supabase.from('host_reports').insert(data);
+      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+      else showStatus(status, "Importado com sucesso ✓", "btn-success");
+    } catch(err) {
+      showStatus(status, "Erro na leitura do Excel: " + err.message, "btn-error");
+    }
   };
   reader.readAsBinaryString(file);
 });
 
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
-
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
