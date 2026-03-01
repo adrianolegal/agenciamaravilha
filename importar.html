@@ -222,7 +222,7 @@ console.log(formatted);
       const { error } = await supabase
         .from("host_reports")
         .upsert(formatted, {
-          onConflict: "host_reports_pkey"
+          onConflict: "member_id,mes,ano"
         });
 
       if (error) {
