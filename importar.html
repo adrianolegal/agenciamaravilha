@@ -83,7 +83,7 @@ document.getElementById("btnImport").addEventListener("click", async () => {
             const formatted = json.map(row => ({
                 member_id: Number(row.member_Id) || null,
                 kwai_id: row.kwaiId || null,
-                agencia_id: row["ID da agência"] || null,
+                ID da agência: row["ID da agência"] || null,
                 nome_agencia: row["Nome da Agência"] || null,
                 apelido_streamer: row["Apelido de streamer"] || null,
                 nome_agente: row["Nome do agente"] || null,
