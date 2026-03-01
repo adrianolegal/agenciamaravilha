@@ -1,3 +1,56 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Importar Relatório Host</title>
+
+<style>
+body {
+    background: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    padding: 40px;
+}
+
+.container {
+    max-width: 600px;
+    margin: auto;
+}
+
+input, button {
+    padding: 10px;
+    margin-top: 10px;
+    width: 100%;
+    border-radius: 6px;
+    border: none;
+}
+
+button {
+    background: #ff6600;
+    color: #fff;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    opacity: 0.9;
+}
+
+.status {
+    margin-top: 15px;
+    font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Importar Relatório Host</h2>
+    <input type="file" id="fileInput" accept=".xlsx,.xls" />
+    <button id="btnImport">Importar</button>
+    <div class="status" id="status"></div>
+</div>
+
 <script type="module">
 
 import { supabase } from "./supabase.js";
