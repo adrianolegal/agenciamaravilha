@@ -73,3 +73,89 @@ importButton.addEventListener('click', async () => {
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Importar Hosts</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+  h1 { color: #333; }
+  input[type="file"] { margin-bottom: 10px; }
+  button {
+    background-color: #007BFF; /* cor padrão dos botões */
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+  }
+  button:hover { background-color: #0056b3; }
+  #msg { margin-top: 15px; color: red; }
+</style>
+</head>
+<body>
+<h1>Importar Excel - Hosts</h1>
+<input type="file" id="fileInput" accept=".xlsx, .xls" />
+<button id="importBtn">Importar</button>
+<div id="msg"></div>
+
+<script type="module">
+import * as XLSX from 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.mjs';
+
+const fileInput = document.getElementById('fileInput');
+const importBtn = document.getElementById('importBtn');
+const msg = document.getElementById('msg');
+
+importBtn.addEventListener('click', async () => {
+  const file = fileInput.files[0];
+  if (!file) { msg.textContent = "Selecione um arquivo Excel."; return; }
+
+  try {
+    const data = await file.arrayBuffer();
+    const workbook = XLSX.read(data, { type: 'array' });
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: null });
+
+    // Envia para Supabase hosts
+    for (let row of jsonData) {
+      const body = {
+        member_Id: row['member_Id'],
+        'Apelido de streamer': row['Apelido de streamer'],
+        kwaiId: row['kwaiId'],
+        'Status de streamer': row['Status de streamer'],
+        'Data de entrada': row['Data de entrada'],
+        'Última transmissão ao vivo em': row['Última transmissão ao vivo em'],
+        'Última publicação em': row['Última publicação em'],
+        'Fluxo da transmissão ao vivo este  mês': row['Fluxo da transmissão ao vivo este  mês'],
+        'Duração da transmissão ao vivo  este mês': row['Duração da transmissão ao vivo  este mês'],
+        'Dias válidos de transmissão ao  vivo este mês': row['Dias válidos de transmissão ao  vivo este mês']
+      };
+
+      const res = await fetch('https://qgsfmiywdohybqlnxhdw.supabase.co/rest/v1/hosts?on_conflict=member_Id&columns=member_Id', {
+        method: 'POST',
+        headers: {
+          'apikey': 'SUA_API_KEY',
+          'Authorization': 'Bearer SUA_API_KEY',
+          'Content-Type': 'application/json',
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        body: JSON.stringify(body)
+      });
+
+      if (!res.ok) {
+        console.error(await res.text());
+        msg.textContent = "Erro ao importar algumas linhas. Veja console.";
+      } else {
+        msg.textContent = "Importação concluída!";
+      }
+    }
+  } catch (err) {
+    console.error(err);
+    msg.textContent = "Erro ao ler o Excel.";
+  }
+});
+</script>
+</body>
+</html>
