@@ -42,8 +42,9 @@ button {
 <body>
 
 <div class="container">
-  <h2>Importação de Dados V.01.1</h2>
+  <h2>Importação de Dados V.01.0</h2>
 
+  <!-- IMPORT HOSTS -->
   <div class="card">
     <h3>Importar Hosts (Tabela 1)</h3>
     <input type="file" id="fileHosts" accept=".xlsx">
@@ -51,11 +52,13 @@ button {
     <div id="statusHosts" class="status"></div>
   </div>
 
+  <!-- IMPORT REPORTS -->
   <div class="card">
-    <h3>Importar Relatórios Lives (Tabela 2)</h3>
+    <h3>Importar Relatórios Lives (Tabela 2 - Prévia)</h3>
     <input type="file" id="fileReports" accept=".xlsx">
     <button class="btn btn-brand" id="btnImportReports">Importar Reports</button>
     <div id="statusReports" class="status"></div>
+    <small>A tabela ainda precisa ser criada no banco.</small>
   </div>
 
   <button class="btn btn-error" id="btnLogout">Logout</button>
@@ -63,41 +66,14 @@ button {
 
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
+import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"; // versão funcional
 
 await protectPage(); // protege a página
 
 function showStatus(element, text, type="") {
   element.className = "status fade " + type;
   element.innerText = text;
-}
-
-// normaliza IDs e datas
-function normalizeData(data) {
-  return data.map(row => {
-    const normalized = { ...row };
-
-    // member_Id sempre número
-    if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
-
-    // campos de data
-    const dateFields = [
-      "Data de entrada",
-      "Última transmissão ao vivo em",
-      "Última publicação em"
-    ];
-
-    dateFields.forEach(field => {
-      if (normalized[field]) {
-        const d = new Date(normalized[field]);
-        normalized[field] = isNaN(d.getTime()) ? null : d.toISOString();
-      } else {
-        normalized[field] = null;
-      }
-    });
-
-    return normalized;
-  });
+  setTimeout(() => { element.innerText = ""; element.className = "status"; }, 4000); // 4s visível
 }
 
 // 📤 IMPORT HOSTS
@@ -108,24 +84,23 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
+    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet, { raw: false });
 
-      data = normalizeData(data);
+    // Garantir member_id como número grande
+    data.forEach(r => {
+      if (r.member_Id) r.member_Id = Number(r.member_Id.toString().replace(/[^0-9]/g,''));
+    });
 
-      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
-    }
+    const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
+    if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
+    else showStatus(status, "Importado com sucesso ✓", "btn-success");
   };
   reader.readAsBinaryString(file);
 });
 
-// 📤 IMPORT REPORTS
+// 📤 IMPORT REPORTS (prévia, tabela ainda não existe)
 document.getElementById("btnImportReports").addEventListener("click", async () => {
   const file = document.getElementById("fileReports").files[0];
   const status = document.getElementById("statusReports");
@@ -133,27 +108,21 @@ document.getElementById("btnImportReports").addEventListener("click", async () =
 
   const reader = new FileReader();
   reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
+    const workbook = XLSX.read(e.target.result, { type: 'binary' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(sheet, { raw: false });
 
-      data = normalizeData(data);
-
-      const { error } = await supabase.from('host_reports').insert(data);
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
-    }
+    // Aqui você poderá processar para criar tabela 'host_reports' futuramente
+    console.log("Dados prontos para host_reports:", data);
+    showStatus(status, "Pré-visualização carregada ✓", "btn-success");
   };
   reader.readAsBinaryString(file);
 });
 
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
-</script>
 
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
