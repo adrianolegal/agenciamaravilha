@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Consulta Hosts - Agência Maravilha</title>
+<title>Consulta Host - Agência Maravilha</title>
 <link rel="icon" href="assets/logo.jpg">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
@@ -35,7 +35,9 @@ button {
 }
 .btn-brand:hover{ filter:brightness(1.05); }
 .status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
-table { width:100%; margin-top:20px; border-collapse: collapse; }
+.field-row { display:flex; margin-bottom:5px; }
+.field-row span { width:180px; font-weight:bold; }
+.table { width:100%; margin-top:20px; border-collapse: collapse; color:white; }
 th, td { border:1px solid #334155; padding:8px; text-align:left; }
 th { background:#1e293b; }
 tr:nth-child(even){ background:#1f2937; }
@@ -44,32 +46,50 @@ tr:nth-child(even){ background:#1f2937; }
 <body>
 
 <div class="container">
-  <h2>Consulta de Hosts</h2>
+  <h2>Consulta Host</h2>
 
   <div class="card">
     <h3>Buscar Host</h3>
-    <div class="mb-3">
-      <input type="text" id="hostSearch" class="form-control" placeholder="Digite apelido ou Kwai ID">
-    </div>
-    <button class="btn btn-brand" id="btnBuscar">Buscar</button>
-    <div id="status" class="status"></div>
+    <input type="text" id="hostSearch" class="form-control" placeholder="Digite apelido ou Kwai ID">
+    <select id="hostSelect" class="form-select mt-2" size="5"></select>
+    <div class="status" id="statusHost"></div>
   </div>
 
-  <div class="card">
-    <h3>Resultados</h3>
-    <table id="tabelaHosts">
+  <div class="card" id="hostInfoCard" style="display:none;">
+    <h3>Informações do Host</h3>
+    <div class="field-row"><span>UID:</span> <span id="memberId"></span></div>
+    <div class="field-row"><span>Apelido:</span> <span id="apelido"></span></div>
+    <div class="field-row"><span>Kwai ID:</span> <span id="kwaiId"></span></div>
+    <div class="field-row"><span>Nome do Agente:</span> <span id="nomeAgente"></span></div>
+
+    <div class="mb-3">
+      <label>Mês</label>
+      <select id="mesInput" class="form-select">
+        <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+        <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+        <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+      </select>
+    </div>
+    <div class="mb-3">
+      <label>Ano</label>
+      <input type="number" id="anoInput" class="form-control" value="2026">
+    </div>
+
+    <button class="btn btn-brand" id="btnFiltrar">Filtrar Dados</button>
+    <div class="status" id="statusReports"></div>
+
+    <table id="reportTable">
       <thead>
         <tr>
-          <th>member_Id</th>
-          <th>Apelido de streamer</th>
-          <th>kwaiId</th>
-          <th>Status de streamer</th>
-          <th>Data de entrada</th>
-          <th>Última transmissão ao vivo em</th>
-          <th>Última publicação em</th>
-          <th>Fluxo da transmissão ao vivo este mês</th>
-          <th>Duração da transmissão ao vivo este mês</th>
-          <th>Dias válidos de transmissão ao vivo este mês</th>
+          <th>Duração Transmissão</th>
+          <th>Dias Efetivos</th>
+          <th>Fluxo Presentes</th>
+          <th>Duração Vídeo</th>
+          <th>Duração Áudio</th>
+          <th>Receita Vídeo</th>
+          <th>Receita Áudio</th>
+          <th>Dias Vídeo</th>
         </tr>
       </thead>
       <tbody></tbody>
@@ -79,60 +99,108 @@ tr:nth-child(even){ background:#1f2937; }
 
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
-
-await protectPage(); // protege a página
+await protectPage();
 
 const hostSearch = document.getElementById('hostSearch');
-const btnBuscar = document.getElementById('btnBuscar');
-const tabelaBody = document.querySelector('#tabelaHosts tbody');
-const status = document.getElementById('status');
+const hostSelect = document.getElementById('hostSelect');
+const statusHost = document.getElementById('statusHost');
+const hostInfoCard = document.getElementById('hostInfoCard');
 
-btnBuscar.addEventListener('click', async () => {
-  tabelaBody.innerHTML = '';
-  status.innerText = 'Carregando...';
+const memberIdSpan = document.getElementById('memberId');
+const apelidoSpan = document.getElementById('apelido');
+const kwaiIdSpan = document.getElementById('kwaiId');
+const nomeAgenteSpan = document.getElementById('nomeAgente');
 
-  const filtro = hostSearch.value.trim();
-  if (!filtro) { status.innerText = 'Digite apelido ou Kwai ID'; return; }
+const mesInput = document.getElementById('mesInput');
+const anoInput = document.getElementById('anoInput');
+const btnFiltrar = document.getElementById('btnFiltrar');
+const statusReports = document.getElementById('statusReports');
+const reportTable = document.querySelector('#reportTable tbody');
 
-  // fetch no Supabase usando nomes corretos e aspas duplas
+let hostsData = [];
+
+// Carregar hosts da view simplificada
+async function carregarHosts() {
   const { data, error } = await supabase
-    .from('hosts')
-    .select(`
-      member_Id,
-      "Apelido de streamer",
-      kwaiId,
-      "Status de streamer",
-      "Data de entrada",
-      "Última transmissão ao vivo em",
-      "Última publicação em",
-      "Fluxo da transmissão ao vivo este mês",
-      "Duração da transmissão ao vivo este mês",
-      "Dias válidos de transmissão ao vivo este mês"
-    `)
-    .or(`"Apelido de streamer".ilike.%${filtro}%,kwaiId.ilike.%${filtro}%`);
+    .from('hosts_simplificado')
+    .select('*')
+    .order('member_id');
 
-  if (error) { status.innerText = 'Erro: ' + error.message; return; }
-  if (!data || data.length === 0) { status.innerText = 'Nenhum host encontrado'; return; }
+  if(error){ statusHost.innerText = 'Erro: '+error.message; return; }
 
-  data.forEach(h => {
-    tabelaBody.innerHTML += `
+  hostsData = data;
+  atualizarSelect('');
+}
+
+function atualizarSelect(filtro){
+  hostSelect.innerHTML = '';
+  const filtrados = hostsData.filter(h =>
+    h.apelido_streamer.toLowerCase().includes(filtro.toLowerCase()) ||
+    h.kwaiId.toLowerCase().includes(filtro.toLowerCase())
+  );
+
+  if(filtrados.length===0){
+    hostSelect.innerHTML = '<option value="">Nenhum host encontrado</option>';
+  } else {
+    filtrados.forEach(h=>{
+      hostSelect.innerHTML += `<option value="${h.member_Id}">${h.apelido_streamer} / ${h.kwaiId}</option>`;
+    });
+  }
+}
+
+hostSearch.addEventListener('input', e=> atualizarSelect(e.target.value));
+
+hostSelect.addEventListener('change', ()=>{
+  const selected = hostsData.find(h=>h.member_Id==hostSelect.value);
+  if(!selected) return;
+  hostInfoCard.style.display = 'block';
+  memberIdSpan.innerText = selected.member_Id;
+  apelidoSpan.innerText = selected.apelido_streamer;
+  kwaiIdSpan.innerText = selected.kwaiId;
+  nomeAgenteSpan.innerText = selected.nome_agente || '';
+});
+
+// Botão filtrar dados do host
+btnFiltrar.addEventListener('click', async ()=>{
+  reportTable.innerHTML = '';
+  statusReports.innerText = '';
+
+  const memberId = hostSelect.value;
+  const mes = Number(mesInput.value);
+  const ano = Number(anoInput.value);
+
+  if(!memberId){ statusReports.innerText='Selecione um host'; return; }
+
+  const { data, error } = await supabase
+    .from('host_reports_simplificado')
+    .select('*')
+    .eq('member_id', memberId)
+    .eq('mes', mes)
+    .eq('ano', ano);
+
+  if(error){ statusReports.innerText = 'Erro: '+error.message; return; }
+  if(!data || data.length===0){ statusReports.innerText='Nenhum dado encontrado'; return; }
+
+  data.forEach(d=>{
+    reportTable.innerHTML += `
       <tr>
-        <td>${h.member_Id}</td>
-        <td>${h["Apelido de streamer"]}</td>
-        <td>${h.kwaiId}</td>
-        <td>${h["Status de streamer"]}</td>
-        <td>${h["Data de entrada"]}</td>
-        <td>${h["Última transmissão ao vivo em"]}</td>
-        <td>${h["Última publicação em"]}</td>
-        <td>${h["Fluxo da transmissão ao vivo este mês"]}</td>
-        <td>${h["Duração da transmissão ao vivo este mês"]}</td>
-        <td>${h["Dias válidos de transmissão ao vivo este mês"]}</td>
+        <td>${d.duracao_transmissao || ''}</td>
+        <td>${d.dias_efetivos || ''}</td>
+        <td>${d.fluxo_presentes || ''}</td>
+        <td>${d.duracao_video || ''}</td>
+        <td>${d.duracao_audio || ''}</td>
+        <td>${d.receita_video || ''}</td>
+        <td>${d.receita_audio || ''}</td>
+        <td>${d.dias_video || ''}</td>
       </tr>
     `;
   });
 
-  status.innerText = `Mostrando ${data.length} host(s)`;
+  statusReports.innerText = `Mostrando ${data.length} registro(s)`;
 });
+
+// Inicializa hosts
+carregarHosts();
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
