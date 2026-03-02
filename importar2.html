@@ -1,134 +1,175 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>Importar Relatório Host</title>
-
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Visualizar Hosts - Agência Maravilha</title>
+<link rel="icon" href="assets/logo.jpg">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="assets/styles.css" rel="stylesheet">
 <style>
 body {
-    background: #000;
-    color: #fff;
-    font-family: Arial, sans-serif;
-    padding: 40px;
+  background: linear-gradient(120deg, #0f172a, #1e293b);
+  color: white;
+  font-family: Arial, sans-serif;
+  padding: 40px;
 }
-
-.container {
-    max-width: 600px;
-    margin: auto;
-}
-
-input, button {
-    padding: 10px;
-    margin-top: 10px;
-    width: 100%;
-    border-radius: 6px;
-    border: none;
-}
-
+.container { max-width: 1000px; margin:auto; }
+.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
 button {
-    background: #ff6600;
-    color: #fff;
-    font-weight: bold;
-    cursor: pointer;
+  font-weight:bold;
+  cursor:pointer;
+  border:none;
+  border-radius:6px;
+  padding:10px 20px;
+  margin-top:10px;
 }
+.status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
+.fade { animation: fade 0.5s ease-in-out; }
+@keyframes fade { from { opacity:0 } to { opacity:1 } }
 
-button:hover {
-    opacity: 0.9;
+/* BOTÕES */
+.btn-brand{
+  background: linear-gradient(90deg, var(--brand), var(--brand2));
+  border:none;
+  color:#ffffff;
 }
+.btn-brand:hover{ filter:brightness(1.05); }
 
-.status {
-    margin-top: 15px;
-    font-weight: bold;
-}
+input, select { background: #1e293b; color: #fff; border-radius: 6px; border: 1px solid #555; padding: 6px; }
+
+table { width: 100%; margin-top: 20px; border-collapse: collapse; }
+table, th, td { border: 1px solid #555; }
+th, td { padding: 8px; text-align: left; }
+th { background: #2563eb; color: #fff; }
+tr:nth-child(even) { background: #1e293b; }
 </style>
 </head>
+
 <body>
 
 <div class="container">
-    <h2>Importar Relatório Host</h2>
-    <input type="file" id="fileInput" accept=".xlsx,.xls" />
-    <button id="btnImport">Importar</button>
-    <div class="status" id="status"></div>
+  <h2>Visualizar Dados de Hosts</h2>
+
+  <div class="card">
+    <h3>Filtro</h3>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label>Host</label>
+        <select id="hostSelect" class="form-select"></select>
+      </div>
+      <div class="col-md-2">
+        <label>Mês</label>
+        <select id="mesInput" class="form-select">
+          <option value="1">Janeiro</option>
+          <option value="2">Fevereiro</option>
+          <option value="3">Março</option>
+          <option value="4">Abril</option>
+          <option value="5">Maio</option>
+          <option value="6">Junho</option>
+          <option value="7">Julho</option>
+          <option value="8">Agosto</option>
+          <option value="9">Setembro</option>
+          <option value="10">Outubro</option>
+          <option value="11">Novembro</option>
+          <option value="12">Dezembro</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label>Ano</label>
+        <input type="number" id="anoInput" class="form-control" value="2025">
+      </div>
+      <div class="col-md-2 align-self-end">
+        <button class="btn btn-brand" id="btnFiltrar">Filtrar</button>
+      </div>
+    </div>
+    <div id="statusFilter" class="status"></div>
+  </div>
+
+  <div class="card">
+    <h3>Resultados</h3>
+    <table id="resultsTable">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Apelido</th>
+          <th>Member ID</th>
+          <th>Duração Vídeo</th>
+          <th>Duração Áudio</th>
+          <th>Receita Vídeo</th>
+          <th>Receita Áudio</th>
+          <th>Dias Vídeo</th>
+          <th>Mês</th>
+          <th>Ano</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 </div>
 
 <script type="module">
+import { supabase, protectPage } from "./supabase.js";
 
-import { supabase } from "./supabase.js";
-import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
+await protectPage();
 
-const statusDiv = document.getElementById("status");
+const hostSelect = document.getElementById("hostSelect");
+const mesInput = document.getElementById("mesInput");
+const anoInput = document.getElementById("anoInput");
+const resultsTable = document.getElementById("resultsTable").querySelector("tbody");
+const status = document.getElementById("statusFilter");
 
-document.getElementById("btnImport").addEventListener("click", async () => {
+// Carrega lista de hosts
+async function loadHosts() {
+  const { data, error } = await supabase.from('hosts').select('member_Id, nome_agente, apelido_streamer');
+  if (error) { status.innerText = "Erro ao carregar hosts"; return; }
 
-    const file = document.getElementById("fileInput").files[0];
+  hostSelect.innerHTML = data.map(h => `<option value="${h.member_Id}">${h.nome_agente} (${h.apelido_streamer})</option>`).join('');
+}
 
-    if (!file) {
-        statusDiv.innerText = "Selecione um arquivo.";
-        return;
-    }
+// Busca dados filtrados
+async function filtrar() {
+  const member_id = hostSelect.value;
+  const mes = mesInput.value;
+  const ano = anoInput.value;
+  resultsTable.innerHTML = '';
+  status.innerText = "Carregando...";
 
-    statusDiv.innerText = "Lendo arquivo...";
+  const { data, error } = await supabase
+    .from('host_reports')
+    .select('*')
+    .eq('member_id', member_id)
+    .eq('mes', mes)
+    .eq('ano', ano);
 
-    const reader = new FileReader();
+  if (error) { status.innerText = "Erro: " + error.message; return; }
+  if (!data || data.length === 0) { status.innerText = "Nenhum dado encontrado"; return; }
 
-    reader.onload = async (e) => {
+  data.forEach(row => {
+    resultsTable.innerHTML += `
+      <tr>
+        <td>${row.nome_agente || ''}</td>
+        <td>${row.apelido_streamer || ''}</td>
+        <td>${row.member_id || ''}</td>
+        <td>${row.duracao_video || ''}</td>
+        <td>${row.duracao_audio || ''}</td>
+        <td>${row.receita_video || ''}</td>
+        <td>${row.receita_audio || ''}</td>
+        <td>${row.dias_video || ''}</td>
+        <td>${row.mes || ''}</td>
+        <td>${row.ano || ''}</td>
+      </tr>
+    `;
+  });
 
-        try {
+  status.innerText = `Mostrando ${data.length} registro(s)`;
+}
 
-            const data = new Uint8Array(e.target.result);
-            const workbook = XLSX.read(data, { type: "array" });
-            const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            let json = XLSX.utils.sheet_to_json(sheet);
+document.getElementById("btnFiltrar").addEventListener("click", filtrar);
 
-            const formatted = json.map(row => ({
-                member_id: Number(row.member_Id) || null,
-                kwai_id: row.kwaiId || null,
-                agencia_id: row["ID da agência"] || null,
-                nome_agencia: row["Nome da Agência"] || null,
-                apelido_streamer: row["Apelido de streamer"] || null,
-                nome_agente: row["Nome do agente"] || null,
-                duracao_transmissao: row["Duração da transmissão ao vivo"] || null,
-                dias_transmissao: row["Dia(s) da transmissão ao vivo"] || null,
-                dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
-                fluxo_presentes: row["Fluxo de presentes"] || null,
-                novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
-                duracao_video: row["Duração de live de vídeo"] || null,
-                duracao_audio: row["Duração de live de áudio"] || null,
-                receita_video: row["Receita de live de vídeo"] || null,
-                receita_audio: row["Receita de presentes de live de áudio"] || null,
-                dias_video: row["Dias efetivos de live de vídeo"] || null,
-                presentes_convidado_video: row["Presentes recebidos como convidado de live em grupo de vídeo"] || null,
-                presentes_streamer_video: row["Presentes recebidos como streamer de live em grupo de vídeo"] || null,
-                presentes_convidado_audio: row["Presentes recebidos como convidado de live em grupo de áudio"] || null,
-                presentes_streamer_audio: row["Presentes recebidos como streamer de live em grupo de áudio"] || null,
-                duracao_chat: row["A duração da transmissão ao vivo da sala de bate-papo"] || null,
-                sala_chat: row["Sala de chat com transmissão ao vivo"] || null,
-                fluxo_caixa_magica: row["Fluxo de Caixa Mágica"] || null,
-                data_entrada: row["Data de entrada"] || null,
-                ultima_live: row["Última transmissão ao vivo em"] || null,
-                ultima_publicacao: row["Última publicação em"] || null
-            }));
-
-            const { error } = await supabase
-                .from("host_reports")
-                .insert(formatted);
-
-            if (error) {
-                console.error(error);
-                statusDiv.innerText = "Erro: " + error.message;
-                return;
-            }
-
-            statusDiv.innerText = "Importação concluída.";
-
-        } catch (err) {
-            console.error(err);
-            statusDiv.innerText = "Erro inesperado.";
-        }
-
-    };
-
-    reader.readAsArrayBuffer(file);
-});
-
+loadHosts();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
