@@ -190,12 +190,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
   reader.readAsBinaryString(file);
 });
 
-// IMPORT REPORTS COM NORMALIZAÇÃO
-document.getElementById("btnImportReports").addEventListener("click", () => {
-  const modal = new bootstrap.Modal(document.getElementById("modalPeriodo"));
-  modal.show();
-});
-
+// 🔹 IMPORT REPORTS COM NORMALIZAÇÃO SIMPLES
 document.getElementById("confirmarPeriodo").addEventListener("click", async () => {
   const mes = Number(document.getElementById("mesInput").value);
   const ano = Number(document.getElementById("anoInput").value);
@@ -221,31 +216,31 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
         return normalizedRow;
       });
 
-      // 🔵 Formata números e datas
+      // 🔵 Mapeia os dados para o Supabase
       const formatted = normalizedJson.map(row => ({
-        member_id: Number(row["Member ID"]) || null,
+        member_id: row["Member ID"] || null,
         kwai_id: row["kwaiId"] || null,
         agencia_id: row["ID da agência"] || null,
         nome_agencia: row["Nome da Agência"] || null,
         apelido_streamer: row["Apelido de streamer"] || null,
         nome_agente: row["Nome do agente"] || null,
-        duracao_transmissao: Number(row["Duração da transmissão ao vivo"] || 0),
-        dias_transmissao: Number(row["Dia(s) da transmissão ao vivo"] || 0),
-        dias_efetivos: Number(row["Dia(s) efetivo(s) da transmissão  ao vivo"] || 0),
-        fluxo_presentes: Number(row["Fluxo de presentes"] || 0),
-        novos_fas: Number(row["Novos fãs da sala de transmissão ao vivo"] || 0),
-        duracao_video: Number(row["Duração de live de vídeo"] || 0),
-        duracao_audio: Number(row["Duração de live de áudio"] || 0),
-        receita_video: Number(row["Receita de live de vídeo"] || 0),
-        receita_audio: Number(row["Receita de presentes de live de áudio"] || 0),
-        dias_video: Number(row["Dias efetivos de live de vídeo"] || 0),
-        presentes_convidado_video: Number(row["Presentes recebidos como convidado de live em grupo de vídeo"] || 0),
-        presentes_streamer_video: Number(row["Presentes recebidos como streamer de live em grupo de vídeo"] || 0),
-        presentes_convidado_audio: Number(row["Presentes recebidos como convidado de live em grupo de áudio"] || 0),
-        presentes_streamer_audio: Number(row["Presentes recebidos como streamer de live em grupo de áudio"] || 0),
-        duracao_chat: Number(row["A duração da transmissão ao vivo da sala de bate-papo"] || 0),
+        duracao_transmissao: row["Duração da transmissão ao vivo"] || null,
+        dias_transmissao: row["Dia(s) da transmissão ao vivo"] || null,
+        dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
+        fluxo_presentes: row["Fluxo de presentes"] || null,
+        novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
+        duracao_video: row["Duração de live de vídeo"] || null, // espaço no cabeçalho resolvido
+        duracao_audio: row["Duração de live de áudio"] || null,
+        receita_video: row["Receita de live de vídeo"] || null,
+        receita_audio: row["Receita de presentes de live de áudio"] || null,
+        dias_video: row["Dias efetivos de live de vídeo"] || null,
+        presentes_convidado_video: row["Presentes recebidos como convidado de live em grupo de vídeo"] || null,
+        presentes_streamer_video: row["Presentes recebidos como streamer de live em grupo de vídeo"] || null,
+        presentes_convidado_audio: row["Presentes recebidos como convidado de live em grupo de áudio"] || null,
+        presentes_streamer_audio: row["Presentes recebidos como streamer de live em grupo de áudio"] || null,
+        duracao_chat: row["A duração da transmissão ao vivo da sala de bate-papo"] || null,
         sala_chat: row["Sala de chat com transmissão ao vivo"] || null,
-        fluxo_caixa_magica: Number(row["Fluxo de Caixa Mágica"] || 0),
+        fluxo_caixa_magica: row["Fluxo de Caixa Mágica"] || null,
         mes: mes,
         ano: ano,
         updated_at: new Date().toISOString()
@@ -264,7 +259,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
   reader.readAsArrayBuffer(file);
 });
-
+  
 // LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
