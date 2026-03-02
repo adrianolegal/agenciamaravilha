@@ -309,7 +309,7 @@ let hostsData = [];
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts')
-    .select('member_id,apelido_de_streamer,kwaiid,Data_de_entrada')
+    .select('member_id,apelido_de_streamer,kwaiId,Data_de_entrada')
     .eq('ativo', true)
     .order('nome_agente');
 
@@ -323,13 +323,13 @@ async function carregarHosts() {
 function atualizarSelect(filtro) {
   hostSelect.innerHTML = '';
   const filtrados = hostsData.filter(h =>
-    h.apelido_streamer.toLowerCase().includes(filtro.toLowerCase()) ||
-    h.kwai_id.toLowerCase().includes(filtro.toLowerCase())
+    h.apelido_de_streamer.toLowerCase().includes(filtro.toLowerCase()) ||
+    h.kwaiId.toLowerCase().includes(filtro.toLowerCase())
   );
 
   if(filtrados.length===0) hostSelect.innerHTML = '<option value="">Nenhum host encontrado</option>';
   else filtrados.forEach(h => {
-    const text = `${h.nome_agente} (${h.apelido_streamer} / ${h.kwai_id})`;
+    const text = `(${h.apelido_de_streamer} / ${h.kwai_id})`;
     hostSelect.innerHTML += `<option value="${h.member_id}">${text}</option>`;
   });
 }
