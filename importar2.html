@@ -22,6 +22,9 @@
     th, td { border:1px solid #334155; padding:8px; text-align:left; }
     th { background:#1e293b; color:#fbbf24; }
     tr:nth-child(even){ background:#1f2937; }
+
+    /* Prévia Kwai */
+    #kwaiPreview img { width:80px; height:80px; object-fit:cover; }
 </style>
 </head>
 <body>
@@ -37,12 +40,12 @@
         <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
         <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
 
-        <!-- Prévia do Kwai -->
+        <!-- Prévia do Kwai (placeholder seguro) -->
         <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
             <h5 class="text-warning">Prévia do Kwai</h5>
             <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
             <div class="d-flex align-items-center">
-                <img id="kwaiProfileImg" class="rounded-circle me-2" width="80" height="80" alt="Foto do perfil">
+                <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
                 <div>
                     <div class="text-white fw-bold" id="kwaiName"></div>
                     <div class="text-white" id="kwaiFollowers">Seguindo preview…</div>
@@ -136,13 +139,12 @@ hostSearch.addEventListener('input', e => {
         apelido.textContent = encontrado.apelido;
         kwai_id.textContent = encontrado.kwai_id;
 
-        // Atualiza prévia Kwai
-        const kwaiUrl = `https://kwai.com/@${encontrado.kwai_id}`;
+        // Prévia segura do Kwai
         kwaiPreview.style.display = 'block';
-        kwaiLink.href = kwaiUrl;
+        kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
         kwaiName.textContent = encontrado.apelido;
-        kwaiProfileImg.src = `https://cdn.kwai.com/profile/${encontrado.kwai_id}.jpg`;
-        kwaiFollowers.textContent = "Seguindo preview…";
+        kwaiProfileImg.src = 'assets/profile-placeholder.jpg'; // placeholder seguro
+        kwaiFollowers.textContent = 'Seguidores: -';
     } else {
         selectedHost = null;
         uid.textContent = '';
