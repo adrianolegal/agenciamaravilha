@@ -5,14 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel de Hosts Simplificado</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="assets/styles.css" rel="stylesheet">
-<style>
-/* Classe para textos dos resultados */
-.result-text {
-    color: white;
-    font-weight: bold;
-}
-</style>
+<link href="assets/styles.css" rel="stylesheet"> <!-- CSS padrão do projeto -->
 </head>
 <body>
 
@@ -22,11 +15,10 @@
     <div class="card">
         <h4>Buscar Host</h4>
         <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
-        <select id="hostSelect" class="form-select mb-3" size="1" style="display:none;"></select>
 
-        <div class="data-row"><span>UID:</span> <span id="uid" class="result-text"></span></div>
-        <div class="data-row"><span>Apelido:</span> <span id="apelido" class="result-text"></span></div>
-        <div class="data-row"><span>Kwai ID:</span> <span id="kwai_id" class="result-text"></span></div>
+        <div class="card text-white bg-dark"><span>UID:</span> <span id="uid"></span></div>
+        <div class="data-row"><span>Apelido:</span> <span id="apelido"></span></div>
+        <div class="data-row"><span>Kwai ID:</span> <span id="kwai_id"></span></div>
 
         <div class="mb-3">
             <label>Mês</label>
@@ -45,12 +37,12 @@
         </div>
 
         <button class="btn btn-brand" id="btnFiltrar">Aplicar Filtro</button>
-        <div id="status" class="status result-text"></div>
+        <div id="status" class="status"></div>
     </div>
 
     <div class="card">
         <h4>Resultados da Transmissão</h4>
-        <table class="table">
+        <table class="table" id="resultTable">
             <thead>
                 <tr>
                     <th>Duração Transmissão</th>
@@ -63,16 +55,15 @@
                     <th>Dias Vídeo</th>
                 </tr>
             </thead>
-            <tbody id="resultTable"></tbody>
+            <tbody></tbody>
         </table>
     </div>
 </div>
 
 <script type="module">
-import { supabase, protectPage, logout } from "./supabase.js";
+import { supabase } from './supabase.js';
 
 const hostSearch = document.getElementById('hostSearch');
-const hostSelect = document.getElementById('hostSelect');
 const uid = document.getElementById('uid');
 const apelido = document.getElementById('apelido');
 const kwai_id = document.getElementById('kwai_id');
@@ -80,9 +71,10 @@ const btnFiltrar = document.getElementById('btnFiltrar');
 const mesInput = document.getElementById('mesInput');
 const anoInput = document.getElementById('anoInput');
 const status = document.getElementById('status');
-const resultTable = document.getElementById('resultTable');
+const resultTable = document.querySelector('#resultTable tbody');
 
 let hostsData = [];
+let selectedHost = null;
 
 // Carrega hosts simplificados
 async function carregarHosts() {
@@ -91,82 +83,67 @@ async function carregarHosts() {
         .select('member_id,apelido,kwai_id')
         .order('apelido', { ascending: true });
 
-    if(error){ status.textContent = "Erro ao carregar hosts: " + error.message; return; }
-
+    if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
     hostsData = data;
 }
 
-// Atualiza select oculto
-function atualizarSelect(filtro) {
-    const filtrados = hostsData.filter(h => 
-        h.apelido?.toLowerCase().includes(filtro.toLowerCase()) || 
-        h.kwai_id?.toLowerCase().includes(filtro.toLowerCase())
+// Pesquisa tipo tonselect
+hostSearch.addEventListener('input', e => {
+    const filtro = e.target.value.toLowerCase();
+    const encontrado = hostsData.find(h => 
+        h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro)
     );
-
-    if(filtrados.length === 0){ hostSelect.style.display='none'; return; }
-
-    hostSelect.innerHTML = '';
-    filtrados.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h.member_id;
-        opt.textContent = h.apelido + ' / ' + h.kwai_id;
-        hostSelect.appendChild(opt);
-    });
-    hostSelect.style.display='block';
-}
-
-// Atualiza campos ao selecionar host
-hostSelect.addEventListener('change', () => {
-    const selected = hostsData.find(h => h.member_id == hostSelect.value);
-    if(!selected) return;
-    uid.textContent = selected.member_id;
-    apelido.textContent = selected.apelido;
-    kwai_id.textContent = selected.kwai_id;
+    if(encontrado){
+        selectedHost = encontrado;
+        uid.textContent = encontrado.member_id;
+        apelido.textContent = encontrado.apelido;
+        kwai_id.textContent = encontrado.kwai_id;
+    } else {
+        selectedHost = null;
+        uid.textContent = '';
+        apelido.textContent = '';
+        kwai_id.textContent = '';
+    }
 });
 
-// Busca ao digitar
-hostSearch.addEventListener('input', e => atualizarSelect(e.target.value));
-
-// Aplica filtro e mostra host_reports_simplificado
+// Filtra host_reports_simplificado
 btnFiltrar.addEventListener('click', async () => {
     resultTable.innerHTML = '';
-    status.textContent = '';
+    status.innerText = '';
 
-    const memberId = hostSelect.value;
+    if(!selectedHost){ status.innerText='Selecione um host válido'; return; }
+
     const mes = Number(mesInput.value);
     const ano = Number(anoInput.value);
-
-    if(!memberId){ status.textContent='Selecione um host'; return; }
 
     const { data, error } = await supabase
         .from('host_reports_simplificado')
         .select('duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
-        .eq('member_id', memberId)
+        .eq('member_id', selectedHost.member_id)
         .eq('mes', mes)
         .eq('ano', ano);
 
-    if(error){ status.textContent = "Erro: " + error.message; return; }
-    if(!data || data.length===0){ status.textContent='Nenhum dado encontrado'; return; }
+    if(error){ status.innerText = "Erro: " + error.message; return; }
+    if(!data || data.length===0){ status.innerText='Nenhum dado encontrado'; return; }
 
     data.forEach(d => {
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td class="result-text">${d.duracao_transmissao || ''}</td>
-            <td class="result-text">${d.dias_efetivos || ''}</td>
-            <td class="result-text">${d.fluxo_presentes || ''}</td>
-            <td class="result-text">${d.duracao_video || ''}</td>
-            <td class="result-text">${d.duracao_audio || ''}</td>
-            <td class="result-text">${d.receita_video || ''}</td>
-            <td class="result-text">${d.receita_audio || ''}</td>
-            <td class="result-text">${d.dias_video || ''}</td>
+            <td>${d.duracao_transmissao || ''}</td>
+            <td>${d.dias_efetivos || ''}</td>
+            <td>${d.fluxo_presentes || ''}</td>
+            <td>${d.duracao_video || ''}</td>
+            <td>${d.duracao_audio || ''}</td>
+            <td>${d.receita_video || ''}</td>
+            <td>${d.receita_audio || ''}</td>
+            <td>${d.dias_video || ''}</td>
         `;
         resultTable.appendChild(tr);
     });
 
-    status.textContent = `Mostrando ${data.length} registro(s)`;
+    status.innerText = `Mostrando ${data.length} registro(s)`;
 });
 
-// Inicializa
 carregarHosts();
 </script>
 
