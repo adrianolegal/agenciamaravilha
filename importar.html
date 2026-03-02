@@ -60,6 +60,7 @@ button {
 
   <button class="btn btn-error" id="btnLogout">Logout</button>
 </div>
+
 <!-- Modal Mês/Ano -->
 <div class="modal fade" id="modalPeriodo" tabindex="-1">
   <div class="modal-dialog">
@@ -96,6 +97,7 @@ button {
     </div>
   </div>
 </div>
+
 <script type="module">
 import { supabase, protectPage, logout } from "./supabase.js";
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
@@ -111,11 +113,8 @@ function showStatus(element, text, type="") {
 function normalizeData(data) {
   return data.map(row => {
     const normalized = { ...row };
-
-    // member_Id sempre número
     if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
 
-    // campos de data
     const dateFields = [
       "Data de entrada",
       "Última transmissão ao vivo em",
@@ -160,7 +159,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
   reader.readAsBinaryString(file);
 });
 
-// 📤 IMPORT REPORTS (VERSÃO CORRETA COM MAPEAMENTO)
+// 📤 IMPORT REPORTS (COM NORMALIZAÇÃO)
 document.getElementById("btnImportReports").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("modalPeriodo"));
   modal.show();
@@ -180,39 +179,27 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   }
 
   const reader = new FileReader();
-rows.forEach(row => {
 
-  // 🔵 1 — Normaliza todas as chaves removendo espaços
-  const normalizedRow = {};
-  Object.keys(row).forEach(key => {
-    normalizedRow[key.trim()] = row[key];
-  });
-
-  // 🔵 2 — Agora usa o objeto normalizado
-  const data = {
-    member_id: normalizedRow["Member ID"],
-    duracao_video: normalizedRow["Duração de live de vídeo"] || null,
-    duracao_audio: normalizedRow["Duração de live de áudio"] || null,
-    dias_video: Number(normalizedRow["Dias de vídeo"] || 0),
-    receita_video: Number(normalizedRow["Receita vídeo"] || 0)
-  };
-
-  // 🔵 3 — Envia para o Supabase
-  // await supabase.from('host_reports').upsert(data);
-
-});
   reader.onload = async (e) => {
-
     try {
-
       const dataArray = new Uint8Array(e.target.result);
       const workbook = XLSX.read(dataArray, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
 
-      const formatted = json.map(row => ({
-        member_id: Number(row.member_Id) || null,
-        kwai_id: row.kwaiId || null,
+      // 🔵 Normaliza chaves removendo espaços
+      const normalizedJson = json.map(row => {
+        const normalizedRow = {};
+        Object.keys(row).forEach(key => {
+          normalizedRow[key.trim()] = row[key];
+        });
+        return normalizedRow;
+      });
+
+      // 🔵 Mapeia os campos para envio
+      const formatted = normalizedJson.map(row => ({
+        member_id: Number(row["Member ID"]) || null,
+        kwai_id: row["kwaiId"] || null,
         agencia_id: row["ID da agência"] || null,
         nome_agencia: row["Nome da Agência"] || null,
         apelido_streamer: row["Apelido de streamer"] || null,
@@ -238,29 +225,23 @@ rows.forEach(row => {
         ano: ano,
         updated_at: new Date().toISOString()
       }));
-console.log(formatted);
+
       const { error } = await supabase
         .from("host_reports")
-        .upsert(formatted, {
-          onConflict: "member_id,mes,ano"
-        });
+        .upsert(formatted, { onConflict: "member_id,mes,ano" });
 
-      if (error) {
-        showStatus(status, "Erro: " + error.message, "btn-error");
-        return;
-      }
-
-      showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
+      if (error) showStatus(status, "Erro: " + error.message, "btn-error");
+      else showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
 
     } catch (err) {
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
-
   };
 
   reader.readAsArrayBuffer(file);
+});
 
-});  // 🚪 LOGOUT
+// 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
 
