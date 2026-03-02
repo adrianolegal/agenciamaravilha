@@ -30,11 +30,9 @@ button {
   padding:10px 20px;
   margin-top:10px;
   transition: all 0.3s ease;
-  text-shadow: 0 0 2px rgba(0,0,0,0.4);
 }
 .btn-brand {
-  background: linear-gradient(90deg, var(--brand, #2563eb), var(--brand2, #1e40af));
-  border: none;
+  background: linear-gradient(90deg, #2563eb, #1e40af);
   color: #ffffff !important;
 }
 .btn-brand:hover {
@@ -49,12 +47,8 @@ button {
   background:#dc2626; 
   color:white; 
 }
-.btn-outline-light {
-  border-color: rgba(255,255,255,.25) !important;
-  color: #ffffff !important;
-}
 input[type="file"] {
-  color: #ffffff; /* texto "Nenhum arquivo escolhido" visível */
+  color: #ffffff; /* deixa "Nenhum arquivo escolhido" visível */
 }
 input[type="file"]::-webkit-file-upload-button,
 input[type="file"]::file-selector-button {
@@ -153,15 +147,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       const workbook = XLSX.read(e.target.result, { type: 'binary' });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let data = XLSX.utils.sheet_to_json(sheet);
-
-      // 🔵 Normalização mínima: apenas remove espaços no cabeçalho
-      const normalized = data.map(row => {
-        const obj = {};
-        Object.keys(row).forEach(key => obj[key.trim()] = row[key]);
-        return obj;
-      });
-
-      const { error } = await supabase.from('hosts').upsert(normalized, { onConflict: 'member_Id' });
+      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
       if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
       else showStatus(status, "Importado com sucesso ✓", "btn-success");
     } catch (err) {
@@ -191,17 +177,10 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
 
-      // 🔵 Normalização mínima: remove espaços nos cabeçalhos
-      const normalizedJson = json.map(row => {
-        const obj = {};
-        Object.keys(row).forEach(key => obj[key.trim()] = row[key] !== undefined && row[key] !== "" ? row[key] : null);
-        return obj;
-      });
-
-      // 🔵 Formata apenas os campos necessários para importação
-      const formatted = normalizedJson.map(row => ({
+      // 🔵 Nenhuma normalização que altere cabeçalhos
+      const formatted = json.map(row => ({
         member_id: row["Member ID"] || null,
-        duracao_video: row["Duração de live de vídeo"] || null,
+        duracao_video: row["Duração de live de vídeo "] || null, // ⚠ espaço intacto
         duracao_audio: row["Duração de live de áudio"] || null,
         receita_video: row["Receita de live de vídeo"] || null,
         receita_audio: row["Receita de presentes de live de áudio"] || null,
