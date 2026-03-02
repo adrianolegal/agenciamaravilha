@@ -22,6 +22,8 @@ body {
   border-radius:12px;
   margin-bottom:20px;
 }
+
+/* BOTÕES */
 button {
   font-weight:bold;
   cursor:pointer;
@@ -29,10 +31,42 @@ button {
   border-radius:6px;
   padding:10px 20px;
   margin-top:10px;
+  transition: all 0.3s ease;
+  text-shadow: 0 0 2px rgba(0,0,0,0.4);
 }
-.btn-brand { background:#2563eb; color:white; }
-.btn-success { background:#16a34a; color:white; }
-.btn-error { background:#dc2626; color:white; }
+
+.btn-brand {
+  background: linear-gradient(90deg, var(--brand, #2563eb), var(--brand2, #1e40af));
+  border: none;
+  color: #ffffff !important;
+}
+
+.btn-brand:hover {
+  filter: brightness(1.05);
+  color: #ffffff !important;
+  text-decoration: none;
+}
+
+.btn-success { 
+  background:#16a34a; 
+  color:white; 
+}
+
+.btn-error { 
+  background:#dc2626; 
+  color:white; 
+}
+
+.btn-outline-light {
+  border-color: rgba(255,255,255,.25) !important;
+  color: #ffffff !important;
+}
+
+.btn-outline-light:hover {
+  color: #ffffff !important;
+  background: rgba(255,255,255,0.1);
+}
+
 .status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
 .fade { animation: fade 0.5s ease-in-out; }
 @keyframes fade { from { opacity:0 } to { opacity:1 } }
@@ -102,25 +136,23 @@ button {
 import { supabase, protectPage, logout } from "./supabase.js";
 import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 
-await protectPage(); // protege a página
+await protectPage();
 
 function showStatus(element, text, type="") {
   element.className = "status fade " + type;
   element.innerText = text;
 }
 
-// normaliza IDs e datas
+// normaliza hosts
 function normalizeData(data) {
   return data.map(row => {
     const normalized = { ...row };
     if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
-
     const dateFields = [
       "Data de entrada",
       "Última transmissão ao vivo em",
       "Última publicação em"
     ];
-
     dateFields.forEach(field => {
       if (normalized[field]) {
         const d = new Date(normalized[field]);
@@ -129,12 +161,11 @@ function normalizeData(data) {
         normalized[field] = null;
       }
     });
-
     return normalized;
   });
 }
 
-// 📤 IMPORT HOSTS
+// IMPORT HOSTS
 document.getElementById("btnImportHosts").addEventListener("click", async () => {
   const file = document.getElementById("fileHosts").files[0];
   const status = document.getElementById("statusHosts");
@@ -159,27 +190,21 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
   reader.readAsBinaryString(file);
 });
 
-// 📤 IMPORT REPORTS (COM NORMALIZAÇÃO)
+// IMPORT REPORTS COM NORMALIZAÇÃO
 document.getElementById("btnImportReports").addEventListener("click", () => {
   const modal = new bootstrap.Modal(document.getElementById("modalPeriodo"));
   modal.show();
 });
 
 document.getElementById("confirmarPeriodo").addEventListener("click", async () => {
-
   const mes = Number(document.getElementById("mesInput").value);
   const ano = Number(document.getElementById("anoInput").value);
-
   const file = document.getElementById("fileReports").files[0];
   const status = document.getElementById("statusReports");
 
-  if (!file) {
-    showStatus(status, "Selecione um arquivo", "btn-error");
-    return;
-  }
+  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
 
   const reader = new FileReader();
-
   reader.onload = async (e) => {
     try {
       const dataArray = new Uint8Array(e.target.result);
@@ -196,7 +221,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
         return normalizedRow;
       });
 
-      // 🔵 Mapeia os campos para envio
+      // 🔵 Formata números e datas
       const formatted = normalizedJson.map(row => ({
         member_id: Number(row["Member ID"]) || null,
         kwai_id: row["kwaiId"] || null,
@@ -204,30 +229,29 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
         nome_agencia: row["Nome da Agência"] || null,
         apelido_streamer: row["Apelido de streamer"] || null,
         nome_agente: row["Nome do agente"] || null,
-        duracao_transmissao: row["Duração da transmissão ao vivo"] || null,
-        dias_transmissao: row["Dia(s) da transmissão ao vivo"] || null,
-        dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
-        fluxo_presentes: row["Fluxo de presentes"] || null,
-        novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
-        duracao_video: row["Duração de live de vídeo"] || null,
-        duracao_audio: row["Duração de live de áudio"] || null,
-        receita_video: row["Receita de live de vídeo"] || null,
-        receita_audio: row["Receita de presentes de live de áudio"] || null,
-        dias_video: row["Dias efetivos de live de vídeo"] || null,
-        presentes_convidado_video: row["Presentes recebidos como convidado de live em grupo de vídeo"] || null,
-        presentes_streamer_video: row["Presentes recebidos como streamer de live em grupo de vídeo"] || null,
-        presentes_convidado_audio: row["Presentes recebidos como convidado de live em grupo de áudio"] || null,
-        presentes_streamer_audio: row["Presentes recebidos como streamer de live em grupo de áudio"] || null,
-        duracao_chat: row["A duração da transmissão ao vivo da sala de bate-papo"] || null,
+        duracao_transmissao: Number(row["Duração da transmissão ao vivo"] || 0),
+        dias_transmissao: Number(row["Dia(s) da transmissão ao vivo"] || 0),
+        dias_efetivos: Number(row["Dia(s) efetivo(s) da transmissão  ao vivo"] || 0),
+        fluxo_presentes: Number(row["Fluxo de presentes"] || 0),
+        novos_fas: Number(row["Novos fãs da sala de transmissão ao vivo"] || 0),
+        duracao_video: Number(row["Duração de live de vídeo"] || 0),
+        duracao_audio: Number(row["Duração de live de áudio"] || 0),
+        receita_video: Number(row["Receita de live de vídeo"] || 0),
+        receita_audio: Number(row["Receita de presentes de live de áudio"] || 0),
+        dias_video: Number(row["Dias efetivos de live de vídeo"] || 0),
+        presentes_convidado_video: Number(row["Presentes recebidos como convidado de live em grupo de vídeo"] || 0),
+        presentes_streamer_video: Number(row["Presentes recebidos como streamer de live em grupo de vídeo"] || 0),
+        presentes_convidado_audio: Number(row["Presentes recebidos como convidado de live em grupo de áudio"] || 0),
+        presentes_streamer_audio: Number(row["Presentes recebidos como streamer de live em grupo de áudio"] || 0),
+        duracao_chat: Number(row["A duração da transmissão ao vivo da sala de bate-papo"] || 0),
         sala_chat: row["Sala de chat com transmissão ao vivo"] || null,
-        fluxo_caixa_magica: row["Fluxo de Caixa Mágica"] || null,
+        fluxo_caixa_magica: Number(row["Fluxo de Caixa Mágica"] || 0),
         mes: mes,
         ano: ano,
         updated_at: new Date().toISOString()
       }));
 
-      const { error } = await supabase
-        .from("host_reports")
+      const { error } = await supabase.from("host_reports")
         .upsert(formatted, { onConflict: "member_id,mes,ano" });
 
       if (error) showStatus(status, "Erro: " + error.message, "btn-error");
@@ -241,7 +265,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   reader.readAsArrayBuffer(file);
 });
 
-// 🚪 LOGOUT
+// LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
 
