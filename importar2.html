@@ -309,7 +309,7 @@ let hostsData = [];
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts')
-    .select('member_id,nome_agente,apelido_streamer,kwai_id,ativo')
+    .select('member_id,apelido_de_streamer,kwaiid,Data_de_entrada')
     .eq('ativo', true)
     .order('nome_agente');
 
