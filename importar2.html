@@ -3,167 +3,203 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel Hosts Simplificado</title>
+<title>Painel de Hosts Simplificado</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body { background:#0f172a; color:white; font-family:Arial,sans-serif; padding:20px; }
-.container { max-width:900px; margin:auto; }
-.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
-label { font-weight:bold; display:block; margin-top:10px; }
-input, select, button { font-size:16px; }
-input, select { border-radius:6px; border:1px solid #334155; padding:8px; width:100%; color:#0f172a; }
-button { padding:10px 20px; margin-top:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; background: linear-gradient(90deg,#2563eb,#3b82f6); color:white; }
-button:hover { filter:brightness(1.05); }
-.status { margin-top:10px; font-weight:bold; color:#facc15; }
-.field { margin-bottom:8px; color:white; }
-.field span { font-weight:bold; margin-right:5px; }
-table { color:white; width:100%; border-collapse:collapse; margin-top:10px; }
-th, td { border:1px solid #334155; padding:6px; text-align:left; }
+body {
+    background: linear-gradient(120deg, #0f172a, #1e293b);
+    color: white;
+    font-family: Arial, sans-serif;
+    padding: 40px;
+}
+.container { max-width: 1000px; margin:auto; }
+.card {
+    background:#1e293b;
+    padding:20px;
+    border-radius:12px;
+    margin-bottom:20px;
+}
+label { font-weight:bold; }
+input, select { background:#0f172a; color:white; border:1px solid #334155; }
+input::placeholder { color:#94a3b8; }
+button {
+    font-weight:bold;
+    cursor:pointer;
+    border:none;
+    border-radius:6px;
+    padding:10px 20px;
+    margin-top:10px;
+}
+.btn-brand { background: linear-gradient(90deg, #2563eb, #3b82f6); color:white; }
+.btn-brand:hover { filter:brightness(1.05); }
+.status { margin-top:10px; font-weight:bold; }
+.data-row { margin-bottom:10px; }
+.data-row span { font-weight:bold; margin-right:5px; }
+.table { width:100%; margin-top:20px; border-collapse: collapse; color:white; }
+th, td { border:1px solid #334155; padding:8px; text-align:left; }
 th { background:#1e293b; }
 tr:nth-child(even){ background:#1f2937; }
 </style>
 </head>
 <body>
+
 <div class="container">
-  <h2>Painel Hosts Simplificado</h2>
+    <h2>Painel de Hosts Simplificado</h2>
 
-  <div class="card">
-    <h3>Buscar Host</h3>
-    <div class="mb-3">
-      <label>Apelido ou Kwai ID</label>
-      <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID">
-      <select id="hostSelect" size="1" style="display:none;"></select>
-      <div id="status" class="status"></div>
+    <div class="card">
+        <h4>Buscar Host</h4>
+        <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
+        <select id="hostSelect" class="form-select mb-3" size="1" style="display:none;"></select>
+
+        <div class="data-row"><span>UID:</span> <span id="uid"></span></div>
+        <div class="data-row"><span>Apelido:</span> <span id="apelido"></span></div>
+        <div class="data-row"><span>Kwai ID:</span> <span id="kwai_id"></span></div>
+
+        <div class="mb-3">
+            <label>Mês</label>
+            <select id="mesInput" class="form-select">
+                <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                <option value="3">Março</option><option value="4">Abril</option>
+                <option value="5">Maio</option><option value="6">Junho</option>
+                <option value="7">Julho</option><option value="8">Agosto</option>
+                <option value="9">Setembro</option><option value="10">Outubro</option>
+                <option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label>Ano</label>
+            <input type="number" id="anoInput" class="form-control" value="2026">
+        </div>
+
+        <button class="btn btn-brand" id="btnFiltrar">Aplicar Filtro</button>
+        <div id="status" class="status"></div>
     </div>
 
-    <div id="hostInfo" style="display:none;" class="mb-3">
-      <div class="field"><span>UID:</span><span id="memberId"></span></div>
-      <div class="field"><span>Apelido:</span><span id="apelido"></span></div>
-      <div class="field"><span>Kwai ID:</span><span id="kwaiId"></span></div>
-
-      <div class="mb-3">
-        <label>Mês</label>
-        <select id="mes">
-          <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-          <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-          <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-          <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
-        </select>
-      </div>
-      <div class="mb-3">
-        <label>Ano</label>
-        <input type="number" id="ano" value="2026">
-      </div>
-      <button id="btnFiltrar">Aplicar Filtro</button>
+    <div class="card">
+        <h4>Resultados da Transmissão</h4>
+        <table class="table" id="resultTable">
+            <thead>
+                <tr>
+                    <th>Duração Transmissão</th>
+                    <th>Dias Efetivos</th>
+                    <th>Fluxo Presentes</th>
+                    <th>Duração Vídeo</th>
+                    <th>Duração Áudio</th>
+                    <th>Receita Vídeo</th>
+                    <th>Receita Áudio</th>
+                    <th>Dias Vídeo</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
     </div>
-  </div>
-
-  <div class="card">
-    <h3>Resultados Host Reports</h3>
-    <table>
-      <thead>
-        <tr>
-          <th>Duração Transmissão</th>
-          <th>Dias Efetivos</th>
-          <th>Fluxo Presentes</th>
-          <th>Duração Vídeo</th>
-          <th>Duração Áudio</th>
-          <th>Receita Vídeo</th>
-          <th>Receita Áudio</th>
-          <th>Dias Vídeo</th>
-        </tr>
-      </thead>
-      <tbody id="tabelaResultados"></tbody>
-    </table>
-  </div>
 </div>
 
 <script type="module">
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
+// Supabase sem colocar a chave no HTML
 const supabaseUrl = 'https://qgsfmiywdohybqlnxhdw.supabase.co';
-const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey); // supabaseKey deve vir de backend seguro
 
 const hostSearch = document.getElementById('hostSearch');
 const hostSelect = document.getElementById('hostSelect');
-const status = document.getElementById('status');
-const hostInfo = document.getElementById('hostInfo');
-const memberIdEl = document.getElementById('memberId');
-const apelidoEl = document.getElementById('apelido');
-const kwaiIdEl = document.getElementById('kwaiId');
-const mesEl = document.getElementById('mes');
-const anoEl = document.getElementById('ano');
+const uid = document.getElementById('uid');
+const apelido = document.getElementById('apelido');
+const kwai_id = document.getElementById('kwai_id');
 const btnFiltrar = document.getElementById('btnFiltrar');
-const tabelaResultados = document.getElementById('tabelaResultados');
+const mesInput = document.getElementById('mesInput');
+const anoInput = document.getElementById('anoInput');
+const status = document.getElementById('status');
+const resultTable = document.querySelector('#resultTable tbody');
 
 let hostsData = [];
-let hostSelecionado = null;
 
-// Carregar hosts simplificados
+// Carrega hosts simplificados
 async function carregarHosts() {
-  const { data, error } = await supabase
-    .from('hosts_simplificado')
-    .select('member_id,apelido,kwai_id,nome_agente')
-    .order('apelido', { ascending: true });
+    const { data, error } = await supabase
+        .from('hosts_simplificado')
+        .select('member_id,apelido,kwai_id')
+        .order('apelido', { ascending: true });
 
-  if(error){ status.textContent='Erro ao carregar hosts: '+error.message; return; }
-  hostsData = data;
-}
-carregarHosts();
+    if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
 
-// Atualizar tom select
-function atualizarSelect(filtro){
-  hostSelect.innerHTML='';
-  const filtrados = hostsData.filter(h =>
-    h.apelido.toLowerCase().includes(filtro.toLowerCase()) ||
-    h.kwai_id.toLowerCase().includes(filtro.toLowerCase())
-  );
-  if(filtrados.length>0){
-    hostSelecionado = filtrados[0];
-    hostInfo.style.display='block';
-    memberIdEl.textContent = hostSelecionado.member_id;
-    apelidoEl.textContent = hostSelecionado.apelido;
-    kwaiIdEl.textContent = hostSelecionado.kwai_id;
-  } else { hostInfo.style.display='none'; hostSelecionado=null; }
+    hostsData = data;
 }
 
+function atualizarSelect(filtro) {
+    const filtrados = hostsData.filter(h => 
+        h.apelido?.toLowerCase().includes(filtro.toLowerCase()) || 
+        h.kwai_id?.toLowerCase().includes(filtro.toLowerCase())
+    );
+
+    if(filtrados.length === 0){ hostSelect.style.display='none'; return; }
+
+    hostSelect.innerHTML = '';
+    filtrados.forEach(h => {
+        const opt = document.createElement('option');
+        opt.value = h.member_id;
+        opt.textContent = h.apelido + ' / ' + h.kwai_id;
+        hostSelect.appendChild(opt);
+    });
+    hostSelect.style.display='block';
+}
+
+// Atualiza campos ao selecionar host
+hostSelect.addEventListener('change', () => {
+    const selected = hostsData.find(h => h.member_id == hostSelect.value);
+    if(!selected) return;
+    uid.textContent = selected.member_id;
+    apelido.textContent = selected.apelido;
+    kwai_id.textContent = selected.kwai_id;
+});
+
+// Busca ao digitar
 hostSearch.addEventListener('input', e => atualizarSelect(e.target.value));
 
-// Filtrar host_reports
-btnFiltrar.addEventListener('click', async ()=>{
-  if(!hostSelecionado){ status.textContent='Selecione um host primeiro'; return; }
-  const mes = Number(mesEl.value);
-  const ano = Number(anoEl.value);
-  tabelaResultados.innerHTML='';
-  status.textContent='Carregando host_reports...';
+// Aplica filtro e mostra host_reports_simplificado
+btnFiltrar.addEventListener('click', async () => {
+    resultTable.innerHTML = '';
+    status.innerText = '';
 
-  const { data, error } = await supabase
-    .from('host_reports_simplificado')
-    .select('duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
-    .eq('member_id', hostSelecionado.member_id)
-    .eq('mes', mes)
-    .eq('ano', ano);
+    const memberId = hostSelect.value;
+    const mes = Number(mesInput.value);
+    const ano = Number(anoInput.value);
 
-  if(error){ status.textContent='Erro: '+error.message; return; }
-  if(!data || data.length===0){ status.textContent='Nenhum resultado encontrado'; return; }
+    if(!memberId){ status.innerText='Selecione um host'; return; }
 
-  data.forEach(r=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`
-      <td>${r.duracao_transmissao||''}</td>
-      <td>${r.dias_efetivos||''}</td>
-      <td>${r.fluxo_presentes||''}</td>
-      <td>${r.duracao_video||''}</td>
-      <td>${r.duracao_audio||''}</td>
-      <td>${r.receita_video||''}</td>
-      <td>${r.receita_audio||''}</td>
-      <td>${r.dias_video||''}</td>
-    `;
-    tabelaResultados.appendChild(tr);
-  });
-  status.textContent=`Mostrando ${data.length} registro(s)`;
+    const { data, error } = await supabase
+        .from('host_reports_simplificado')
+        .select('duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
+        .eq('member_id', memberId)
+        .eq('mes', mes)
+        .eq('ano', ano);
+
+    if(error){ status.innerText = "Erro: " + error.message; return; }
+    if(!data || data.length===0){ status.innerText='Nenhum dado encontrado'; return; }
+
+    data.forEach(d => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td>${d.duracao_transmissao || ''}</td>
+            <td>${d.dias_efetivos || ''}</td>
+            <td>${d.fluxo_presentes || ''}</td>
+            <td>${d.duracao_video || ''}</td>
+            <td>${d.duracao_audio || ''}</td>
+            <td>${d.receita_video || ''}</td>
+            <td>${d.receita_audio || ''}</td>
+            <td>${d.dias_video || ''}</td>
+        `;
+        resultTable.appendChild(tr);
+    });
+
+    status.innerText = `Mostrando ${data.length} registro(s)`;
 });
+
+// Inicializa
+carregarHosts();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
