@@ -154,7 +154,7 @@ btnFiltrar.addEventListener('click', async ()=>{
   if(!memberId){ status.innerText='Selecione um host'; return; }
 
   const { data, error } = await supabase
-    .from('host_reports_view') // sua view de host_reports simplificada
+    .from('host_reports_simplificado') // sua view de host_reports simplificada
     .select('*')
     .eq('member_id', Number(memberId))
     .eq('mes', mes)
