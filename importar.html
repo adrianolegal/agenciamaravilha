@@ -189,7 +189,13 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const workbook = XLSX.read(dataArray, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
+const normalizedRow = {};
 
+Object.keys(row).forEach(key => {
+  normalizedRow[key.trim()] = row[key];
+});
+
+duracao_video = normalizedRow["Duração de live de vídeo"] || null;
       const formatted = json.map(row => ({
         member_id: Number(row.member_Id) || null,
         kwai_id: row.kwaiId || null,
