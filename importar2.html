@@ -96,13 +96,8 @@ tr:nth-child(even){ background:#1f2937; }
 </div>
 
 <script type="module">
-import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
-
+import { supabase, protectPage, logout } from "./supabase.js";
 await protectPage(); // protege a página
-    
-// Supabase sem colocar a chave no HTML
-const supabaseUrl = 'https://qgsfmiywdohybqlnxhdw.supabase.co';
-const supabase = createClient(supabaseUrl, supabaseKey); // supabaseKey deve vir de backend seguro
 
 const hostSearch = document.getElementById('hostSearch');
 const hostSelect = document.getElementById('hostSelect');
