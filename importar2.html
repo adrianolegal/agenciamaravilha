@@ -100,7 +100,7 @@ let hostsData = [];
 // Carregar hosts da view simplificada
 async function carregarHosts(){
   const { data, error } = await supabase
-    .from('hosts_view') // sua view simplificada
+    .from('hosts_simplificado') // sua view simplificada
     .select('member_Id,"Apelido de streamer",kwaiId,nome_agente');
 
   if(error){
