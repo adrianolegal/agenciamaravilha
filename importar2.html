@@ -34,7 +34,10 @@ tr:nth-child(even){ background:#1f2937; }
     <div class="mb-3">
       <label>Mês</label>
       <select id="mesInput" class="form-select">
-        ${Array.from({length:12}, (_,i)=>`<option value="${i+1}">${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][i]}</option>`).join('')}
+        <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+        <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+        <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
       </select>
     </div>
     <div class="mb-3">
@@ -92,7 +95,7 @@ async function carregarHosts() {
     .order('apelido');
 
   if(error){ status.innerText = "Erro ao carregar hosts: "+error.message; return; }
-  hostsData = data;
+  hostsData = data || [];
   atualizarSelect('');
 }
 
@@ -125,7 +128,7 @@ document.getElementById('btnFiltrar').addEventListener('click', async ()=>{
   status.innerText='Carregando...';
 
   const { data, error } = await supabase
-    .from('host_reports_simplificada') // a view simplificada que você vai criar
+    .from('host_reports_simplificado') // view simplificada
     .select('*')
     .eq('member_id', memberId)
     .eq('mes', mes)
@@ -138,7 +141,7 @@ document.getElementById('btnFiltrar').addEventListener('click', async ()=>{
     tabelaDados.innerHTML+=`
       <tr>
         <td>${d.member_id||''}</td>
-        <td>${d.apelido||''}</td>
+        <td>${d.apelido_streamer||''}</td>
         <td>${d.kwai_id||''}</td>
         <td>${d.nome_agente||''}</td>
         <td>${d.duracao_transmissao||''}</td>
