@@ -8,20 +8,16 @@
 <link rel="icon" href="assets/logo.jpg">
 <link href="assets/styles.css" rel="stylesheet"> <!-- CSS padrão do projeto -->
 <style>
-    body { background: linear-gradient(120deg, #0f172a, #1e293b); padding:40px; font-family:Arial,sans-serif; color:white; }
-    .container { max-width:1000px; margin:auto; }
-    .card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
-    .data-row span.title { font-weight:bold; color:#fbbf24; } /* laranja para títulos */
-    .data-row span.value { color:white; } /* branco para resultados */
-    input, select { background:#0f172a; color:white; border:1px solid #334155; }
-    input::placeholder { color:#94a3b8; }
-    button { font-weight:bold; cursor:pointer; border:none; border-radius:6px; padding:10px 20px; margin-top:10px; }
-    .btn-brand { background: linear-gradient(90deg, #2563eb, #3b82f6); color:white; }
-    .btn-brand:hover { filter:brightness(1.05); }
-    .table { width:100%; margin-top:20px; border-collapse: collapse; color:white; }
-    th, td { border:1px solid #334155; padding:8px; text-align:left; }
-    th { background:#1e293b; color:#fbbf24; }
-    tr:nth-child(even){ background:#1f2937; }
+/* Ajustes de cores e preview Kwai */
+#kwaiPreview img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover; /* mostra só a parte de cima da imagem */
+}
+#kwaiPreview .p-2 {
+    text-align: center;
+    font-weight: bold;
+}
 </style>
 </head>
 <body>
@@ -29,29 +25,26 @@
 <div class="container">
     <h2>Painel de Hosts Simplificado</h2>
 
-    <div class="card">
-        <h4 class="text-warning">Buscar Host</h4>
+    <div class="card mb-3">
+        <h4>Buscar Host</h4>
         <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
 
-        <div class="data-row mb-2"><span class="title">UID:</span> <span class="value" id="uid"></span></div>
-        <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
-        <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
+        <div class="card text-warning bg-dark mb-1"><span>UID:</span> <span id="uid" class="text-white"></span></div>
+        <div class="card text-warning bg-dark mb-1"><span>Apelido:</span> <span id="apelido" class="text-white"></span></div>
+        <div class="card text-warning bg-dark mb-3"><span>Kwai ID:</span> <span id="kwai_id" class="text-white"></span></div>
 
-        <!-- Prévia do Kwai -->
-        <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
-            <h5 class="text-warning">Prévia do Kwai</h5>
-            <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
-            <div class="d-flex align-items-center">
-                <img id="kwaiProfileImg" class="rounded-circle me-2" width="80" height="80" alt="Foto do perfil">
-                <div>
-                    <div class="text-white fw-bold" id="kwaiName"></div>
-                    <div class="text-white" id="kwaiFollowers">Seguindo preview…</div>
+        <!-- Preview do Kwai -->
+        <div class="card mb-3" id="kwaiPreview" style="display:none;">
+            <a id="kwaiLink" target="_blank">
+                <img id="kwaiProfileImg" src="" class="img-fluid rounded-top" alt="Perfil Kwai">
+                <div class="p-2 bg-dark text-white">
+                    <span id="kwaiName"></span> • <span id="kwaiFollowers"></span>
                 </div>
-            </div>
+            </a>
         </div>
 
-        <div class="mb-3">
-            <label class="text-warning">Mês</label>
+        <div class="lead muted mb-3">
+            <label>Mês</label>
             <select id="mesInput" class="form-select">
                 <option value="1">Janeiro</option><option value="2">Fevereiro</option>
                 <option value="3">Março</option><option value="4">Abril</option>
@@ -61,17 +54,17 @@
                 <option value="11">Novembro</option><option value="12">Dezembro</option>
             </select>
         </div>
-        <div class="mb-3">
-            <label class="text-warning">Ano</label>
+        <div class="lead muted mb-4">
+            <label>Ano</label>
             <input type="number" id="anoInput" class="form-control" value="2026">
         </div>
 
         <button class="btn btn-brand" id="btnFiltrar">Aplicar Filtro</button>
-        <div id="status" class="mt-2"></div>
+        <div id="status" class="status mt-2"></div>
     </div>
 
     <div class="card">
-        <h4 class="text-warning">Resultados da Transmissão</h4>
+        <h4>Resultados da Transmissão</h4>
         <table class="table" id="resultTable">
             <thead>
                 <tr>
@@ -123,32 +116,44 @@ async function carregarHosts() {
     hostsData = data;
 }
 
-// Pesquisa tipo tonselect
+// Atualiza preview Kwai
+async function atualizarPreview(kwaiId, apelido) {
+    kwaiPreview.style.display = 'block';
+    kwaiLink.href = `https://kwai.com/@${kwaiId}`;
+    kwaiName.textContent = apelido;
+
+    try {
+        const res = await fetch(`http://localhost:3000/kwai/${kwaiId}`);
+        const data = await res.json();
+
+        kwaiProfileImg.src = data.image || 'assets/profile-placeholder.jpg';
+        kwaiFollowers.textContent = data.seguidores ? `Seguidores: ${data.seguidores}` : 'Seguidores: -';
+    } catch(err) {
+        console.error(err);
+        kwaiProfileImg.src = 'assets/profile-placeholder.jpg';
+        kwaiFollowers.textContent = 'Seguidores: -';
+    }
+}
+
+// Busca tipo tonselect
 hostSearch.addEventListener('input', e => {
     const filtro = e.target.value.toLowerCase();
     const encontrado = hostsData.find(h => 
         h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro)
     );
-
     if(encontrado){
         selectedHost = encontrado;
         uid.textContent = encontrado.member_id;
         apelido.textContent = encontrado.apelido;
         kwai_id.textContent = encontrado.kwai_id;
 
-        // Atualiza prévia Kwai
-        const kwaiUrl = `https://kwai.com/@${encontrado.kwai_id}`;
-        kwaiPreview.style.display = 'block';
-        kwaiLink.href = kwaiUrl;
-        kwaiName.textContent = encontrado.apelido;
-        kwaiProfileImg.src = `https://cdn.kwai.com/profile/${encontrado.kwai_id}.jpg`;
-        kwaiFollowers.textContent = "Seguindo preview…";
+        atualizarPreview(encontrado.kwai_id, encontrado.apelido);
     } else {
         selectedHost = null;
         uid.textContent = '';
         apelido.textContent = '';
         kwai_id.textContent = '';
-        kwaiPreview.style.display = 'none';
+        kwaiPreview.style.display='none';
     }
 });
 
@@ -158,7 +163,7 @@ btnFiltrar.addEventListener('click', async () => {
     status.innerText = '';
 
     if(!selectedHost){
-        status.innerText='Selecione um host válido';
+        status.innerText = 'Selecione um host válido';
         status.style.color = 'orange';
         return;
     } else {
