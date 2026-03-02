@@ -3,21 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Painel de Hosts - Agência Maravilha</title>
-<link rel="icon" href="assets/logo.jpg">
+<title>Painel de Hosts Simplificado</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
-body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-family:Arial,sans-serif; padding:40px; }
-.container { max-width: 1000px; margin:auto; }
-.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
-button { font-weight:bold; cursor:pointer; border:none; border-radius:6px; padding:10px 20px; margin-top:10px; }
+body { background: linear-gradient(120deg,#0f172a,#1e293b); color:white; font-family:Arial,sans-serif; padding:40px;}
+.container { max-width:1000px; margin:auto; }
+.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px;}
+button { font-weight:bold; cursor:pointer; border:none; border-radius:6px; padding:10px 20px; margin-top:10px;}
 .btn-brand { background: linear-gradient(90deg,#2563eb,#3b82f6); color:#fff; }
-.btn-brand:hover { filter:brightness(1.05); }
-.btn-success { background:#16a34a; color:white; }
-.btn-error { background:#dc2626; color:white; }
-.status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
-.table { color:white; width:100%; margin-top:20px; border-collapse: collapse; }
-th, td { border:1px solid #334155; padding:8px; text-align:left; }
+.btn-brand:hover { filter:brightness(1.05);}
+.status { margin-top:10px; font-weight:bold; }
+table { width:100%; margin-top:20px; border-collapse:collapse;}
+th,td { border:1px solid #334155; padding:8px; text-align:left;}
 th { background:#1e293b; }
 tr:nth-child(even){ background:#1f2937; }
 </style>
@@ -25,32 +22,19 @@ tr:nth-child(even){ background:#1f2937; }
 <body>
 
 <div class="container">
-  <h2>Painel de Hosts</h2>
+  <h2>Painel de Hosts Simplificado</h2>
 
   <div class="card">
     <h3>Buscar Host</h3>
     <div class="mb-3">
-      <label>Digite Apelido ou Kwai ID:</label>
-      <input type="text" id="hostSearch" class="form-control" placeholder="Ex: Uembaixador">
+      <input type="text" id="hostSearch" class="form-control" placeholder="Digite apelido ou Kwai ID">
       <select id="hostSelect" class="form-select mt-2" size="5"></select>
     </div>
-    <div id="status" class="status"></div>
-  </div>
-
-  <div class="card" id="hostInfoCard" style="display:none;">
-    <h3>Informações do Host</h3>
-    <p><strong>UID:</strong> <span id="uid"></span></p>
-    <p><strong>Apelido:</strong> <span id="apelido"></span></p>
-    <p><strong>Kwai ID:</strong> <span id="kwaiId"></span></p>
-    <p><strong>Nome do Agente:</strong> <span id="nomeAgente"></span></p>
 
     <div class="mb-3">
       <label>Mês</label>
       <select id="mesInput" class="form-select">
-        <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
-        <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
-        <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
-        <option value="10">Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+        ${Array.from({length:12}, (_,i)=>`<option value="${i+1}">${["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"][i]}</option>`).join('')}
       </select>
     </div>
     <div class="mb-3">
@@ -59,10 +43,18 @@ tr:nth-child(even){ background:#1f2937; }
     </div>
 
     <button class="btn btn-brand" id="btnFiltrar">Filtrar</button>
+    <div id="status" class="status"></div>
+  </div>
 
-    <table class="table mt-3" id="dadosTable">
+  <div class="card">
+    <h3>Dados do Host</h3>
+    <table id="tabelaDados">
       <thead>
         <tr>
+          <th>UID</th>
+          <th>Apelido</th>
+          <th>Kwai ID</th>
+          <th>Nome Agente</th>
           <th>Duração Transmissão</th>
           <th>Dias Efetivos</th>
           <th>Fluxo Presentes</th>
@@ -76,87 +68,66 @@ tr:nth-child(even){ background:#1f2937; }
       <tbody></tbody>
     </table>
   </div>
-
 </div>
 
 <script type="module">
-import { supabase } from './supabase.js';
+import { supabase, protectPage, logout } from "./supabase.js";
+
+await protectPage();
 
 const hostSearch = document.getElementById('hostSearch');
 const hostSelect = document.getElementById('hostSelect');
+const tabelaDados = document.querySelector('#tabelaDados tbody');
 const status = document.getElementById('status');
-const hostInfoCard = document.getElementById('hostInfoCard');
-const uidEl = document.getElementById('uid');
-const apelidoEl = document.getElementById('apelido');
-const kwaiEl = document.getElementById('kwaiId');
-const nomeAgenteEl = document.getElementById('nomeAgente');
 const mesInput = document.getElementById('mesInput');
 const anoInput = document.getElementById('anoInput');
-const btnFiltrar = document.getElementById('btnFiltrar');
-const dadosTable = document.querySelector('#dadosTable tbody');
 
 let hostsData = [];
 
-// Carregar hosts da view simplificada
-async function carregarHosts(){
+// Carregar hosts
+async function carregarHosts() {
   const { data, error } = await supabase
-    .from('hosts_simplificado') // sua view simplificada
-    .select('member_Id,"Apelido de streamer",kwaiId,nome_agente');
+    .from('hosts_simplificado')
+    .select('member_id,apelido,kwai_id,nome_agente')
+    .order('apelido');
 
-  if(error){
-    status.innerText = "Erro ao carregar hosts: "+error.message;
-    return;
-  }
+  if(error){ status.innerText = "Erro ao carregar hosts: "+error.message; return; }
   hostsData = data;
   atualizarSelect('');
 }
 
-// Atualiza o select filtrando
+// Atualizar select com filtro
 function atualizarSelect(filtro){
   hostSelect.innerHTML = '';
   const filtrados = hostsData.filter(h =>
-    (h['Apelido de streamer']?.toLowerCase()||'').includes(filtro.toLowerCase()) ||
-    (h.kwaiId?.toLowerCase()||'').includes(filtro.toLowerCase())
+    (h.apelido?.toLowerCase().includes(filtro.toLowerCase())) ||
+    (h.kwai_id?.toLowerCase().includes(filtro.toLowerCase()))
   );
-  if(filtrados.length===0){
-    hostSelect.innerHTML = '<option value="">Nenhum host encontrado</option>';
-  }else{
-    filtrados.forEach(h=>{
-      hostSelect.innerHTML += `<option value="${h.member_Id}">${h['Apelido de streamer'] || ''} / ${h.kwaiId || ''}</option>`;
-    });
-  }
+
+  if(filtrados.length===0) hostSelect.innerHTML = '<option value="">Nenhum host encontrado</option>';
+  else filtrados.forEach(h=>{
+    hostSelect.innerHTML += `<option value="${h.member_id}">${h.apelido} / ${h.kwai_id}</option>`;
+  });
 }
 
-// Ao digitar no input
-hostSearch.addEventListener('input', e=>{
-  atualizarSelect(e.target.value);
-});
+hostSearch.addEventListener('input', e=>atualizarSelect(e.target.value));
 
-// Ao selecionar host
-hostSelect.addEventListener('change', e=>{
-  const memberId = e.target.value;
-  const host = hostsData.find(h=>h.member_Id==memberId);
-  if(!host) return;
-  uidEl.innerText = host.member_Id || '';
-  apelidoEl.innerText = host['Apelido de streamer'] || '';
-  kwaiEl.innerText = host.kwaiId || '';
-  nomeAgenteEl.innerText = host.nome_agente || '';
-  hostInfoCard.style.display = 'block';
-  dadosTable.innerHTML = '';
-});
+document.getElementById('btnFiltrar').addEventListener('click', async ()=>{
+  tabelaDados.innerHTML = '';
+  status.innerText = '';
 
-// Botão filtrar dados da live
-btnFiltrar.addEventListener('click', async ()=>{
-  dadosTable.innerHTML = '';
   const memberId = hostSelect.value;
   const mes = Number(mesInput.value);
   const ano = Number(anoInput.value);
+
   if(!memberId){ status.innerText='Selecione um host'; return; }
 
+  status.innerText='Carregando...';
+
   const { data, error } = await supabase
-    .from('host_reports_simplificado') // sua view de host_reports simplificada
+    .from('host_reports_simplificada') // a view simplificada que você vai criar
     .select('*')
-    .eq('member_id', Number(memberId))
+    .eq('member_id', memberId)
     .eq('mes', mes)
     .eq('ano', ano);
 
@@ -164,8 +135,12 @@ btnFiltrar.addEventListener('click', async ()=>{
   if(!data || data.length===0){ status.innerText='Nenhum dado encontrado'; return; }
 
   data.forEach(d=>{
-    dadosTable.innerHTML += `
+    tabelaDados.innerHTML+=`
       <tr>
+        <td>${d.member_id||''}</td>
+        <td>${d.apelido||''}</td>
+        <td>${d.kwai_id||''}</td>
+        <td>${d.nome_agente||''}</td>
         <td>${d.duracao_transmissao||''}</td>
         <td>${d.dias_efetivos||''}</td>
         <td>${d.fluxo_presentes||''}</td>
@@ -177,13 +152,12 @@ btnFiltrar.addEventListener('click', async ()=>{
       </tr>
     `;
   });
+
   status.innerText=`Mostrando ${data.length} registro(s)`;
 });
 
-// Inicializa
 carregarHosts();
 </script>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
