@@ -5,29 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Painel de Hosts Simplificado</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-<style>
-body {
-    background: linear-gradient(120deg, #0f172a, #1e293b);
-    color: white;
-    font-family: Arial, sans-serif;
-    padding: 40px;
-}
-.container { max-width: 1000px; margin:auto; }
-.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
-label { font-weight:bold; }
-input, select { background:#0f172a; color:white; border:1px solid #334155; }
-input::placeholder { color:#94a3b8; }
-button { font-weight:bold; cursor:pointer; border:none; border-radius:6px; padding:10px 20px; margin-top:10px; }
-.btn-brand { background: linear-gradient(90deg, #2563eb, #3b82f6); color:white; }
-.btn-brand:hover { filter:brightness(1.05); }
-.status { margin-top:10px; font-weight:bold; }
-.data-row { margin-bottom:10px; }
-.data-row span { font-weight:bold; margin-right:5px; }
-.table { width:100%; margin-top:20px; border-collapse: collapse; color:white; }
-th, td { border:1px solid #334155; padding:8px; text-align:left; }
-th { background:#1e293b; }
-tr:nth-child(even){ background:#1f2937; }
-</style>
+<link href="assets/styles.css" rel="stylesheet"> <!-- CSS padrão do projeto -->
 </head>
 <body>
 
@@ -83,7 +61,7 @@ tr:nth-child(even){ background:#1f2937; }
 </div>
 
 <script type="module">
-import { supabase } from './supabase.js'; // sem chave no HTML
+import { supabase } from './supabase.js';
 
 const hostSearch = document.getElementById('hostSearch');
 const uid = document.getElementById('uid');
