@@ -21,7 +21,7 @@
         <div class="card text-warning bg-dark"><span>Apelido:</span> <span id="apelido"></span></div>
         <div class="card text-warning bg-dark"><span>Kwai ID:</span> <span id="kwai_id"></span></div>
 
-        <div class="mb-4">
+        <div class="lead muted mb-3">
             <label>Mês</label>
             <select id="mesInput" class="form-select">
                 <option value="1">Janeiro</option><option value="2">Fevereiro</option>
@@ -112,7 +112,16 @@ btnFiltrar.addEventListener('click', async () => {
     resultTable.innerHTML = '';
     status.innerText = '';
 
-    if(!selectedHost){ status.innerText='Selecione um host válido'; return; }
+    if(!selectedHost){
+    status.innerText = 'Selecione um host válido';
+    status.style.color = 'orange'; // Adiciona a cor laranja
+    return;
+} else {
+    // Importante: resetar a cor para a cor original (ex: preto ou verde) 
+    // se o host for válido no futuro
+    status.style.color = 'white'; 
+}
+
 
     const mes = Number(mesInput.value);
     const ano = Number(anoInput.value);
