@@ -13,23 +13,11 @@ body {
     padding: 40px;
 }
 .container { max-width: 1000px; margin:auto; }
-.card {
-    background:#1e293b;
-    padding:20px;
-    border-radius:12px;
-    margin-bottom:20px;
-}
+.card { background:#1e293b; padding:20px; border-radius:12px; margin-bottom:20px; }
 label { font-weight:bold; }
 input, select { background:#0f172a; color:white; border:1px solid #334155; }
 input::placeholder { color:#94a3b8; }
-button {
-    font-weight:bold;
-    cursor:pointer;
-    border:none;
-    border-radius:6px;
-    padding:10px 20px;
-    margin-top:10px;
-}
+button { font-weight:bold; cursor:pointer; border:none; border-radius:6px; padding:10px 20px; margin-top:10px; }
 .btn-brand { background: linear-gradient(90deg, #2563eb, #3b82f6); color:white; }
 .btn-brand:hover { filter:brightness(1.05); }
 .status { margin-top:10px; font-weight:bold; }
@@ -49,7 +37,6 @@ tr:nth-child(even){ background:#1f2937; }
     <div class="card">
         <h4>Buscar Host</h4>
         <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
-        <select id="hostSelect" class="form-select mb-3" size="1" style="display:none;"></select>
 
         <div class="data-row"><span>UID:</span> <span id="uid"></span></div>
         <div class="data-row"><span>Apelido:</span> <span id="apelido"></span></div>
@@ -96,10 +83,9 @@ tr:nth-child(even){ background:#1f2937; }
 </div>
 
 <script type="module">
-import { supabase, protectPage, logout } from "./supabase.js";
+import { supabase } from './supabase.js'; // sem chave no HTML
 
 const hostSearch = document.getElementById('hostSearch');
-const hostSelect = document.getElementById('hostSelect');
 const uid = document.getElementById('uid');
 const apelido = document.getElementById('apelido');
 const kwai_id = document.getElementById('kwai_id');
@@ -110,6 +96,7 @@ const status = document.getElementById('status');
 const resultTable = document.querySelector('#resultTable tbody');
 
 let hostsData = [];
+let selectedHost = null;
 
 // Carrega hosts simplificados
 async function carregarHosts() {
@@ -119,55 +106,42 @@ async function carregarHosts() {
         .order('apelido', { ascending: true });
 
     if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
-
     hostsData = data;
 }
 
-function atualizarSelect(filtro) {
-    const filtrados = hostsData.filter(h => 
-        h.apelido?.toLowerCase().includes(filtro.toLowerCase()) || 
-        h.kwai_id?.toLowerCase().includes(filtro.toLowerCase())
+// Pesquisa tipo tonselect
+hostSearch.addEventListener('input', e => {
+    const filtro = e.target.value.toLowerCase();
+    const encontrado = hostsData.find(h => 
+        h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro)
     );
-
-    if(filtrados.length === 0){ hostSelect.style.display='none'; return; }
-
-    hostSelect.innerHTML = '';
-    filtrados.forEach(h => {
-        const opt = document.createElement('option');
-        opt.value = h.member_id;
-        opt.textContent = h.apelido + ' / ' + h.kwai_id;
-        hostSelect.appendChild(opt);
-    });
-    hostSelect.style.display='block';
-}
-
-// Atualiza campos ao selecionar host
-hostSelect.addEventListener('change', () => {
-    const selected = hostsData.find(h => h.member_id == hostSelect.value);
-    if(!selected) return;
-    uid.textContent = selected.member_id;
-    apelido.textContent = selected.apelido;
-    kwai_id.textContent = selected.kwai_id;
+    if(encontrado){
+        selectedHost = encontrado;
+        uid.textContent = encontrado.member_id;
+        apelido.textContent = encontrado.apelido;
+        kwai_id.textContent = encontrado.kwai_id;
+    } else {
+        selectedHost = null;
+        uid.textContent = '';
+        apelido.textContent = '';
+        kwai_id.textContent = '';
+    }
 });
 
-// Busca ao digitar
-hostSearch.addEventListener('input', e => atualizarSelect(e.target.value));
-
-// Aplica filtro e mostra host_reports_simplificado
+// Filtra host_reports_simplificado
 btnFiltrar.addEventListener('click', async () => {
     resultTable.innerHTML = '';
     status.innerText = '';
 
-    const memberId = hostSelect.value;
+    if(!selectedHost){ status.innerText='Selecione um host válido'; return; }
+
     const mes = Number(mesInput.value);
     const ano = Number(anoInput.value);
-
-    if(!memberId){ status.innerText='Selecione um host'; return; }
 
     const { data, error } = await supabase
         .from('host_reports_simplificado')
         .select('duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
-        .eq('member_id', memberId)
+        .eq('member_id', selectedHost.member_id)
         .eq('mes', mes)
         .eq('ano', ano);
 
@@ -192,7 +166,6 @@ btnFiltrar.addEventListener('click', async () => {
     status.innerText = `Mostrando ${data.length} registro(s)`;
 });
 
-// Inicializa
 carregarHosts();
 </script>
 
