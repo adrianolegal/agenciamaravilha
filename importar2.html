@@ -25,6 +25,7 @@
 
     /* Prévia Kwai */
     #kwaiPreview img { width:80px; height:80px; object-fit:cover; }
+    #kwaiPreview .kwai-info { margin-left:10px; }
 </style>
 </head>
 <body>
@@ -40,13 +41,13 @@
         <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
         <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
 
-        <!-- Prévia do Kwai (placeholder seguro) -->
+        <!-- Prévia do Kwai -->
         <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
             <h5 class="text-warning">Prévia do Kwai</h5>
             <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
             <div class="d-flex align-items-center">
-                <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
-                <div>
+                <img id="kwaiProfileImg" class="rounded-circle" alt="Foto do perfil">
+                <div class="kwai-info">
                     <div class="text-white fw-bold" id="kwaiName"></div>
                     <div class="text-white" id="kwaiFollowers">Seguindo preview…</div>
                 </div>
@@ -127,7 +128,7 @@ async function carregarHosts() {
 }
 
 // Pesquisa tipo tonselect
-hostSearch.addEventListener('input', e => {
+hostSearch.addEventListener('input', async e => {
     const filtro = e.target.value.toLowerCase();
     const encontrado = hostsData.find(h => 
         h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro)
@@ -139,18 +140,26 @@ hostSearch.addEventListener('input', e => {
         apelido.textContent = encontrado.apelido;
         kwai_id.textContent = encontrado.kwai_id;
 
-        // Prévia segura do Kwai
+        // Atualiza prévia Kwai
+        const kwaiUrl = `https://kwai.com/@${encontrado.kwai_id}`;
         kwaiPreview.style.display = 'block';
-        kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
+        kwaiLink.href = kwaiUrl;
         kwaiName.textContent = encontrado.apelido;
-        kwaiProfileImg.src = 'assets/profile-placeholder.jpg'; // placeholder seguro
-        kwaiFollowers.textContent = 'Seguidores: -';
+
+        // URL fallback online caso não tenha foto
+        kwaiProfileImg.src = `https://cdn.kwai.com/profile/${encontrado.kwai_id}.jpg`;
+        kwaiProfileImg.onerror = () => {
+            kwaiProfileImg.src = 'https://via.placeholder.com/80?text=Perfil'; // fallback seguro
+        }
+
+        // Seguidores e seguindo: exemplo simulado (precisa de API ou scraping do backend)
+        kwaiFollowers.textContent = "Seguindo: 0 • Seguidores: 0"; // substitua com dados reais via backend
     } else {
         selectedHost = null;
         uid.textContent = '';
         apelido.textContent = '';
         kwai_id.textContent = '';
-        kwaiPreview.style.display = 'none';
+        kwaiPreview.style.display='none';
     }
 });
 
