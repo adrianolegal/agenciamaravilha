@@ -180,27 +180,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   }
 
   const reader = new FileReader();
-rows.forEach(row => {
 
-  // 🔵 1 — Normaliza todas as chaves removendo espaços
-  const normalizedRow = {};
-  Object.keys(row).forEach(key => {
-    normalizedRow[key.trim()] = row[key];
-  });
-
-  // 🔵 2 — Agora usa o objeto normalizado
-  const data = {
-    member_id: normalizedRow["Member ID"],
-    duracao_video: normalizedRow["Duração de live de vídeo"] || null,
-    duracao_audio: normalizedRow["Duração de live de áudio"] || null,
-    dias_video: Number(normalizedRow["Dias de vídeo"] || 0),
-    receita_video: Number(normalizedRow["Receita vídeo"] || 0)
-  };
-
-  // 🔵 3 — Envia para o Supabase
-  // await supabase.from('host_reports').upsert(data);
-
-});
   reader.onload = async (e) => {
 
     try {
@@ -222,7 +202,7 @@ rows.forEach(row => {
         dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
         fluxo_presentes: row["Fluxo de presentes"] || null,
         novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
-        duracao_video: row["Duração de live de vídeo"] || null,
+        duracao_video: row["Duração de live de vídeo "] || null,
         duracao_audio: row["Duração de live de áudio"] || null,
         receita_video: row["Receita de live de vídeo"] || null,
         receita_audio: row["Receita de presentes de live de áudio"] || null,
