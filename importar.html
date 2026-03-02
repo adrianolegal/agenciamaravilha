@@ -30,12 +30,21 @@ button {
   padding:10px 20px;
   margin-top:10px;
 }
-.btn-brand { background:#2563eb; color:white; }
-.btn-success { background:#16a34a; color:white; }
-.btn-error { background:#dc2626; color:white; }
 .status { margin-top:10px; font-weight:bold; transition: all 0.3s ease; }
 .fade { animation: fade 0.5s ease-in-out; }
 @keyframes fade { from { opacity:0 } to { opacity:1 } }
+
+/* BOTÕES */
+.btn-brand{
+  background: linear-gradient(90deg, var(--brand), var(--brand2));
+  border:none;
+  color:#ffffff;
+}
+.btn-brand:hover{ filter:brightness(1.05); }
+
+.btn-outline-light{
+  border-color: rgba(255,255,255,.25) !important;
+}
 
 /* INPUT DE ARQUIVO VISÍVEL NO FUNDO ESCURO */
 input[type="file"] {
@@ -43,8 +52,8 @@ input[type="file"] {
 }
 input[type="file"]::-webkit-file-upload-button,
 input[type="file"]::file-selector-button {
-  background: #2563eb; /* cor do botão */
-  color: #fff;          /* texto do botão */
+  background: linear-gradient(90deg, var(--brand), var(--brand2));
+  color: #fff;
   border: none;
   padding: 6px 12px;
   border-radius: 6px;
