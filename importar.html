@@ -189,13 +189,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const workbook = XLSX.read(dataArray, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
-const normalizedRow = {};
 
-Object.keys(row).forEach(key => {
-  normalizedRow[key.trim()] = row[key];
-});
-
-duracao_video = normalizedRow["Duração de live de vídeo"] || null;
       const formatted = json.map(row => ({
         member_id: Number(row.member_Id) || null,
         kwai_id: row.kwaiId || null,
@@ -208,7 +202,7 @@ duracao_video = normalizedRow["Duração de live de vídeo"] || null;
         dias_efetivos: row["Dia(s) efetivo(s) da transmissão  ao vivo"] || null,
         fluxo_presentes: row["Fluxo de presentes"] || null,
         novos_fas: row["Novos fãs da sala de transmissão ao vivo"] || null,
-        duracao_video: row["Duração de live de vídeo"] || null,
+        duracao_video: row["Duração de live de vídeo "] || null,
         duracao_audio: row["Duração de live de áudio"] || null,
         receita_video: row["Receita de live de vídeo"] || null,
         receita_audio: row["Receita de presentes de live de áudio"] || null,
