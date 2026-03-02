@@ -12,10 +12,10 @@ body { background:#0f172a; color:white; font-family:Arial,sans-serif; padding:20
 label { font-weight:bold; display:block; margin-top:10px; }
 input, select, button { font-size:16px; }
 input, select { border-radius:6px; border:1px solid #334155; padding:8px; width:100%; color:#0f172a; }
-button { padding:10px 20px; margin-top:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; background: linear-gradient(90deg, #2563eb, #3b82f6); color:white; }
+button { padding:10px 20px; margin-top:10px; border:none; border-radius:6px; cursor:pointer; font-weight:bold; background: linear-gradient(90deg,#2563eb,#3b82f6); color:white; }
 button:hover { filter:brightness(1.05); }
 .status { margin-top:10px; font-weight:bold; color:#facc15; }
-.field { margin-bottom:8px; }
+.field { margin-bottom:8px; color:white; }
 .field span { font-weight:bold; margin-right:5px; }
 table { color:white; width:100%; border-collapse:collapse; margin-top:10px; }
 th, td { border:1px solid #334155; padding:6px; text-align:left; }
@@ -32,7 +32,7 @@ tr:nth-child(even){ background:#1f2937; }
     <div class="mb-3">
       <label>Apelido ou Kwai ID</label>
       <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID">
-      <button id="btnBuscar">Buscar</button>
+      <select id="hostSelect" size="1" style="display:none;"></select>
       <div id="status" class="status"></div>
     </div>
 
@@ -86,7 +86,7 @@ const supabaseKey = 'YOUR_SUPABASE_ANON_KEY';
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 const hostSearch = document.getElementById('hostSearch');
-const btnBuscar = document.getElementById('btnBuscar');
+const hostSelect = document.getElementById('hostSelect');
 const status = document.getElementById('status');
 const hostInfo = document.getElementById('hostInfo');
 const memberIdEl = document.getElementById('memberId');
@@ -97,42 +97,46 @@ const anoEl = document.getElementById('ano');
 const btnFiltrar = document.getElementById('btnFiltrar');
 const tabelaResultados = document.getElementById('tabelaResultados');
 
+let hostsData = [];
 let hostSelecionado = null;
 
-// Buscar host pelo apelido ou kwai_id
-btnBuscar.addEventListener('click', async () => {
-  status.textContent = 'Buscando...';
-  tabelaResultados.innerHTML = '';
-  hostInfo.style.display = 'none';
-
-  const termo = hostSearch.value.trim();
-  if(!termo) { status.textContent = 'Digite apelido ou Kwai ID'; return; }
-
+// Carregar hosts simplificados
+async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts_simplificado')
-    .select('*')
-    .or(`apelido.ilike.%${termo}%,kwai_id.ilike.%${termo}%`)
-    .limit(1);
+    .select('member_id,apelido,kwai_id,nome_agente')
+    .order('apelido', { ascending: true });
 
-  if(error) { status.textContent = 'Erro: ' + error.message; return; }
-  if(!data || data.length===0){ status.textContent = 'Nenhum host encontrado'; return; }
+  if(error){ status.textContent='Erro ao carregar hosts: '+error.message; return; }
+  hostsData = data;
+}
+carregarHosts();
 
-  hostSelecionado = data[0];
-  memberIdEl.textContent = hostSelecionado.member_id;
-  apelidoEl.textContent = hostSelecionado.apelido;
-  kwaiIdEl.textContent = hostSelecionado.kwai_id;
+// Atualizar tom select
+function atualizarSelect(filtro){
+  hostSelect.innerHTML='';
+  const filtrados = hostsData.filter(h =>
+    h.apelido.toLowerCase().includes(filtro.toLowerCase()) ||
+    h.kwai_id.toLowerCase().includes(filtro.toLowerCase())
+  );
+  if(filtrados.length>0){
+    hostSelecionado = filtrados[0];
+    hostInfo.style.display='block';
+    memberIdEl.textContent = hostSelecionado.member_id;
+    apelidoEl.textContent = hostSelecionado.apelido;
+    kwaiIdEl.textContent = hostSelecionado.kwai_id;
+  } else { hostInfo.style.display='none'; hostSelecionado=null; }
+}
 
-  hostInfo.style.display = 'block';
-  status.textContent = '';
-});
+hostSearch.addEventListener('input', e => atualizarSelect(e.target.value));
 
-// Aplicar filtro mês/ano e mostrar host_reports
-btnFiltrar.addEventListener('click', async () => {
+// Filtrar host_reports
+btnFiltrar.addEventListener('click', async ()=>{
   if(!hostSelecionado){ status.textContent='Selecione um host primeiro'; return; }
   const mes = Number(mesEl.value);
   const ano = Number(anoEl.value);
-  tabelaResultados.innerHTML = '';
-  status.textContent = 'Carregando host_reports...';
+  tabelaResultados.innerHTML='';
+  status.textContent='Carregando host_reports...';
 
   const { data, error } = await supabase
     .from('host_reports_simplificado')
@@ -141,27 +145,25 @@ btnFiltrar.addEventListener('click', async () => {
     .eq('mes', mes)
     .eq('ano', ano);
 
-  if(error){ status.textContent='Erro: ' + error.message; return; }
+  if(error){ status.textContent='Erro: '+error.message; return; }
   if(!data || data.length===0){ status.textContent='Nenhum resultado encontrado'; return; }
 
-  data.forEach(r => {
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td>${r.duracao_transmissao || ''}</td>
-      <td>${r.dias_efetivos || ''}</td>
-      <td>${r.fluxo_presentes || ''}</td>
-      <td>${r.duracao_video || ''}</td>
-      <td>${r.duracao_audio || ''}</td>
-      <td>${r.receita_video || ''}</td>
-      <td>${r.receita_audio || ''}</td>
-      <td>${r.dias_video || ''}</td>
+  data.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td>${r.duracao_transmissao||''}</td>
+      <td>${r.dias_efetivos||''}</td>
+      <td>${r.fluxo_presentes||''}</td>
+      <td>${r.duracao_video||''}</td>
+      <td>${r.duracao_audio||''}</td>
+      <td>${r.receita_video||''}</td>
+      <td>${r.receita_audio||''}</td>
+      <td>${r.dias_video||''}</td>
     `;
     tabelaResultados.appendChild(tr);
   });
-
-  status.textContent = `Mostrando ${data.length} registro(s)`;
+  status.textContent=`Mostrando ${data.length} registro(s)`;
 });
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
