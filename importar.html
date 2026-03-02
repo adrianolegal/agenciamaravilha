@@ -62,11 +62,6 @@ button {
   color: #ffffff !important;
 }
 
-.btn-outline-light:hover {
-  color: #ffffff !important;
-  background: rgba(255,255,255,0.1);
-}
-
 input[type="file"] {
   color: #ffffff; /* texto "Nenhum arquivo escolhido" */
 }
@@ -212,13 +207,14 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
 
-      // 🔵 Normaliza chaves (remove espaços extras)
+      // 🔵 Normaliza chaves apenas para remover espaços (resolve problema da coluna)
       const normalizedJson = json.map(row => {
         const normalizedRow = {};
-        Object.keys(row).forEach(key => normalizedRow[key.trim()] = row[key]);
+        Object.keys(row).forEach(key => normalizedRow[key.trim()] = row[key] !== undefined && row[key] !== "" ? row[key] : null);
         return normalizedRow;
       });
 
+      // 🔵 Formata para Supabase (somente os campos que você precisa)
       const formatted = normalizedJson.map(row => ({
         member_id: row["Member ID"] || null,
         duracao_video: row["Duração de live de vídeo"] || null,
