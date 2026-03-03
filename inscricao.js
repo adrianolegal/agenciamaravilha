@@ -12,7 +12,10 @@ const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
 
-let hostsData = window.hostsData || []; // os hosts já devem estar disponíveis na página
+// Aqui você deve colocar os hosts já disponíveis
+// Exemplo:
+// window.hostsData = [{ member_id: 1, apelido: "Test", kwai_id:"teste123", avatar_url:"avatar.jpg" }, ...]
+let hostsData = window.hostsData || [];
 let selectedHost = null;
 let selectedHora = null;
 
@@ -48,7 +51,7 @@ horarioGroup.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// Pegar IP
+// Pegar IP do usuário
 async function getUserIP() {
   try {
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -59,14 +62,14 @@ async function getUserIP() {
   }
 }
 
-// Envio inscrição
+// Envio inscrição via Edge Function
 btnEnviar.addEventListener('click', async () => {
   if (!selectedHost) { status.textContent = 'Selecione um host válido'; return; }
   if (!selectedHora) { status.textContent = 'Selecione um horário'; return; }
 
   status.textContent = 'Enviando inscrição...';
   const ip = await getUserIP();
-  const mesAtual = new Date().getMonth() + 1; // Janeiro=0
+  const mesAtual = new Date().getMonth() + 1;
 
   try {
     const res = await fetch('/api/inscricao', {
