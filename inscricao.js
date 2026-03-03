@@ -12,20 +12,9 @@ const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
 
-let hostsData = [];
+let hostsData = window.hostsData || []; // os hosts já devem estar disponíveis na página
 let selectedHost = null;
 let selectedHora = null;
-
-// Carrega hosts (supõe que você tenha um endpoint na Edge Function que retorna hosts)
-async function carregarHosts() {
-  try {
-    const res = await fetch('/api/hosts'); // sua edge function que retorna os hosts
-    hostsData = await res.json();
-  } catch (err) {
-    status.textContent = 'Erro ao carregar hosts: ' + err.message;
-  }
-}
-carregarHosts();
 
 // Busca host localmente
 hostSearch.addEventListener('input', e => {
@@ -40,7 +29,6 @@ hostSearch.addEventListener('input', e => {
     kwaiPreview.style.display = 'block';
     kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
     kwaiName.textContent = encontrado.apelido;
-
     kwaiProfileImg.src = encontrado.avatar_url || 'profile-placeholder.jpg';
   } else {
     selectedHost = null;
@@ -60,7 +48,7 @@ horarioGroup.querySelectorAll('button').forEach(btn => {
   });
 });
 
-// Pegar IP do usuário
+// Pegar IP
 async function getUserIP() {
   try {
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -78,25 +66,23 @@ btnEnviar.addEventListener('click', async () => {
 
   status.textContent = 'Enviando inscrição...';
   const ip = await getUserIP();
-  const mesAtual = new Date().getMonth() + 1; // Janeiro = 0
-
-  const payload = {
-    member_id: selectedHost.member_id,
-    kwai_id: selectedHost.kwai_id,
-    hora_escolhida: selectedHora,
-    ip_usuario: ip,
-    mes: mesAtual
-  };
+  const mesAtual = new Date().getMonth() + 1; // Janeiro=0
 
   try {
-    const res = await fetch('/api/inscricao', { // sua edge function que faz insert
+    const res = await fetch('/api/inscricao', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      body: JSON.stringify({
+        member_id: selectedHost.member_id,
+        kwai_id: selectedHost.kwai_id,
+        hora_escolhida: selectedHora,
+        ip_usuario: ip,
+        mes: mesAtual
+      })
     });
 
     if (!res.ok) {
-      const err = await res.json();
+      const err = await res.json().catch(()=>({message:res.statusText}));
       status.textContent = 'Erro ao salvar: ' + (err.message || res.statusText);
       return;
     }
