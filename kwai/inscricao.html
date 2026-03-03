@@ -17,13 +17,20 @@
 
     /* Popup */
     #popupMsg {
-      display: none;
+      display: flex; /* manter como flex para centralizar */
+      justify-content: center;
+      align-items: center;
       position: fixed;
       top:0; left:0; right:0; bottom:0;
       background: rgba(0,0,0,0.6);
-      justify-content:center;
-      align-items:center;
       z-index: 9999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    #popupMsg.show {
+      opacity: 1;
+      pointer-events: auto;
     }
     #popupMsgContent {
       background: #1a1a1a;
@@ -31,11 +38,27 @@
       padding: 25px 30px;
       border-radius: 12px;
       max-width: 400px;
-      text-align:center;
+      text-align: center;
       font-family: sans-serif;
+      transform: scale(0.9);
+      transition: transform 0.4s ease;
+    }
+    #popupMsg.show #popupMsgContent {
+      transform: scale(1);
     }
     #popupMsgContent img { width:50px; height:50px; margin-bottom:10px; }
-    #popupMsgContent button { margin-top:15px; padding:8px 20px; font-weight:bold; border:none; border-radius:6px; background:#fbbf24; color:#000; cursor:pointer; }
+    #popupMsgContent button {
+      margin-top:15px;
+      padding:8px 20px;
+      font-weight:bold;
+      border:none;
+      border-radius:6px;
+      background:#fbbf24;
+      color:#000;
+      cursor:pointer;
+    }
+    /* Mensagem de status */
+    #status { color: #fbbf24; }
   </style>
 </head>
 <body>
@@ -93,7 +116,7 @@
     </div>
 
     <button id="btnEnviar" class="btn btn-brand mt-2">Enviar Inscrição</button>
-    <div id="status" class="mt-2 text-warning"></div>
+    <div id="status" class="mt-2"></div>
   </div>
 </div>
 
@@ -130,19 +153,16 @@ let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
-// Carrega hosts do Supabase
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts_simplificado')
     .select('member_id, apelido, kwai_id')
     .order('apelido');
-
   if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
   hostsData = data;
 }
 carregarHosts();
 
-// Busca host localmente
 hostSearch.addEventListener('input', e => {
   const filtro = e.target.value.toLowerCase();
   const encontrado = hostsData.find(h =>
@@ -172,7 +192,6 @@ hostSearch.addEventListener('input', e => {
   }
 });
 
-// Seleção de horário
 horarioGroup.querySelectorAll('button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
@@ -181,7 +200,6 @@ horarioGroup.querySelectorAll('button').forEach(btn=>{
   });
 });
 
-// Pegar IP do usuário
 async function getUserIP(){
   try{
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -190,7 +208,6 @@ async function getUserIP(){
   } catch{return 'desconhecido';}
 }
 
-// Envio inscrição direto para Supabase
 btnEnviar.addEventListener('click', async ()=>{
   if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
   if(!selectedHora){ status.textContent='Selecione um horário'; return; }
@@ -217,12 +234,11 @@ btnEnviar.addEventListener('click', async ()=>{
   }
 
   status.textContent = "";
-  popupMsg.style.display = 'flex';
+  popupMsg.classList.add('show'); // fade-in
 
-  // Quando clicar OK no popup
   popupOkBtn.onclick = () => {
-    popupMsg.style.display = 'none';
-    window.location.href = 'kwai/materiais/eventos';
+    popupMsg.classList.remove('show'); // fade-out
+    setTimeout(()=> { window.location.href = 'kwai/materiais/eventos'; }, 400); // aguarda fade
   };
 });
 </script>
