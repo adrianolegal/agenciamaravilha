@@ -96,21 +96,19 @@ let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
-// Carregar hosts direto do Supabase
+// Carrega hosts do Supabase
 async function carregarHosts() {
-  const { data, error } = await supabase.from('hosts_simplificado')
-    .select('member_id,apelido,kwai_id')
+  const { data, error } = await supabase
+    .from('hosts_simplificado')
+    .select('member_id, apelido, kwai_id')
     .order('apelido');
 
-  if(error){
-    status.innerText = "Erro ao carregar hosts: " + error.message;
-    return;
-  }
+  if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
   hostsData = data;
 }
 carregarHosts();
 
-// Busca local
+// Busca host localmente
 hostSearch.addEventListener('input', e => {
   const filtro = e.target.value.toLowerCase();
   const encontrado = hostsData.find(h =>
@@ -123,7 +121,7 @@ hostSearch.addEventListener('input', e => {
     apelido.textContent = encontrado.apelido;
     kwai_id.textContent = encontrado.kwai_id;
 
-    kwaiPreview.style.display='block';
+    kwaiPreview.style.display = 'block';
     kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
     kwaiName.textContent = encontrado.apelido;
 
@@ -136,20 +134,20 @@ hostSearch.addEventListener('input', e => {
     uid.textContent = '';
     apelido.textContent = '';
     kwai_id.textContent = '';
-    kwaiPreview.style.display='none';
+    kwaiPreview.style.display = 'none';
   }
 });
 
 // Seleção de horário
 horarioGroup.querySelectorAll('button').forEach(btn=>{
-  btn.addEventListener('click',()=>{
+  btn.addEventListener('click', ()=>{
     horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedHora = btn.dataset.hora;
   });
 });
 
-// IP do usuário
+// Pegar IP do usuário
 async function getUserIP(){
   try{
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -167,31 +165,26 @@ btnEnviar.addEventListener('click', async ()=>{
   const ip = await getUserIP();
   const mesAtual = new Date().getMonth() + 1;
 
- const payload = {
-  member_id: selectedHost.member_id,  // agora bigint
-  kwai_id: selectedHost.kwai_id,
-  hora_escolhida: selectedHora,
-  ip_usuario: ip,
-  mes: mesAtual
-};
+  const payload = {
+    member_id: selectedHost.member_id,
+    kwai_id: selectedHost.kwai_id,
+    hora_escolhida: selectedHora,
+    ip_usuario: ip,
+    mes: mesAtual
+  };
 
-const { data, error } = await supabase
-  .from('inscricoes_pk_agencias')
-  .insert([payload]);
+  const { data: insertedData, error: insertError } = await supabase
+    .from('inscricoes_pk_agencias')
+    .insert([payload]);
 
-if(error){
-  status.textContent = "Erro ao salvar: " + error.message;
-}else{
-  status.textContent = "Inscrição salva com sucesso!";
-} console.log('Payload enviado:', payload); // debug
-
-  const { data, error } = await supabase.from('inscricoes_pk_agencias').insert([payload]);
-
-  if(error){
-    status.textContent = 'Erro ao salvar: ' + error.message;
+  if(insertError){
+    status.textContent = "Erro ao salvar: " + insertError.message;
     return;
   }
-  status.textContent='Inscrição salva com sucesso!';
+
+  status.textContent = "Inscrição salva com sucesso!";
+  console.log('Payload enviado:', payload);
+  console.log('Retorno do Supabase:', insertedData);
 });
 </script>
 
