@@ -168,13 +168,22 @@ btnEnviar.addEventListener('click', async ()=>{
   const mesAtual = new Date().getMonth() + 1;
 
  const payload = {
-  member_id: String(selectedHost.member_id), // usar string aqui
-  kwai_id: String(selectedHost.kwai_id),
-  hora_escolhida: String(selectedHora),
-  ip_usuario: String(ip),
-  mes: Number(mesAtual)
+  member_id: selectedHost.member_id,  // agora bigint
+  kwai_id: selectedHost.kwai_id,
+  hora_escolhida: selectedHora,
+  ip_usuario: ip,
+  mes: mesAtual
 };
-  console.log('Payload enviado:', payload); // debug
+
+const { data, error } = await supabase
+  .from('inscricoes_pk_agencias')
+  .insert([payload]);
+
+if(error){
+  status.textContent = "Erro ao salvar: " + error.message;
+}else{
+  status.textContent = "Inscrição salva com sucesso!";
+} console.log('Payload enviado:', payload); // debug
 
   const { data, error } = await supabase.from('inscricoes_pk_agencias').insert([payload]);
 
