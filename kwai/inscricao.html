@@ -3,7 +3,7 @@
 <head>
   <base href="/"/>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inscrição PK Agências — Agência Maravilha</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" href="assets/logo.jpg">
@@ -14,17 +14,28 @@
     #kwaiPreview { max-width: 300px; }
     #kwaiPreview img { width:50px; height:50px; }
     .data-row .value { color: #fbbf24; font-weight:bold; }
-    
-    /* POPUP */
+
+    /* Popup */
     #popupMsg {
-      display: none; 
-      position: fixed; top:0; left:0; width:100%; height:100%; 
-      background: rgba(0,0,0,0.85); color:#fff; 
-      justify-content:center; align-items:center; 
-      z-index:1000; flex-direction:column; text-align:center; padding:20px;
+      display: none;
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.6);
+      justify-content:center;
+      align-items:center;
+      z-index: 9999;
     }
-    #popupMsg img { width:80px; height:80px; margin-bottom:20px; }
-    #popupMsg button { margin-top:15px; padding:10px 20px; border:none; background:#fbbf24; color:black; font-weight:bold; border-radius:6px; cursor:pointer; }
+    #popupMsgContent {
+      background: #1a1a1a;
+      color: #fbbf24;
+      padding: 25px 30px;
+      border-radius: 12px;
+      max-width: 400px;
+      text-align:center;
+      font-family: sans-serif;
+    }
+    #popupMsgContent img { width:50px; height:50px; margin-bottom:10px; }
+    #popupMsgContent button { margin-top:15px; padding:8px 20px; font-weight:bold; border:none; border-radius:6px; background:#fbbf24; color:#000; cursor:pointer; }
   </style>
 </head>
 <body>
@@ -86,13 +97,17 @@
   </div>
 </div>
 
-<!-- POPUP -->
-<div id="popupMsg" class="d-flex">
-  <img src="assets/logo.jpg" alt="Logo Agência">
-  <h3>Parabéns!</h3>
-  <p>Inscrição feita com sucesso.<br>Fique atento à data e aguarde aviso do PK no grupo.</p>
-  <button id="popupOkBtn">OK</button>
+<!-- Popup -->
+<div id="popupMsg">
+  <div id="popupMsgContent">
+    <img src="assets/logo.jpg" alt="Agência Maravilha">
+    <h5>Parabéns!</h5>
+    <p>Inscrição feita com sucesso!<br>Fique atento à data e aguarde aviso do PK no grupo.</p>
+    <button id="popupOkBtn">OK</button>
+  </div>
 </div>
+
+<hr class="hr-soft my-5">
 
 <script type="module">
 import { supabase } from './supabase.js';
@@ -115,12 +130,13 @@ let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
-// Carregar hosts
+// Carrega hosts do Supabase
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts_simplificado')
     .select('member_id, apelido, kwai_id')
     .order('apelido');
+
   if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
   hostsData = data;
 }
@@ -165,7 +181,7 @@ horarioGroup.querySelectorAll('button').forEach(btn=>{
   });
 });
 
-// IP do usuário
+// Pegar IP do usuário
 async function getUserIP(){
   try{
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -174,7 +190,7 @@ async function getUserIP(){
   } catch{return 'desconhecido';}
 }
 
-// Envio inscrição
+// Envio inscrição direto para Supabase
 btnEnviar.addEventListener('click', async ()=>{
   if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
   if(!selectedHora){ status.textContent='Selecione um horário'; return; }
@@ -200,14 +216,14 @@ btnEnviar.addEventListener('click', async ()=>{
     return;
   }
 
-  // Mostra popup somente depois de inserção
+  status.textContent = "";
   popupMsg.style.display = 'flex';
-});
 
-// Botão OK do popup
-popupOkBtn.addEventListener('click', ()=>{
-  popupMsg.style.display = 'none';
-  window.location.href = 'kwai/materiais/eventos';
+  // Quando clicar OK no popup
+  popupOkBtn.onclick = () => {
+    popupMsg.style.display = 'none';
+    window.location.href = 'kwai/materiais/eventos';
+  };
 });
 </script>
 
