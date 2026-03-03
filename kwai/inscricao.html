@@ -17,47 +17,25 @@
 
     /* Popup */
     #popupMsg {
-      display: flex; /* manter como flex para centralizar */
-      justify-content: center;
-      align-items: center;
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
+      display: flex; justify-content:center; align-items:center;
+      position: fixed; top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.6); z-index: 9999; opacity:0; pointer-events:none;
       transition: opacity 0.4s ease;
     }
-    #popupMsg.show {
-      opacity: 1;
-      pointer-events: auto;
-    }
+    #popupMsg.show { opacity:1; pointer-events:auto; }
     #popupMsgContent {
-      background: #1a1a1a;
-      color: #fbbf24;
-      padding: 25px 30px;
-      border-radius: 12px;
-      max-width: 400px;
-      text-align: center;
-      font-family: sans-serif;
-      transform: scale(0.9);
+      background: #1a1a1a; color: #fbbf24;
+      padding: 25px 30px; border-radius: 12px; max-width: 400px;
+      text-align: center; font-family: sans-serif; transform: scale(0.9);
       transition: transform 0.4s ease;
     }
-    #popupMsg.show #popupMsgContent {
-      transform: scale(1);
-    }
+    #popupMsg.show #popupMsgContent { transform: scale(1); }
     #popupMsgContent img { width:50px; height:50px; margin-bottom:10px; }
     #popupMsgContent button {
-      margin-top:15px;
-      padding:8px 20px;
-      font-weight:bold;
-      border:none;
-      border-radius:6px;
-      background:#fbbf24;
-      color:#000;
-      cursor:pointer;
+      margin-top:15px; padding:8px 20px; font-weight:bold; border:none; border-radius:6px;
+      background:#fbbf24; color:#000; cursor:pointer;
     }
-    /* Mensagem de status */
+
     #status { color: #fbbf24; }
   </style>
 </head>
@@ -88,8 +66,14 @@
 </nav>
 
 <div class="container my-4">
-  <h2>Inscrição PK Agências Março/2026</h2>
   <div class="card p-3">
+    <!-- Imagem do evento acima do título -->
+    <div class="text-center mb-3">
+      <img src="kwai/materiais/img/evento-99.jpg" alt="PK Agências" class="img-fluid rounded" style="max-height:180px;">
+    </div>
+
+    <h2 class="text-center text-warning mb-3">Inscrição PK Agências Março/2026</h2>
+
     <h4 class="text-warning">Digite seu Id ou parte do Apelido</h4>
     <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
 
@@ -129,8 +113,6 @@
     <button id="popupOkBtn">OK</button>
   </div>
 </div>
-
-<hr class="hr-soft my-5">
 
 <script type="module">
 import { supabase } from './supabase.js';
@@ -234,11 +216,11 @@ btnEnviar.addEventListener('click', async ()=>{
   }
 
   status.textContent = "";
-  popupMsg.classList.add('show'); // fade-in
+  popupMsg.classList.add('show');
 
   popupOkBtn.onclick = () => {
-    popupMsg.classList.remove('show'); // fade-out
-    setTimeout(()=> { window.location.href = 'kwai/materiais/eventos'; }, 400); // aguarda fade
+    popupMsg.classList.remove('show');
+    setTimeout(()=> { window.location.href = 'kwai/materiais/eventos'; }, 400);
   };
 });
 </script>
