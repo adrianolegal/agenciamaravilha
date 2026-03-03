@@ -179,7 +179,6 @@ btnEnviar.addEventListener('click', async ()=>{
     const { data, error } = await supabase.from('inscricoes_pk_agencias').insert([{ 
       member_id:selectedHost.member_id, 
       hora_escolhida:selectedHora, 
-      adm:'REN', 
       ip_usuario:ip 
     }]);
     if(error){ status.textContent='Erro ao salvar: '+error.message; return; }
