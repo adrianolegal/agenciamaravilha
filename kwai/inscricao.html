@@ -167,14 +167,13 @@ btnEnviar.addEventListener('click', async ()=>{
   const ip = await getUserIP();
   const mesAtual = new Date().getMonth() + 1;
 
-  const payload = {
-    member_id: Number(selectedHost.member_id),
-    kwai_id: String(selectedHost.kwai_id),
-    hora_escolhida: String(selectedHora),
-    ip_usuario: String(ip),
-    mes: Number(mesAtual)
-  };
-
+ const payload = {
+  member_id: String(selectedHost.member_id), // usar string aqui
+  kwai_id: String(selectedHost.kwai_id),
+  hora_escolhida: String(selectedHora),
+  ip_usuario: String(ip),
+  mes: Number(mesAtual)
+};
   console.log('Payload enviado:', payload); // debug
 
   const { data, error } = await supabase.from('inscricoes_pk_agencias').insert([payload]);
