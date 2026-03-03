@@ -1,4 +1,10 @@
-// inscricao.js
+// inscrição.js
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+const supabaseUrl = 'YOUR_SUPABASE_URL'; // do projeto Supabase
+const supabaseKey = 'YOUR_SUPABASE_SERVICE_ROLE_KEY'; // Service Role segura
+const supabase = createClient(supabaseUrl, supabaseKey);
+
 const hostSearch = document.getElementById('hostSearch');
 const uid = document.getElementById('uid');
 const apelido = document.getElementById('apelido');
@@ -12,10 +18,7 @@ const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
 
-// Aqui você deve colocar os hosts já disponíveis
-// Exemplo:
-// window.hostsData = [{ member_id: 1, apelido: "Test", kwai_id:"teste123", avatar_url:"avatar.jpg" }, ...]
-let hostsData = window.hostsData || [];
+let hostsData = []; // preencha manualmente ou via Supabase fetch seguro
 let selectedHost = null;
 let selectedHora = null;
 
@@ -32,6 +35,7 @@ hostSearch.addEventListener('input', e => {
     kwaiPreview.style.display = 'block';
     kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
     kwaiName.textContent = encontrado.apelido;
+
     kwaiProfileImg.src = encontrado.avatar_url || 'profile-placeholder.jpg';
   } else {
     selectedHost = null;
@@ -62,7 +66,7 @@ async function getUserIP() {
   }
 }
 
-// Envio inscrição via Edge Function
+// Envio inscrição direto para Supabase
 btnEnviar.addEventListener('click', async () => {
   if (!selectedHost) { status.textContent = 'Selecione um host válido'; return; }
   if (!selectedHora) { status.textContent = 'Selecione um horário'; return; }
@@ -72,21 +76,18 @@ btnEnviar.addEventListener('click', async () => {
   const mesAtual = new Date().getMonth() + 1;
 
   try {
-    const res = await fetch('/api/inscricao', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    const { data, error } = await supabase
+      .from('inscricoes_pk_agencias')
+      .insert([{
         member_id: selectedHost.member_id,
         kwai_id: selectedHost.kwai_id,
         hora_escolhida: selectedHora,
         ip_usuario: ip,
         mes: mesAtual
-      })
-    });
+      }]);
 
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({message:res.statusText}));
-      status.textContent = 'Erro ao salvar: ' + (err.message || res.statusText);
+    if (error) {
+      status.textContent = 'Erro ao salvar: ' + error.message;
       return;
     }
 
