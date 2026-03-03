@@ -1,239 +1,276 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <base href="/"/>
+  <base href="/">
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Inscrição PK Divas — Agência Maravilha</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Eventos Kwai — Agência Maravilha</title>
+
+   <link rel="icon" href="assets/logo.jpg">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="icon" href="assets/logo.jpg">
-  <link href="assets/styles.css" rel="stylesheet">
-  <style>
-    body { background: #fff0f6; } /* Fundo geral rosa claro */
-    .button-group button { 
-      margin:5px; padding:10px 15px; border:none; cursor:pointer; font-weight:bold; border-radius:6px; color:#fff; background:#ff69b4; 
-    }
-    .button-group button.selected { background:#ff1493; color:white; }
-    #kwaiPreview { max-width: 300px; }
-    #kwaiPreview img { width:50px; height:50px; }
-    .data-row .value { color:#ff1493; font-weight:bold; }
-    #horarioLabel { color:#ff1493; font-weight:bold; margin-bottom:5px; display:block; }
-    #status { color:#ff1493; font-weight:bold; margin-top:10px; }
-    /* Popup */
-    #popup {
-      display:none;
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(255,182,193,0.95);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      opacity:0;
-      transition: opacity 0.4s ease;
-      z-index:9999;
-    }
-    #popup.show { opacity:1; }
-    #popupContent {
-      background:#ffe4ec;
-      border-radius:12px;
-      padding:25px 35px;
-      text-align:center;
-      max-width:400px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.3);
-    }
-    #popupContent h2 { color:#ff1493; margin-bottom:15px; }
-    #popupContent p { color:#ff1493; margin-bottom:20px; font-weight:bold; }
-    #popupContent button { background:#ff1493; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; }
-  </style>
+   
+  <link rel="stylesheet" href="assets/styles.css">
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background:#ff69b4;">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
-      <img src="assets/logo.jpg" alt="Agência Maravilha" width="28" height="28" onerror="this.style.display='none'">
+      <img src="assets/logo.jpg" alt="Agência Maravilha" width="28" height="28"
+           onerror="this.style.display='none'">
       <span>Agência Maravilha</span>
     </a>
+
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div id="nav" class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
         <li class="nav-item"><a class="nav-link active" href="kwai">Kwai</a></li>
-        <li class="nav-item"><a class="nav-link" href="inscricao/">Inscrição</a></li>
         <li class="nav-item"><a class="nav-link" href="faq/">FAQ</a></li>
       </ul>
+
+      <div class="d-flex ms-lg-3 gap-2 mt-3 mt-lg-0">
+        <a class="btn btn-outline-light btn-sm"
+           href="https://wa.me/5547984719854"
+           target="_blank" rel="noopener">WhatsApp</a>
+      </div>
     </div>
   </div>
 </nav>
 
-<div class="container my-4">
-  <h2 style="color:#ff1493;">Inscrição PK Divas Março/2026</h2>
-  <div class="card p-3">
-    <h4 style="color:#ff1493;">Digite seu Id ou parte do Apelido</h4>
-    <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
+<header class="hero py-5">
+  <div class="container py-2">
+    <h1 class="display-6 fw-semibold mb-2">Eventos do Kwai</h1>
+    <p class="muted mb-0">
+      Eventos oficiais do Kwai. Trocamos as imagens e os links conforme o evento esta vigente.
+    </p>
+  </div>
+</header>
 
-    <div class="data-row mb-2"><span class="title" style="color:#ff1493;">UID:</span> <span class="value" id="uid"></span></div>
-    <div class="data-row mb-2"><span class="title" style="color:#ff1493;">Apelido:</span> <span class="value" id="apelido"></span></div>
-    <div class="data-row mb-3"><span class="title" style="color:#ff1493;">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
+<main class="py-5">
+  <div class="container">
 
-    <div class="card bg-light mb-3 p-2" id="kwaiPreview" style="display:none;">
-      <h5 style="color:#ff1493;">Prévia do Kwai</h5>
-      <a id="kwaiLink" href="" target="_blank" class="text-pink mb-2 d-block" style="color:#ff1493;">Ver perfil completo</a>
-      <div class="d-flex align-items-center">
-        <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
-        <div><div class="text-pink fw-bold" id="kwaiName" style="color:#ff1493;"></div></div>
+    <!-- EVENTOS -->
+    <section id="eventos">
+      <div class="row g-4">
+
+        <!-- EVENTO 1 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-01.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <div>
+                  <h6 class="mb-3">PK AGÊNCIA MARÇO</h6>
+                </div>
+
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand"
+                     href="https://drive.google.com/file/d/167eUx5CTxp3DPNKuBtkYaIn3JJSOWaRb/view?usp=sharing"
+                     target="_blank" rel="noopener">
+                    Regulamento
+                  </a>
+                  <a class="btn btn-outline-light"
+                     href="kwai/inscricao"
+                     >
+                    Pré-inscrição
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTO 2 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-02.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">PK DIVAS</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://docs.google.com/document/d/1PMZ6J9OXoRgDu1n3y8CERd87fzgDAzHbYL2nyJiPWzQ/edit?usp=sharing">Regulamento</a>
+                  <a class="btn btn-outline-light" href="kwai/divas">Inscrição</a>
+                
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTO 3 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-03.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">Pk Bolsa-Inscriçoes, seu UID pergunte ao Adm da Agencia ate 08/02</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://drive.google.com/file/d/1zxQen1QQPIirKo6Rk2rfwXM6-6_7wnYi/view?usp=sharing">Regulamento</a>
+                 <!-- <a class="btn btn-outline-light" href="https://docs.google.com/forms/d/e/1FAIpQLSdgwkKFfGxX-b9kHsRxzjMb5X6UL5rh9QfkIF-ToB9Ux-67SQ/viewform">Inscrição Aberta</a> -->
+                -->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTO 4 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-04.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">PK O REI DO CAMAROTE</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://drive.google.com/file/d/1MhlEUauK3kBv4h3I_KE4X14DYQ-EZrfq/view?usp=sharing">Regulamento</a>
+                  <!--<a class="btn btn-outline-light" href="#">Inscrição Fechada</a>-->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTO 5 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-05.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">Acampamento Novatos- Março</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://docs.google.com/document/d/1C-D7KnITsyWPlJd0HsUL3bD7O1q2sDqxvzglBLYKyq4/edit?tab=t.0</a>
+                  <!--<a class="btn btn-outline-light" href="#">Pré-inscrição</a>-->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EVENTO 6 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-06.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">Evento Novo aguarde</h6>
+
+                <div class="d-flex flex-column gap-2">
+                  <!--<a class="btn btn-brand" href="https://docs.google.com/document/d/1FKjt2yr9yA8racJRo6e4r_6ATut8X1xEvkeMJGuXH_M/view?usp=sharing">Regulamento</a>
+                   <a class="btn btn-outline-light" href="#">Pré-inscrição</a>-->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+<!-- EVENTO 7 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-07.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3"> Baú Misterioso de Fevereiro 2026</h6>
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://docs.google.com/document/d/1FKjt2yr9yA8racJRo6e4r_6ATut8X1xEvkeMJGuXH_M/view?usp=sharing">Regulamento</a>
+                 <a class="btn btn-outline-light" href="https://ppg.kwai-pro.com/doodle/XvwcCxJj.html?webview=yoda&share_item_type=jimu_XvwcCxJj&__launch_options__=%7B%22topBarPosition%22%3A%22fixed%22%7D">Banner do evento</a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+   <!-- EVENTO 8 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-08.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3"> 💚 PK – Quem Domina o Brasil? 💛</h6>
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://docs.google.com/document/d/14TipkAbqHFWvLmmOcyS7-9F_P90y0V0Wxg411OBI79g/view?usp=sharing">Regulamento</a>
+                   <!--<a class="btn btn-outline-light" href="https://forms.gle/d8bWWwDwYwYwCXHLA">Inscrição</a>-->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+  <!-- EVENTO 9 -->
+        <div class="col-md-6 col-lg-4">
+          <div class="card p-3 h-100">
+            <div class="d-flex gap-3">
+              <img src="kwai/materiais/img/evento-09.jpg"
+                   width="237" height="235"
+                   alt="Evento Kwai"
+                   style="object-fit:cover;border-radius:14px;border:1px solid rgba(255,255,255,.12);">
+              <div class="flex-grow-1 d-flex flex-column justify-content-between">
+                <h6 class="mb-3">  🎭 PK Abre-Alas 🎭</h6>
+                <div class="d-flex flex-column gap-2">
+                  <a class="btn btn-brand" href="https://docs.google.com/document/d/1TIFpGKB9o2Sq8UK2DoFZnP94mnV432-hINdx3JVAafU/view?usp=sharing">Regulamento</a>
+                   <!--<a class="btn btn-outline-light" href="#">Pré-inscrição</a>-->
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+   </section>
+
+  </div>
+</main>
+
+<footer class="footer py-4">
+  <div class="container">
+    <div class="d-flex justify-content-between">
+      <div class="muted">© <span id="y"></span> Agência Maravilha</div>
+      <div class="d-flex gap-3">
+        <a href="privacidade/">Privacidade</a>
+        <a href="termos/">Termos</a>
       </div>
     </div>
-
-    <label id="horarioLabel">Caso fique no TOP 30 para PK dia 13, 14 e 15, selecione o horário que gostaria de participar</label>
-    <div class="button-group mb-2" id="horarioGroup">
-      <button type="button" data-hora="19:00-20:00">Entre 19h - 20h</button>
-      <button type="button" data-hora="20:00-21:00">Entre 20h - 21h</button>
-      <button type="button" data-hora="21:00-22:00">Entre 21h - 22h</button>
-      <button type="button" data-hora="22:00-23:00">Entre 22h - 23h</button>
-      <button type="button" data-hora="23:00-00:00">Entre 23h - 00h</button>
-    </div>
-
-    <button id="btnEnviar" class="btn btn-dark mt-2" style="background:#ff1493;">Enviar Inscrição</button>
-    <div id="status" class="mt-2"></div>
   </div>
-</div>
-
-<!-- POPUP -->
-<div id="popup">
-  <div id="popupContent">
-    <h2>Parabéns!</h2>
-    <p>Inscrição feita com sucesso! Aguarde aviso do PK no grupo.</p>
-    <button id="popupBtn">OK</button>
-  </div>
-</div>
-
-<script type="module">
-import { supabase } from './supabase.js';
-
-const hostSearch = document.getElementById('hostSearch');
-const uid = document.getElementById('uid');
-const apelido = document.getElementById('apelido');
-const kwai_id = document.getElementById('kwai_id');
-const kwaiPreview = document.getElementById('kwaiPreview');
-const kwaiLink = document.getElementById('kwaiLink');
-const kwaiProfileImg = document.getElementById('kwaiProfileImg');
-const kwaiName = document.getElementById('kwaiName');
-const horarioGroup = document.getElementById('horarioGroup');
-const btnEnviar = document.getElementById('btnEnviar');
-const status = document.getElementById('status');
-const popup = document.getElementById('popup');
-const popupBtn = document.getElementById('popupBtn');
-
-let hostsData = [];
-let selectedHost = null;
-let selectedHora = null;
-
-// Carrega hosts do Supabase
-async function carregarHosts() {
-  const { data, error } = await supabase
-    .from('hosts_simplificado')
-    .select('member_id, apelido, kwai_id')
-    .order('apelido');
-
-  if(error){ status.style.color='#ff1493'; status.innerText = "Erro ao carregar hosts: " + error.message; return; }
-  hostsData = data;
-}
-carregarHosts();
-
-// Busca host localmente
-hostSearch.addEventListener('input', e => {
-  const filtro = e.target.value.toLowerCase();
-  const encontrado = hostsData.find(h =>
-    h.apelido.toLowerCase().includes(filtro) ||
-    h.kwai_id.toLowerCase().includes(filtro)
-  );
-  if(encontrado){
-    selectedHost = encontrado;
-    uid.textContent = encontrado.member_id;
-    apelido.textContent = encontrado.apelido;
-    kwai_id.textContent = encontrado.kwai_id;
-
-    kwaiPreview.style.display = 'block';
-    kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
-    kwaiName.textContent = encontrado.apelido;
-
-    supabase.from('kwai_profiles').select('avatar_url')
-      .eq('kwai_id', encontrado.kwai_id).single()
-      .then(res => kwaiProfileImg.src = res.data?.avatar_url || 'profile-placeholder.jpg')
-      .catch(()=> kwaiProfileImg.src='profile-placeholder.jpg');
-  } else {
-    selectedHost = null;
-    uid.textContent = '';
-    apelido.textContent = '';
-    kwai_id.textContent = '';
-    kwaiPreview.style.display = 'none';
-  }
-});
-
-// Seleção de horário
-horarioGroup.querySelectorAll('button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
-    btn.classList.add('selected');
-    selectedHora = btn.dataset.hora;
-  });
-});
-
-// Pegar IP do usuário
-async function getUserIP(){
-  try{
-    const resp = await fetch('https://api.ipify.org?format=json');
-    const data = await resp.json();
-    return data.ip;
-  } catch{return 'desconhecido';}
-}
-
-// Envio inscrição direto para Supabase
-btnEnviar.addEventListener('click', async ()=>{
-  if(!selectedHost){ status.style.color='#ff1493'; status.textContent='Selecione um host válido'; return; }
-  if(!selectedHora){ status.style.color='#ff1493'; status.textContent='Selecione um horário'; return; }
-
-  status.style.color='#ff1493';
-  status.textContent='Enviando inscrição...';
-  const ip = await getUserIP();
-  const mesAtual = new Date().getMonth() + 1;
-
-  const payload = {
-    member_id: selectedHost.member_id,
-    kwai_id: selectedHost.kwai_id,
-    hora_escolhida: selectedHora,
-    ip_usuario: ip,
-    mes: mesAtual
-  };
-
-  const { data: insertedData, error: insertError } = await supabase
-    .from('pk_divas')
-    .insert([payload]);
-
-  if(insertError){
-    status.textContent = "Erro ao salvar: " + insertError.message;
-    return;
-  }
-
-  // Show popup
-  popup.classList.add('show');
-
-  popupBtn.onclick = ()=>{
-    popup.classList.remove('show');
-    window.location.href = 'kwai/materiais/eventos';
-  };
-});
-</script>
-
-<footer class="text-center py-3">
-  <strong>© 2026 Agência Maravilha</strong><br>
-  Desenvolvido por Adriano José Ribeiro da Silva
+<
 </footer>
 
+<script>
+  document.getElementById("y").textContent = new Date().getFullYear();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
