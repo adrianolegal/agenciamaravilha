@@ -57,9 +57,7 @@
       <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
       <div class="d-flex align-items-center">
         <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
-        <div>
-          <div class="text-white fw-bold" id="kwaiName"></div>
-        </div>
+        <div><div class="text-white fw-bold" id="kwaiName"></div></div>
       </div>
     </div>
 
@@ -90,7 +88,6 @@ const kwaiPreview = document.getElementById('kwaiPreview');
 const kwaiLink = document.getElementById('kwaiLink');
 const kwaiProfileImg = document.getElementById('kwaiProfileImg');
 const kwaiName = document.getElementById('kwaiName');
-
 const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
@@ -99,109 +96,97 @@ let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
-// Carrega hosts direto do Supabase
+// Carregar hosts direto do Supabase
 async function carregarHosts() {
-  const { data, error } = await supabase
-    .from('hosts_simplificado')
-    .select('member_id, apelido, kwai_id')
+  const { data, error } = await supabase.from('hosts_simplificado')
+    .select('member_id,apelido,kwai_id')
     .order('apelido');
 
-  if (error) {
-    status.textContent = 'Erro ao carregar hosts: ' + error.message;
+  if(error){
+    status.innerText = "Erro ao carregar hosts: " + error.message;
     return;
   }
   hostsData = data;
 }
 carregarHosts();
 
-// Busca host localmente
+// Busca local
 hostSearch.addEventListener('input', e => {
   const filtro = e.target.value.toLowerCase();
-  const encontrado = hostsData.find(h => h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro));
-
-  if (encontrado) {
+  const encontrado = hostsData.find(h =>
+    h.apelido.toLowerCase().includes(filtro) ||
+    h.kwai_id.toLowerCase().includes(filtro)
+  );
+  if(encontrado){
     selectedHost = encontrado;
     uid.textContent = encontrado.member_id;
     apelido.textContent = encontrado.apelido;
     kwai_id.textContent = encontrado.kwai_id;
 
-    kwaiPreview.style.display = 'block';
+    kwaiPreview.style.display='block';
     kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
     kwaiName.textContent = encontrado.apelido;
 
-    supabase
-      .from('kwai_profiles')
-      .select('avatar_url')
-      .eq('kwai_id', encontrado.kwai_id)
-      .single()
-      .then(res => {
-        kwaiProfileImg.src = res.data?.avatar_url || 'profile-placeholder.jpg';
-      })
-      .catch(() => {
-        kwaiProfileImg.src = 'profile-placeholder.jpg';
-      });
+    supabase.from('kwai_profiles').select('avatar_url')
+      .eq('kwai_id', encontrado.kwai_id).single()
+      .then(res => kwaiProfileImg.src = res.data?.avatar_url || 'profile-placeholder.jpg')
+      .catch(()=> kwaiProfileImg.src='profile-placeholder.jpg');
   } else {
     selectedHost = null;
     uid.textContent = '';
     apelido.textContent = '';
     kwai_id.textContent = '';
-    kwaiPreview.style.display = 'none';
+    kwaiPreview.style.display='none';
   }
 });
 
 // Seleção de horário
-horarioGroup.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    horarioGroup.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+horarioGroup.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedHora = btn.dataset.hora;
   });
 });
 
-// Pegar IP do usuário
-async function getUserIP() {
-  try {
+// IP do usuário
+async function getUserIP(){
+  try{
     const resp = await fetch('https://api.ipify.org?format=json');
     const data = await resp.json();
     return data.ip;
-  } catch {
-    return 'desconhecido';
-  }
+  } catch{return 'desconhecido';}
 }
 
-// Envio inscrição direto pro Supabase
-btnEnviar.addEventListener('click', async () => {
-  if (!selectedHost) { status.textContent = 'Selecione um host válido'; return; }
-  if (!selectedHora) { status.textContent = 'Selecione um horário'; return; }
+// Envio inscrição direto para Supabase
+btnEnviar.addEventListener('click', async ()=>{
+  if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
+  if(!selectedHora){ status.textContent='Selecione um horário'; return; }
 
-  status.textContent = 'Enviando inscrição...';
+  status.textContent='Enviando inscrição...';
   const ip = await getUserIP();
-  const mesAtual = new Date().getMonth() + 1; // Janeiro = 0
+  const mesAtual = new Date().getMonth() + 1;
 
   const payload = {
-    member_id: Number(selectedHost.member_id),  // número
-    kwai_id: String(selectedHost.kwai_id),      // string
-    hora_escolhida: String(selectedHora),       // string
-    ip_usuario: String(ip),                     // string
-    mes: Number(mesAtual)                       // número
+    member_id: Number(selectedHost.member_id),
+    kwai_id: String(selectedHost.kwai_id),
+    hora_escolhida: String(selectedHora),
+    ip_usuario: String(ip),
+    mes: Number(mesAtual)
   };
 
-  try {
-    const { data, error } = await supabase
-      .from('inscricoes_pk_agencias')
-      .insert([payload]);
+  console.log('Payload enviado:', payload); // debug
 
-    if (error) {
-      status.textContent = 'Erro ao salvar: ' + error.message;
-      return;
-    }
+  const { data, error } = await supabase.from('inscricoes_pk_agencias').insert([payload]);
 
-    status.textContent = 'Inscrição salva com sucesso!';
-  } catch (err) {
-    status.textContent = 'Erro inesperado: ' + err.message;
+  if(error){
+    status.textContent = 'Erro ao salvar: ' + error.message;
+    return;
   }
+  status.textContent='Inscrição salva com sucesso!';
 });
 </script>
+
 <footer class="text-center py-3">
   <strong>© 2026 Agência Maravilha</strong><br>
   Desenvolvido por Adriano José Ribeiro da Silva
