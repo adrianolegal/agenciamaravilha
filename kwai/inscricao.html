@@ -169,7 +169,7 @@ btnEnviar.addEventListener('click', async ()=>{
   const mesAtual = new Date().getMonth() + 1;
 
   try {
-    const res = await fetch('/api/inscricao', {
+    const res = await fetch('/inscricao', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
