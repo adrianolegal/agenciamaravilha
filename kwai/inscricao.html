@@ -2,8 +2,8 @@
 <html lang="pt-BR">
 <head>
   <base href="/"/>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Inscrição PK Agências — Agência Maravilha</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" href="assets/logo.jpg">
@@ -14,25 +14,29 @@
     #kwaiPreview { max-width: 300px; }
     #kwaiPreview img { width:50px; height:50px; }
     .data-row .value { color: #fbbf24; font-weight:bold; }
-    
-    /* Popup estilo */
+    #status { font-weight:bold; }
+
+    /* Popup escuro */
     #popupMsg {
       display: none;
       position: fixed;
       top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.7);
       z-index: 1000;
       justify-content: center;
       align-items: center;
     }
     #popupMsg .content {
-      background: #fff;
-      padding: 20px 30px;
+      background: #1c1c1c;
+      padding: 25px 30px;
       border-radius: 12px;
       text-align: center;
       max-width: 400px;
+      color: #fbbf24;
+      box-shadow: 0 0 15px rgba(0,0,0,0.5);
     }
-    #popupMsg img { width: 80px; margin-bottom: 10px; }
+    #popupMsg img { width: 80px; margin-bottom: 15px; }
+    #popupMsg button { margin-top: 15px; }
   </style>
 </head>
 <body>
@@ -99,8 +103,8 @@
   <div class="content">
     <img src="assets/logo.jpg" alt="Logo Agência Maravilha">
     <h5>Parabéns!</h5>
-    <p>Inscrição feita! Informe a data e aguarde aviso do PK no grupo.</p>
-    <button id="popupOk" class="btn btn-brand mt-2">OK</button>
+    <p>Inscrição feita com sucesso! Informe a data e aguarde aviso do PK no grupo.</p>
+    <button id="popupOk" class="btn btn-warning">OK</button>
   </div>
 </div>
 
@@ -118,7 +122,6 @@ const kwaiName = document.getElementById('kwaiName');
 const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
-
 const popupMsg = document.getElementById('popupMsg');
 const popupOk = document.getElementById('popupOk');
 
@@ -213,7 +216,7 @@ btnEnviar.addEventListener('click', async ()=>{
     return;
   }
 
-  // Exibe popup de sucesso
+  // Mostrar popup somente depois de sucesso
   popupMsg.style.display = 'flex';
 });
 
