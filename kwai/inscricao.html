@@ -11,6 +11,10 @@
   <style>
     .button-group button { margin:5px; padding:10px 15px; border:none; cursor:pointer; font-weight:bold; border-radius:6px; }
     .button-group button.selected { background:#fbbf24; color:black; }
+    /* Prévia menor */
+    #kwaiPreview { max-width: 300px; }
+    #kwaiPreview img { width:50px; height:50px; }
+    /* Textos laranja */
     .data-row .value { color: #fbbf24; font-weight:bold; }
   </style>
 </head>
@@ -32,6 +36,10 @@
         <li class="nav-item"><a class="nav-link" href="inscricao/">Inscrição</a></li>
         <li class="nav-item"><a class="nav-link" href="faq/">FAQ</a></li>
       </ul>
+      <div class="d-flex ms-lg-3 gap-2 mt-3 mt-lg-0">
+        <a class="btn btn-outline-light btn-sm" href="https://wa.me/5547984719854" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-brand btn-sm" href="https://forms.gle/LC1yQhnBdEfadLci9" target="_blank" rel="noopener">Quero entrar</a>
+      </div>
     </div>
   </div>
 </nav>
@@ -39,13 +47,27 @@
 <div class="container my-4">
   <h2>Inscrição PK Agências Março/2026</h2>
   <div class="card p-3">
-    <h4 class="text-warning">Digite o UID, Apelido ou Kwai ID</h4>
-    <input type="text" id="hostInput" placeholder="Digite UID / Apelido / Kwai ID" class="form-control mb-2">
+    <h4 class="text-warning">Digite seu Id ou parte do Apelido</h4>
+    <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
 
+    <!-- Dados do host -->
     <div class="data-row mb-2"><span class="title">UID:</span> <span class="value" id="uid"></span></div>
     <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
     <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
 
+    <!-- Prévia menor -->
+    <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
+      <h5 class="text-warning">Prévia do Kwai</h5>
+      <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
+      <div class="d-flex align-items-center">
+        <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
+        <div>
+          <div class="text-white fw-bold" id="kwaiName"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Escolha do horário -->
     <label class="text-warning">Escolha o horário</label>
     <div class="button-group mb-2" id="horarioGroup">
       <button type="button" data-hora="10:00-11:00">10:00-11:00</button>
@@ -63,45 +85,86 @@
 <hr class="hr-soft my-5">
 
 <script type="module">
-const hostInput = document.getElementById('hostInput');
+import { supabase } from './supabase.js';
+
+const hostSearch = document.getElementById('hostSearch');
 const uid = document.getElementById('uid');
 const apelido = document.getElementById('apelido');
 const kwai_id = document.getElementById('kwai_id');
+const kwaiPreview = document.getElementById('kwaiPreview');
+const kwaiLink = document.getElementById('kwaiLink');
+const kwaiProfileImg = document.getElementById('kwaiProfileImg');
+const kwaiName = document.getElementById('kwaiName');
+
 const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
 
+let hostsData = [];
+let selectedHost = null;
 let selectedHora = null;
 
-horarioGroup.querySelectorAll('button').forEach(btn => {
-  btn.addEventListener('click', () => {
-    horarioGroup.querySelectorAll('button').forEach(b => b.classList.remove('selected'));
+// Carrega hosts do Supabase direto (como funcionava antes)
+async function carregarHosts() {
+  const { data, error } = await supabase.from('hosts_simplificado')
+    .select('member_id,apelido,kwai_id')
+    .order('apelido');
+  if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
+  hostsData = data;
+}
+carregarHosts();
+
+// Busca host localmente
+hostSearch.addEventListener('input', e => {
+  const filtro = e.target.value.toLowerCase();
+  const encontrado = hostsData.find(h => h.apelido.toLowerCase().includes(filtro) || h.kwai_id.toLowerCase().includes(filtro));
+  if(encontrado){
+    selectedHost = encontrado;
+    uid.textContent = encontrado.member_id;
+    apelido.textContent = encontrado.apelido;
+    kwai_id.textContent = encontrado.kwai_id;
+
+    kwaiPreview.style.display='block';
+    kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
+    kwaiName.textContent = encontrado.apelido;
+
+    supabase.from('kwai_profiles').select('avatar_url')
+      .eq('kwai_id', encontrado.kwai_id).single()
+      .then(res => { kwaiProfileImg.src = res.data?.avatar_url || 'profile-placeholder.jpg'; })
+      .catch(()=>{ kwaiProfileImg.src='profile-placeholder.jpg'; });
+  } else {
+    selectedHost = null;
+    uid.textContent = '';
+    apelido.textContent = '';
+    kwai_id.textContent = '';
+    kwaiPreview.style.display='none';
+  }
+});
+
+// Seleção de horário
+horarioGroup.querySelectorAll('button').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
     btn.classList.add('selected');
     selectedHora = btn.dataset.hora;
   });
 });
 
-async function getUserIP() {
-  try {
+// Pegar IP
+async function getUserIP(){
+  try{
     const resp = await fetch('https://api.ipify.org?format=json');
     const data = await resp.json();
     return data.ip;
-  } catch {
-    return 'desconhecido';
-  }
+  } catch{return 'desconhecido';}
 }
 
-btnEnviar.addEventListener('click', async () => {
-  const value = hostInput.value.trim();
-  if (!value) { status.textContent = 'Digite UID, Apelido ou Kwai ID'; return; }
-  if (!selectedHora) { status.textContent = 'Selecione um horário'; return; }
+// Envio inscrição via Edge Function
+btnEnviar.addEventListener('click', async ()=>{
+  if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
+  if(!selectedHora){ status.textContent='Selecione um horário'; return; }
 
-  // Preencher campos (simples, baseado no input digitado)
-  uid.textContent = value;
-  apelido.textContent = value;
-  kwai_id.textContent = value;
-
-  status.textContent = 'Enviando inscrição...';
+  status.textContent='Enviando inscrição...';
   const ip = await getUserIP();
   const mesAtual = new Date().getMonth() + 1;
 
@@ -110,23 +173,23 @@ btnEnviar.addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        member_id: value,
-        kwai_id: value,
+        member_id: selectedHost.member_id,
+        kwai_id: selectedHost.kwai_id,
         hora_escolhida: selectedHora,
         ip_usuario: ip,
         mes: mesAtual
       })
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(()=>({message:res.statusText}));
+    if(!res.ok){
+      const err = await res.json().catch(()=>({ message: res.statusText }));
       status.textContent = 'Erro ao salvar: ' + (err.message || res.statusText);
       return;
     }
 
-    status.textContent = 'Inscrição salva com sucesso!';
-  } catch (err) {
-    status.textContent = 'Erro ao enviar: ' + err.message;
+    status.textContent='Inscrição salva com sucesso!';
+  } catch(err){
+    status.textContent='Erro ao enviar: ' + err.message;
   }
 });
 </script>
