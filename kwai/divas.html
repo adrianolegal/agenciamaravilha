@@ -3,53 +3,33 @@
 <head>
   <base href="/"/>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Inscrição PK Divas — Agência Maravilha</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="icon" href="assets/logo.jpg">
   <link href="assets/styles.css" rel="stylesheet">
   <style>
-    body { background: #fff0f6; } /* Fundo geral rosa claro */
-    .button-group button { 
-      margin:5px; padding:10px 15px; border:none; cursor:pointer; font-weight:bold; border-radius:6px; color:#fff; background:#ff69b4; 
-    }
-    .button-group button.selected { background:#ff1493; color:white; }
+    .button-group button { margin:5px; padding:10px 15px; border:none; cursor:pointer; font-weight:bold; border-radius:6px; }
+    .button-group button.selected { background:#ff69b4; color:white; }
     #kwaiPreview { max-width: 300px; }
     #kwaiPreview img { width:50px; height:50px; }
-    .data-row .value { color:#ff1493; font-weight:bold; }
-    #horarioLabel { color:#ff1493; font-weight:bold; margin-bottom:5px; display:block; }
-    #status { color:#ff1493; font-weight:bold; margin-top:10px; }
-    /* Popup */
-    #popup {
-      display:none;
-      position:fixed;
-      top:0; left:0;
-      width:100%; height:100%;
-      background:rgba(255,182,193,0.95);
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      opacity:0;
-      transition: opacity 0.4s ease;
-      z-index:9999;
+    .data-row .value { color: #ff69b4; font-weight:bold; }
+    .popup-overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);
+      display:none; align-items:center; justify-content:center; z-index:9999; opacity:0; transition: opacity 0.5s;
     }
-    #popup.show { opacity:1; }
-    #popupContent {
-      background:#ffe4ec;
-      border-radius:12px;
-      padding:25px 35px;
-      text-align:center;
-      max-width:400px;
-      box-shadow:0 5px 15px rgba(0,0,0,0.3);
+    .popup-content {
+      background:#ffe6f0; color:#ff1493; padding:30px; border-radius:12px;
+      text-align:center; max-width:400px; width:90%; box-shadow:0 8px 20px rgba(0,0,0,0.3); transform:translateY(-20px);
+      transition: transform 0.5s;
     }
-    #popupContent h2 { color:#ff1493; margin-bottom:15px; }
-    #popupContent p { color:#ff1493; margin-bottom:20px; font-weight:bold; }
-    #popupContent button { background:#ff1493; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer; }
+    .popup-overlay.show { display:flex; opacity:1; }
+    .popup-overlay.show .popup-content { transform:translateY(0); }
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background:#ff69b4;">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
       <img src="assets/logo.jpg" alt="Agência Maravilha" width="28" height="28" onerror="this.style.display='none'">
@@ -65,30 +45,35 @@
         <li class="nav-item"><a class="nav-link" href="inscricao/">Inscrição</a></li>
         <li class="nav-item"><a class="nav-link" href="faq/">FAQ</a></li>
       </ul>
+      <div class="d-flex ms-lg-3 gap-2 mt-3 mt-lg-0">
+        <a class="btn btn-outline-light btn-sm" href="https://wa.me/5547984719854" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-brand btn-sm" href="https://forms.gle/LC1yQhnBdEfadLci9" target="_blank" rel="noopener">Quero entrar</a>
+      </div>
     </div>
   </div>
 </nav>
 
 <div class="container my-4">
-  <h2 style="color:#ff1493;">Inscrição PK Divas Março/2026</h2>
+  <h2>Inscrição PK Divas Março/2026</h2>
   <div class="card p-3">
-    <h4 style="color:#ff1493;">Digite seu Id ou parte do Apelido</h4>
+    <h4 class="text-warning">Digite seu Id ou parte do Apelido</h4>
     <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
 
-    <div class="data-row mb-2"><span class="title" style="color:#ff1493;">UID:</span> <span class="value" id="uid"></span></div>
-    <div class="data-row mb-2"><span class="title" style="color:#ff1493;">Apelido:</span> <span class="value" id="apelido"></span></div>
-    <div class="data-row mb-3"><span class="title" style="color:#ff1493;">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
+    <div class="data-row mb-2"><span class="title">UID:</span> <span class="value" id="uid"></span></div>
+    <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
+    <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
 
-    <div class="card bg-light mb-3 p-2" id="kwaiPreview" style="display:none;">
-      <h5 style="color:#ff1493;">Prévia do Kwai</h5>
-      <a id="kwaiLink" href="" target="_blank" class="text-pink mb-2 d-block" style="color:#ff1493;">Ver perfil completo</a>
+    <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
+      <h5 class="text-warning">Prévia do Kwai</h5>
+      <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
       <div class="d-flex align-items-center">
         <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
-        <div><div class="text-pink fw-bold" id="kwaiName" style="color:#ff1493;"></div></div>
+        <div><div class="text-white fw-bold" id="kwaiName"></div></div>
       </div>
     </div>
 
-    <label id="horarioLabel">Caso fique no TOP 30 para PK dia 13, 14 e 15, selecione o horário que gostaria de participar</label>
+    <p class="text-pink fw-bold" style="color:#ff69b4;">Caso fique no TOP 30 para PK dia 13, 14 e 15, selecione o horário que gostaria de participar:</p>
+
     <div class="button-group mb-2" id="horarioGroup">
       <button type="button" data-hora="19:00-20:00">Entre 19h - 20h</button>
       <button type="button" data-hora="20:00-21:00">Entre 20h - 21h</button>
@@ -97,17 +82,17 @@
       <button type="button" data-hora="23:00-00:00">Entre 23h - 00h</button>
     </div>
 
-    <button id="btnEnviar" class="btn btn-dark mt-2" style="background:#ff1493;">Enviar Inscrição</button>
-    <div id="status" class="mt-2"></div>
+    <button id="btnEnviar" class="btn btn-brand mt-2">Enviar Inscrição</button>
+    <div id="status" class="mt-2 text-pink"></div>
   </div>
 </div>
 
-<!-- POPUP -->
-<div id="popup">
-  <div id="popupContent">
-    <h2>Parabéns!</h2>
+<div class="popup-overlay" id="popup">
+  <div class="popup-content">
+    <img src="assets/logo.jpg" width="80" height="80" alt="Agência Maravilha" class="mb-3">
+    <h4>Parabéns!</h4>
     <p>Inscrição feita com sucesso! Aguarde aviso do PK no grupo.</p>
-    <button id="popupBtn">OK</button>
+    <button id="popupOk" class="btn btn-brand mt-2">OK</button>
   </div>
 </div>
 
@@ -126,20 +111,20 @@ const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
 const popup = document.getElementById('popup');
-const popupBtn = document.getElementById('popupBtn');
+const popupOk = document.getElementById('popupOk');
 
 let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
-// Carrega hosts do Supabase
+// Carrega hosts
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts_simplificado')
     .select('member_id, apelido, kwai_id')
     .order('apelido');
 
-  if(error){ status.style.color='#ff1493'; status.innerText = "Erro ao carregar hosts: " + error.message; return; }
+  if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
   hostsData = data;
 }
 carregarHosts();
@@ -183,7 +168,7 @@ horarioGroup.querySelectorAll('button').forEach(btn=>{
   });
 });
 
-// Pegar IP do usuário
+// Pegar IP
 async function getUserIP(){
   try{
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -192,12 +177,11 @@ async function getUserIP(){
   } catch{return 'desconhecido';}
 }
 
-// Envio inscrição direto para Supabase
+// Envio inscrição
 btnEnviar.addEventListener('click', async ()=>{
-  if(!selectedHost){ status.style.color='#ff1493'; status.textContent='Selecione um host válido'; return; }
-  if(!selectedHora){ status.style.color='#ff1493'; status.textContent='Selecione um horário'; return; }
+  if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
+  if(!selectedHora){ status.textContent='Selecione um horário'; return; }
 
-  status.style.color='#ff1493';
   status.textContent='Enviando inscrição...';
   const ip = await getUserIP();
   const mesAtual = new Date().getMonth() + 1;
@@ -219,13 +203,15 @@ btnEnviar.addEventListener('click', async ()=>{
     return;
   }
 
-  // Show popup
+  // Mostra popup
   popup.classList.add('show');
 
-  popupBtn.onclick = ()=>{
-    popup.classList.remove('show');
-    window.location.href = 'kwai/materiais/eventos';
-  };
+});
+
+// Fechar popup e redirecionar
+popupOk.addEventListener('click', ()=>{
+  popup.classList.remove('show');
+  window.location.href = 'kwai/materiais/eventos';
 });
 </script>
 
