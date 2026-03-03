@@ -214,4 +214,12 @@ h1, h2, h3, h4, h5, h6{
 #uid, #apelido, #kwai_id {
     color: white !important;
 }
+.data-row span.title {
+    font-weight: bold;
+    color: #fbbf24; /* laranja */
+}
+
+.data-row span.value {
+    color: #fbbf24; /* laranja também, antes estava branco/preto */
+}
 
