@@ -10,59 +10,26 @@
   <link href="assets/styles.css" rel="stylesheet">
   <style>
     .button-group button { margin:5px; padding:10px 15px; border:none; cursor:pointer; font-weight:bold; border-radius:6px; }
-    .button-group button.selected { background:#ff69b4; color:black; }
+    .button-group button.selected { background:#ff69b4; color:white; }
     #kwaiPreview { max-width: 300px; }
     #kwaiPreview img { width:50px; height:50px; }
     .data-row .value { color: #ff69b4; font-weight:bold; }
-
-    /* Popup */
-    #popupMsg {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      position: fixed;
-      top:0; left:0; right:0; bottom:0;
-      background: rgba(0,0,0,0.6);
-      z-index: 9999;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.4s ease;
+    .popup-overlay {
+      position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6);
+      display:none; align-items:center; justify-content:center; z-index:9999; opacity:0; transition: opacity 0.5s;
     }
-    #popupMsg.show {
-      opacity: 1;
-      pointer-events: auto;
+    .popup-content {
+      background:#ffe6f0; color:#ff1493; padding:30px; border-radius:12px;
+      text-align:center; max-width:400px; width:90%; box-shadow:0 8px 20px rgba(0,0,0,0.3); transform:translateY(-20px);
+      transition: transform 0.5s;
     }
-    #popupMsgContent {
-      background: #ff69b4;
-      color: #fff;
-      padding: 25px 30px;
-      border-radius: 12px;
-      max-width: 400px;
-      text-align: center;
-      font-family: sans-serif;
-      transform: scale(0.9);
-      transition: transform 0.4s ease;
-    }
-    #popupMsg.show #popupMsgContent {
-      transform: scale(1);
-    }
-    #popupMsgContent img { width:50px; height:50px; margin-bottom:10px; }
-    #popupMsgContent button {
-      margin-top:15px;
-      padding:8px 20px;
-      font-weight:bold;
-      border:none;
-      border-radius:6px;
-      background:#fff;
-      color:#ff69b4;
-      cursor:pointer;
-    }
-    #status { color: #ff69b4; }
+    .popup-overlay.show { display:flex; opacity:1; }
+    .popup-overlay.show .popup-content { transform:translateY(0); }
   </style>
 </head>
 <body>
 
-<nav class="navbar navbar-expand-lg navbar-dark sticky-top" style="background:#ff1493;">
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
       <img src="assets/logo.jpg" alt="Agência Maravilha" width="28" height="28" onerror="this.style.display='none'">
@@ -80,15 +47,16 @@
       </ul>
       <div class="d-flex ms-lg-3 gap-2 mt-3 mt-lg-0">
         <a class="btn btn-outline-light btn-sm" href="https://wa.me/5547984719854" target="_blank" rel="noopener">WhatsApp</a>
+        <a class="btn btn-brand btn-sm" href="https://forms.gle/LC1yQhnBdEfadLci9" target="_blank" rel="noopener">Quero entrar</a>
       </div>
     </div>
   </div>
 </nav>
 
 <div class="container my-4">
-  <h2 class="text-pink">Inscrição PK Divas Março/2026</h2>
+  <h2>Inscrição PK Divas Março/2026</h2>
   <div class="card p-3">
-    <h5 class="text-pink">Digite seu Id ou parte do Apelido</h5>
+    <h4 class="text-warning">Digite seu Id ou parte do Apelido</h4>
     <input type="text" id="hostSearch" placeholder="Digite apelido ou Kwai ID" class="form-control mb-2">
 
     <div class="data-row mb-2"><span class="title">UID:</span> <span class="value" id="uid"></span></div>
@@ -96,7 +64,7 @@
     <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
 
     <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
-      <h5 class="text-pink">Prévia do Kwai</h5>
+      <h5 class="text-warning">Prévia do Kwai</h5>
       <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
       <div class="d-flex align-items-center">
         <img id="kwaiProfileImg" class="rounded-circle me-2" alt="Foto do perfil">
@@ -104,7 +72,8 @@
       </div>
     </div>
 
-    <p class="text-pink fw-bold">Caso fique no TOP 30 para PK dia 13, 14 e 15, selecione o horário que gostaria de participar:</p>
+    <p class="text-pink fw-bold" style="color:#ff69b4;">Caso fique no TOP 30 para PK dia 13, 14 e 15, selecione o horário que gostaria de participar:</p>
+
     <div class="button-group mb-2" id="horarioGroup">
       <button type="button" data-hora="19:00-20:00">Entre 19h - 20h</button>
       <button type="button" data-hora="20:00-21:00">Entre 20h - 21h</button>
@@ -113,18 +82,17 @@
       <button type="button" data-hora="23:00-00:00">Entre 23h - 00h</button>
     </div>
 
-    <button id="btnEnviar" class="btn" style="background:#ff69b4; color:#fff;">Enviar Inscrição</button>
-    <div id="status" class="mt-2"></div>
+    <button id="btnEnviar" class="btn btn-brand mt-2">Enviar Inscrição</button>
+    <div id="status" class="mt-2 text-pink"></div>
   </div>
 </div>
 
-<!-- Popup -->
-<div id="popupMsg">
-  <div id="popupMsgContent">
-    <img src="assets/logo.jpg" alt="Agência Maravilha">
-    <h5>Parabéns!</h5>
-    <p>Inscrição feita com sucesso!<br>Fique atento à data e aguarde aviso do PK no grupo.</p>
-    <button id="popupOkBtn">OK</button>
+<div class="popup-overlay" id="popup">
+  <div class="popup-content">
+    <img src="assets/logo.jpg" width="80" height="80" alt="Agência Maravilha" class="mb-3">
+    <h4>Parabéns!</h4>
+    <p>Inscrição feita com sucesso! Aguarde aviso do PK no grupo.</p>
+    <button id="popupOk" class="btn btn-brand mt-2">OK</button>
   </div>
 </div>
 
@@ -142,23 +110,26 @@ const kwaiName = document.getElementById('kwaiName');
 const horarioGroup = document.getElementById('horarioGroup');
 const btnEnviar = document.getElementById('btnEnviar');
 const status = document.getElementById('status');
-const popupMsg = document.getElementById('popupMsg');
-const popupOkBtn = document.getElementById('popupOkBtn');
+const popup = document.getElementById('popup');
+const popupOk = document.getElementById('popupOk');
 
 let hostsData = [];
 let selectedHost = null;
 let selectedHora = null;
 
+// Carrega hosts
 async function carregarHosts() {
   const { data, error } = await supabase
     .from('hosts_simplificado')
     .select('member_id, apelido, kwai_id')
     .order('apelido');
+
   if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
   hostsData = data;
 }
 carregarHosts();
 
+// Busca host localmente
 hostSearch.addEventListener('input', e => {
   const filtro = e.target.value.toLowerCase();
   const encontrado = hostsData.find(h =>
@@ -188,6 +159,7 @@ hostSearch.addEventListener('input', e => {
   }
 });
 
+// Seleção de horário
 horarioGroup.querySelectorAll('button').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     horarioGroup.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
@@ -196,6 +168,7 @@ horarioGroup.querySelectorAll('button').forEach(btn=>{
   });
 });
 
+// Pegar IP
 async function getUserIP(){
   try{
     const resp = await fetch('https://api.ipify.org?format=json');
@@ -204,6 +177,7 @@ async function getUserIP(){
   } catch{return 'desconhecido';}
 }
 
+// Envio inscrição
 btnEnviar.addEventListener('click', async ()=>{
   if(!selectedHost){ status.textContent='Selecione um host válido'; return; }
   if(!selectedHora){ status.textContent='Selecione um horário'; return; }
@@ -229,13 +203,15 @@ btnEnviar.addEventListener('click', async ()=>{
     return;
   }
 
-  status.textContent = "";
-  popupMsg.classList.add('show');
+  // Mostra popup
+  popup.classList.add('show');
 
-  popupOkBtn.onclick = () => {
-    popupMsg.classList.remove('show');
-    setTimeout(()=> { window.location.href = 'kwai/materiais/eventos'; }, 400);
-  };
+});
+
+// Fechar popup e redirecionar
+popupOk.addEventListener('click', ()=>{
+  popup.classList.remove('show');
+  window.location.href = 'kwai/materiais/eventos';
 });
 </script>
 
