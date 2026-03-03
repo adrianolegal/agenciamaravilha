@@ -164,12 +164,13 @@ btnEnviar.addEventListener('click', async ()=>{
   if(!selectedHora){ status.textContent='Selecione um horário'; return; }
 
   const ip = await getUserIP();
-  const mesAtual = new Date().getMonth() + 1; // Janeiro=0
+  const mesAtual = new Date().getMonth() + 1; // Janeiro = 0
 
   try{
     const { data, error } = await supabase.from('inscricoes_pk_agencias')
       .insert([{ 
         member_id: selectedHost.member_id, 
+        kwai_id: selectedHost.kwai_id,
         hora_escolhida: selectedHora, 
         ip_usuario: ip,
         mes: mesAtual
@@ -180,7 +181,6 @@ btnEnviar.addEventListener('click', async ()=>{
   } catch(err){ status.textContent='Erro: '+err.message; }
 });
 </script>
-
 <footer class="text-center py-3">
   <strong>© 2026 Agência Maravilha</strong><br>
   Desenvolvido por Adriano José Ribeiro da Silva
