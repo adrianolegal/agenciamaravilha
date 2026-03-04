@@ -23,7 +23,7 @@ body {
   background: linear-gradient(120deg, #0f172a, #1e293b);
   color: white;
   font-family: Arial, sans-serif;
-  padding: 40px;
+  padding: 80px;
 }
 .container { max-width: 800px; margin:auto; }
 .card {
@@ -217,6 +217,9 @@ document.getElementById("btnImportReports").addEventListener("click", () => {
 
 document.getElementById("confirmarPeriodo").addEventListener("click", async () => {
 
+  const modalEl = document.getElementById("modalPeriodo");
+  const modalInstance = bootstrap.Modal.getInstance(modalEl);
+
   const mes = Number(document.getElementById("mesInput").value);
   const ano = Number(document.getElementById("anoInput").value);
 
@@ -231,8 +234,8 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   const reader = new FileReader();
 
   reader.onload = async (e) => {
-
     try {
+
       const dataArray = new Uint8Array(e.target.result);
       const workbook = XLSX.read(dataArray, { type: "array" });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
@@ -266,31 +269,25 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
         ano: ano,
         updated_at: new Date().toISOString()
       }));
-console.log(formatted);
+
       const { error } = await supabase
         .from("host_reports")
         .upsert(formatted, { onConflict: "member_id,mes,ano" });
 
-      if (error) showStatus(status, "Erro: " + error.message, "btn-error");
-      else showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
- // 🔥 FECHA O MODAL CORRETAMENTE
-      modalInstance.hide();
-
-    } catch (err) {
-      showStatus(status, "Erro inesperado: " + err.message);
-    }
+      if (error) {
+        showStatus(status, "Erro: " + error.message, "btn-error");
+      } else {
+        showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
+        modalInstance.hide(); // 🔥 agora fecha corretamente
+      }
 
     } catch (err) {
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
-
   };
 
-
   reader.readAsArrayBuffer(file);
-
 });
-
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
