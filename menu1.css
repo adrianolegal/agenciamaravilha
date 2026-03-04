@@ -1,58 +1,125 @@
 /* ================================
-   HEADER 100% PRETO FORÇADO
+   Menu Preto Slim Elementor
    ================================ */
 
-/* Força fundo preto em TODA estrutura do header */
-header,
-.elementor-location-header,
-.elementor-section.elementor-top-section,
-.elementor-container,
-.elementor-column,
-.elementor-widget-wrap,
-.elementor-nav-menu-wrapper {
-    background-color: #12121a !important;
-}
-
-/* Barra fixa fina */
-.elementor-nav-menu-wrapper {
+/* ===== Wrapper Fixo ===== */
+.elementor-nav-menu-wrapper,
+.elementor-location-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 36px;
+    background: #12121a !important; /* Preto total */
+    z-index: 9999;
     display: flex;
     align-items: center;
-    z-index: 9999;
+    height: 38px; /* altura fina */
+    box-shadow: none;
 }
 
-/* Logo */
+/* ===== Logo ===== */
+.menu-logo {
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+}
+
 .menu-logo img {
-    height: 20px;
+    height: 22px; /* logo menor */
+    margin-right: 15px;
 }
 
-/* Menu */
+/* ===== Menu Principal ===== */
 .elementor-nav-menu {
+    display: flex;
+    justify-content: center;
     padding: 0;
 }
 
+.elementor-nav-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.elementor-nav-menu > ul > li {
+    display: inline-block;
+    position: relative;
+}
+
+/* ===== Links ===== */
 .elementor-nav-menu a {
-    line-height: 36px;
-    padding: 0 12px;
-    color: #ffffff !important;
-    font-size: 13px;
+    display: block;
+    padding: 0 14px;
+    line-height: 38px; /* centralização vertical */
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 500;
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    transition: background 0.3s ease;
 }
 
 /* Hover */
 .elementor-nav-menu a:hover {
-    background: #1f1f36 !important;
+    background: #1f1f36;
 }
 
-/* Submenu preto */
+/* ===== Submenu ===== */
 .sub-menu {
-    background: #12121a !important;
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #12121a; /* preto */
+    min-width: 250px;
+    padding: 0;
+    margin: 0;
+    border-radius: 0 0 4px 4px;
 }
 
-/* Espaço do conteúdo */
+.sub-menu li {
+    display: block;
+}
+
+.sub-menu a {
+    padding: 8px 15px;
+    line-height: normal;
+    font-size: 13px;
+}
+
+.sub-menu a:hover {
+    background: #1f1f36;
+}
+
+/* Mostrar submenu */
+.menu-item-has-children:hover > .sub-menu {
+    display: block;
+}
+
+/* ===== Ajuste do conteúdo abaixo ===== */
 body {
-    padding-top: 36px;
+    padding-top: 38px; /* igual à altura da barra */
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 768px) {
+    .elementor-nav-menu-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .elementor-nav-menu {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .elementor-nav-menu > ul > li {
+        display: block;
+        text-align: center;
+    }
+
+    .elementor-nav-menu a {
+        line-height: 40px;
+    }
 }
