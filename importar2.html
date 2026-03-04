@@ -94,7 +94,9 @@
 </div>
 
 <script type="module">
-import { supabase } from './supabase.js';
+import { supabase, protectPage, logout } from "./supabase.js";
+
+await protectPage(); // protege a página
 
 const hostSearch = document.getElementById('hostSearch');
 const uid = document.getElementById('uid');
