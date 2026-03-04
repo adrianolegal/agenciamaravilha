@@ -1,53 +1,40 @@
-/* ================================
-   Menu estilo Elementor
-   ================================ */
-
 /* Wrapper fixo no topo */
 .elementor-nav-menu-wrapper {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: #007bff;
+    background: #12121a; /* preto total */
     z-index: 9999;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    display: flex; /* para posicionar logo e menu lado a lado */
+    display: flex;
     align-items: center;
+    height: 50px; /* controla altura total */
 }
 
 /* Logo no menu */
 .menu-logo {
     display: flex;
     align-items: center;
-    padding: 5px 20px;
+    padding: 0 15px; /* menor */
 }
 
 .menu-logo img {
-    height: 40px; /* ajuste a altura conforme necessário */
-    margin-right: 25px;
+    height: 30px; /* menor */
+    margin-right: 20px;
 }
 
 /* Menu principal */
 .elementor-nav-menu {
     display: flex;
     justify-content: center;
-    padding: 10px;
-}
-
-.elementor-nav-menu ul {
-    list-style: none;
-    margin: 0;
     padding: 0;
 }
 
-.elementor-nav-menu > ul > li {
-    display: inline-block;
-    position: relative;
-}
-
+/* Links */
 .elementor-nav-menu a {
     display: block;
-    padding: 10px 20px;
+    padding: 0 18px; /* remove altura vertical */
+    line-height: 50px; /* centraliza vertical */
     color: white;
     text-decoration: none;
     font-weight: 500;
@@ -55,68 +42,12 @@
     transition: background 0.3s ease;
 }
 
-.elementor-nav-menu a i {
-    margin-left: 5px;
-}
-
-/* Hover no menu principal */
+/* Hover */
 .elementor-nav-menu a:hover {
     background: #1f1f36;
 }
 
-/* Submenu oculto por padrão */
-.sub-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: #1f1f36;
-    min-width: 300px;
-    padding: 0;
-    margin: 0;
-    border-radius: 0 0 5px 5px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-}
-
-/* Itens do submenu */
-.sub-menu li {
-    display: block;
-}
-
-.sub-menu a {
-    padding: 10px 20px;
-    color: white;
-    font-size: 14px;
-}
-
-.sub-menu a i {
-    margin-right: 8px;
-}
-
-/* Hover no submenu */
-.sub-menu a:hover {
-    background: #004080;
-}
-
-/* Mostrar submenu ao passar o mouse */
-.menu-item-has-children:hover > .sub-menu {
-    display: block;
-}
-
-/* Espaço para conteúdo não ficar atrás do menu fixo */
+/* Espaço do body ajustado */
 body {
-    padding-top: 60px;
-}
-
-/* Responsividade */
-@media (max-width: 768px) {
-    .elementor-nav-menu-wrapper {
-        flex-direction: column;
-    }
-    .elementor-nav-menu {
-        flex-direction: column;
-    }
-    .elementor-nav-menu > ul > li {
-        display: block;
-    }
+    padding-top: 50px; /* igual à altura do menu */
 }
