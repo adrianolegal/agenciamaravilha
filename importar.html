@@ -74,6 +74,12 @@ input[type="file"]::file-selector-button:hover {
 
 <body>
 
+<div id="menu-placeholder"></div>
+<script>
+fetch('menu.html').then(r => r.text()).then(html => {
+  document.getElementById('menu-placeholder').innerHTML = html;
+});
+</script>
 <div class="container">
   <h2>Importação de Dados V.01.4</h2>
 
