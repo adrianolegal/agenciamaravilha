@@ -70,7 +70,8 @@
 </div>
 
 <script type="module">
-import { supabase } from './supabase.js';
+import { supabase, protectPage, logout } from "./supabase.js";
+
 await protectPage(); // protege a página
 
 const tabelaBody = document.getElementById('tabelaBody');
