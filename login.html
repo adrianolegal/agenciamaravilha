@@ -20,16 +20,20 @@
 
     <input type="email" id="email" placeholder="Email" class="form-control mb-3">
     <input type="password" id="senha" placeholder="Senha" class="form-control mb-3">
-    <button id="btnLogin" class="btn btn-brand btn-login">Entrar</button>
+    <button id="btnLogin" class="btn btn-brand btn-login mb-2">Entrar</button>
+
+    <!-- BOTÃO SAIR -->
+    <button id="btnSair" class="btn btn-outline-light btn-sm">Sair</button>
 
     <p id="msg" class="mt-3 fw-bold"></p>
   </div>
 </div>
 
 <script type="module">
-  import { supabase } from "./supabase.js"; // supabase.js deve estar na mesma pasta
+  import { supabase } from "./supabase.js";
 
   const btnLogin = document.getElementById("btnLogin");
+  const btnSair = document.getElementById("btnSair");
   const msg = document.getElementById("msg");
 
   btnLogin.addEventListener("click", async () => {
@@ -37,7 +41,7 @@
     const senha = document.getElementById("senha").value;
 
     if (!email || !senha) {
-      msg.style.color = "#f87171"; // vermelho
+      msg.style.color = "#f87171";
       msg.textContent = "Preencha todos os campos";
       return;
     }
@@ -53,7 +57,7 @@
 
       if (error) throw error;
 
-      msg.style.color = "#16a34a"; // verde
+      msg.style.color = "#16a34a";
       msg.textContent = "Login realizado! Redirecionando...";
       localStorage.setItem("sessaoSupabase", JSON.stringify(data.session));
 
@@ -63,6 +67,11 @@
       msg.textContent = "Email ou senha inválidos";
       console.error(err);
     }
+  });
+
+  // AÇÃO DO BOTÃO SAIR
+  btnSair.addEventListener("click", () => {
+    window.location.href = "index.html";
   });
 </script>
 
