@@ -106,7 +106,6 @@ fetch('menu1.html').then(r => r.text()).then(html => {
 </div>
 
 <!-- ✅ Modal volta a funcionar corretamente -->
-<!-- MODAL CORRIGIDO -->
 <div class="modal fade" id="modalPeriodo" tabindex="-1">
   <div class="modal-dialog">
     <div class="modal-content bg-dark text-white">
@@ -278,7 +277,8 @@ console.log(formatted);
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
 
-  // 🔥 FECHA O MODAL CORRETAMENTE
+  };
+ // 🔥 FECHA O MODAL CORRETAMENTE
       modalInstance.hide();
 
     } catch (err) {
@@ -290,6 +290,7 @@ console.log(formatted);
   reader.readAsArrayBuffer(file);
 
 });
+
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
