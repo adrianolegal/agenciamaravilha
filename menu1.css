@@ -1,125 +1,58 @@
 /* ================================
-   Menu Preto Slim Elementor
+   HEADER 100% PRETO FORÇADO
    ================================ */
 
-/* ===== Wrapper Fixo ===== */
-.elementor-nav-menu-wrapper,
-.elementor-location-header {
+/* Força fundo preto em TODA estrutura do header */
+header,
+.elementor-location-header,
+.elementor-section.elementor-top-section,
+.elementor-container,
+.elementor-column,
+.elementor-widget-wrap,
+.elementor-nav-menu-wrapper {
+    background-color: #12121a !important;
+}
+
+/* Barra fixa fina */
+.elementor-nav-menu-wrapper {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: #12121a !important; /* Preto total */
+    height: 36px;
+    display: flex;
+    align-items: center;
     z-index: 9999;
-    display: flex;
-    align-items: center;
-    height: 38px; /* altura fina */
-    box-shadow: none;
 }
 
-/* ===== Logo ===== */
-.menu-logo {
-    display: flex;
-    align-items: center;
-    padding: 0 12px;
-}
-
+/* Logo */
 .menu-logo img {
-    height: 22px; /* logo menor */
-    margin-right: 15px;
+    height: 20px;
 }
 
-/* ===== Menu Principal ===== */
+/* Menu */
 .elementor-nav-menu {
-    display: flex;
-    justify-content: center;
     padding: 0;
 }
 
-.elementor-nav-menu ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.elementor-nav-menu > ul > li {
-    display: inline-block;
-    position: relative;
-}
-
-/* ===== Links ===== */
 .elementor-nav-menu a {
-    display: block;
-    padding: 0 14px;
-    line-height: 38px; /* centralização vertical */
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: 500;
-    font-family: 'Poppins', sans-serif;
-    font-size: 14px;
-    transition: background 0.3s ease;
+    line-height: 36px;
+    padding: 0 12px;
+    color: #ffffff !important;
+    font-size: 13px;
 }
 
 /* Hover */
 .elementor-nav-menu a:hover {
-    background: #1f1f36;
+    background: #1f1f36 !important;
 }
 
-/* ===== Submenu ===== */
+/* Submenu preto */
 .sub-menu {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: 0;
-    background: #12121a; /* preto */
-    min-width: 250px;
-    padding: 0;
-    margin: 0;
-    border-radius: 0 0 4px 4px;
+    background: #12121a !important;
 }
 
-.sub-menu li {
-    display: block;
-}
-
-.sub-menu a {
-    padding: 8px 15px;
-    line-height: normal;
-    font-size: 13px;
-}
-
-.sub-menu a:hover {
-    background: #1f1f36;
-}
-
-/* Mostrar submenu */
-.menu-item-has-children:hover > .sub-menu {
-    display: block;
-}
-
-/* ===== Ajuste do conteúdo abaixo ===== */
+/* Espaço do conteúdo */
 body {
-    padding-top: 38px; /* igual à altura da barra */
-}
-
-/* ===== Responsivo ===== */
-@media (max-width: 768px) {
-    .elementor-nav-menu-wrapper {
-        flex-direction: column;
-        height: auto;
-    }
-
-    .elementor-nav-menu {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .elementor-nav-menu > ul > li {
-        display: block;
-        text-align: center;
-    }
-
-    .elementor-nav-menu a {
-        line-height: 40px;
-    }
+    padding-top: 36px;
 }
