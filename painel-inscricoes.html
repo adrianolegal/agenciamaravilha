@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <base href="/"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Painel de Inscrições — Agência Maravilha</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/styles.css" rel="stylesheet">
+
+  <style>
+    body { background:#111; color:#fff; }
+
+    .btn-filtro {
+      margin:5px;
+      font-weight:bold;
+    }
+
+    .btn-filtro.active {
+      background:#fbbf24;
+      color:#000;
+    }
+
+    table {
+      background:#1a1a1a;
+    }
+
+    th {
+      color:#fbbf24;
+    }
+
+    td {
+      color:#fff;
+    }
+  </style>
+</head>
+<body>
+
+<nav class="navbar navbar-dark bg-dark">
+  <div class="container">
+    <span class="navbar-brand">Painel de Inscrições</span>
+    <button id="logoutBtn" class="btn btn-warning btn-sm">Sair</button>
+  </div>
+</nav>
+
+<div class="container my-4">
+
+  <div class="text-center mb-3">
+    <button class="btn btn-outline-light btn-filtro active" data-tabela="inscricoes_pk_divas">PK Divas</button>
+    <button class="btn btn-outline-light btn-filtro" data-tabela="inscricoes_pk_agencias">PK Agências</button>
+    <button class="btn btn-outline-light btn-filtro" data-tabela="inscricoes_pk_bolsa">PK Bolsa</button>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-bordered table-dark">
+      <thead>
+        <tr>
+          <th>UID</th>
+          <th>Kwai ID</th>
+          <th>Horário</th>
+          <th>Mês</th>
+          <th>Data</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script type="module">
+import { supabase } from './supabase.js';
+
+const tabelaBody = document.getElementById('tabelaBody');
+const botoes = document.querySelectorAll('.btn-filtro');
+const logoutBtn = document.getElementById('logoutBtn');
+
+let tabelaAtual = 'inscricoes_pk_divas';
+
+async function protegerPagina(){
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if(!session){
+    window.location.href = "login.html";
+  }
+}
+
+async function carregarInscricoes(tabela){
+  tabelaBody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
+
+  const { data, error } = await supabase
+    .from(tabela)
+    .select('*')
+    .order('created_at', { ascending:false });
+
+  if(error){
+    tabelaBody.innerHTML = "<tr><td colspan='5'>Erro ao carregar</td></tr>";
+    return;
+  }
+
+  if(data.length === 0){
+    tabelaBody.innerHTML = "<tr><td colspan='5'>Nenhuma inscrição</td></tr>";
+    return;
+  }
+
+  tabelaBody.innerHTML = "";
+
+  data.forEach(item=>{
+    tabelaBody.innerHTML += `
+      <tr>
+        <td>${item.member_id}</td>
+        <td>${item.kwai_id}</td>
+        <td>${item.hora_escolhida}</td>
+        <td>${item.mes}</td>
+        <td>${new Date(item.created_at).toLocaleString()}</td>
+      </tr>
+    `;
+  });
+}
+
+botoes.forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    botoes.forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+
+    tabelaAtual = btn.dataset.tabela;
+    carregarInscricoes(tabelaAtual);
+  });
+});
+
+logoutBtn.addEventListener('click', async ()=>{
+  await supabase.auth.signOut();
+  window.location.href = "login.html";
+});
+
+protegerPagina();
+carregarInscricoes(tabelaAtual);
+</script>
+
+</body>
+</html>
