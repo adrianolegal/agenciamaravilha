@@ -63,7 +63,4 @@ header,
     background: #12121a !important;
 }
 
-/* Remove qualquer gradiente */
-.elementor-section.elementor-top-section {
-    background-image: none !important;
 }
