@@ -278,12 +278,18 @@ console.log(formatted);
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
 
+  // 🔥 FECHA O MODAL CORRETAMENTE
+      modalInstance.hide();
+
+    } catch (err) {
+      showStatus(status, "Erro inesperado: " + err.message);
+    }
+
   };
 
   reader.readAsArrayBuffer(file);
 
 });
-
 // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
