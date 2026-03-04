@@ -61,7 +61,7 @@
       msg.textContent = "Login realizado! Redirecionando...";
       localStorage.setItem("sessaoSupabase", JSON.stringify(data.session));
 
-      setTimeout(() => window.location.href = "importar.html", 800);
+      setTimeout(() => window.location.href = "restrito.html", 800);
     } catch (err) {
       msg.style.color = "#f87171";
       msg.textContent = "Email ou senha inválidos";
