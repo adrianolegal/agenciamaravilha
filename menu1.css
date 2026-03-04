@@ -24,7 +24,7 @@
 
 .menu-logo img {
     height: 40px; /* ajuste a altura conforme necessário */
-    margin-right: 15px;
+    margin-right: 25px;
 }
 
 /* Menu principal */
@@ -61,7 +61,7 @@
 
 /* Hover no menu principal */
 .elementor-nav-menu a:hover {
-    background: #0056b3;
+    background: #1f1f36;
 }
 
 /* Submenu oculto por padrão */
@@ -70,7 +70,7 @@
     position: absolute;
     top: 100%;
     left: 0;
-    background: #0056b3;
+    background: #1f1f36;
     min-width: 300px;
     padding: 0;
     margin: 0;
