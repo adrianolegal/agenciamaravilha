@@ -70,23 +70,15 @@
 </div>
 
 <script type="module">
-import { supabase, protectPage, logout } from "./supabase.js";
+import { supabase, protectPage } from "./supabase.js";
 
-await protectPage(); // protege a página
+await protectPage();
 
 const tabelaBody = document.getElementById('tabelaBody');
 const botoes = document.querySelectorAll('.btn-filtro');
 const logoutBtn = document.getElementById('logoutBtn');
 
-let tabelaAtual = 'inscricoes_pk_divas';
-
-async function protegerPagina(){
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if(!session){
-    window.location.href = "login.html";
-  }
-}
+let tabelaAtual = 'pk_divas';
 
 async function carregarInscricoes(tabela){
   tabelaBody.innerHTML = "<tr><td colspan='5'>Carregando...</td></tr>";
@@ -94,14 +86,17 @@ async function carregarInscricoes(tabela){
   const { data, error } = await supabase
     .from(tabela)
     .select('*')
-    .order('created_at', { ascending:false });
+    .order('hora_cadastro', { ascending:false });
 
   if(error){
-    tabelaBody.innerHTML = "<tr><td colspan='5'>Erro ao carregar</td></tr>";
+    tabelaBody.innerHTML = `
+      <tr>
+        <td colspan="5">Erro: ${error.message}</td>
+      </tr>`;
     return;
   }
 
-  if(data.length === 0){
+  if(!data || data.length === 0){
     tabelaBody.innerHTML = "<tr><td colspan='5'>Nenhuma inscrição</td></tr>";
     return;
   }
@@ -115,7 +110,7 @@ async function carregarInscricoes(tabela){
         <td>${item.kwai_id}</td>
         <td>${item.hora_escolhida}</td>
         <td>${item.mes}</td>
-        <td>${new Date(item.created_at).toLocaleString()}</td>
+        <td>${item.hora_cadastro ? new Date(item.hora_cadastro).toLocaleString() : '-'}</td>
       </tr>
     `;
   });
@@ -136,9 +131,7 @@ logoutBtn.addEventListener('click', async ()=>{
   window.location.href = "login.html";
 });
 
-protegerPagina();
 carregarInscricoes(tabelaAtual);
 </script>
-
 </body>
 </html>
