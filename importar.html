@@ -273,6 +273,12 @@ console.log(formatted);
 
       if (error) showStatus(status, "Erro: " + error.message, "btn-error");
       else showStatus(status, "Importação atualizada com sucesso ✓", "btn-success");
+ // 🔥 FECHA O MODAL CORRETAMENTE
+      modalInstance.hide();
+
+    } catch (err) {
+      showStatus(status, "Erro inesperado: " + err.message);
+    }
 
     } catch (err) {
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
