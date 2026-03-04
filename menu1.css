@@ -56,11 +56,3 @@ header,
 body {
     padding-top: 36px;
 }
-/* Força o fundo da FAIXA do header para preto */
-header,
-.elementor-location-header,
-.elementor-section.elementor-top-section {
-    background: #12121a !important;
-}
-
-}
