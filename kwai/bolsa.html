@@ -34,12 +34,21 @@
       color:#000;
     }
 
+    #kwaiPreview{
+      max-width:300px;
+    }
+
+    #kwaiPreview img{
+      width:50px;
+      height:50px;
+    }
+
     .data-row .value{
       color:#fbbf24;
       font-weight:bold;
     }
 
-    /* Popup Fade */
+    /* Popup */
     #popupMsg{
       display:flex;
       justify-content:center;
@@ -73,6 +82,12 @@
       transform:scale(1);
     }
 
+    #popupMsgContent img{
+      width:50px;
+      height:50px;
+      margin-bottom:10px;
+    }
+
     #popupMsgContent button{
       margin-top:15px;
       padding:8px 20px;
@@ -84,7 +99,9 @@
       cursor:pointer;
     }
 
-    #status{ color:#fbbf24; }
+    #status{
+      color:#fbbf24;
+    }
   </style>
 </head>
 <body>
@@ -129,7 +146,7 @@
   <div class="card p-3 text-start">
 
     <h4 class="text-warning">Digite seu Id ou parte do Apelido</h4>
-    <input type="text" id="hostSearch" class="form-control mb-3">
+    <input type="text" id="hostSearch" class="form-control mb-2">
 
     <div class="data-row mb-2">
       <span>UID:</span>
@@ -146,6 +163,18 @@
       <span class="value" id="kwai_id"></span>
     </div>
 
+    <!-- PRÉVIA KWAI -->
+    <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
+      <h5 class="text-warning">Prévia do Kwai</h5>
+      <a id="kwaiLink" href="" target="_blank" class="text-white mb-2 d-block">Ver perfil completo</a>
+      <div class="d-flex align-items-center">
+        <img id="kwaiProfileImg" class="rounded-circle me-2">
+        <div>
+          <div class="text-white fw-bold" id="kwaiName"></div>
+        </div>
+      </div>
+    </div>
+
     <label class="text-warning">Escolha o horário</label>
 
     <div class="button-group mb-3" id="horarioGroup">
@@ -156,7 +185,7 @@
       <button data-hora="23:00-00:00">Entre 23h - 00h</button>
     </div>
 
-    <button id="btnEnviar" class="btn btn-warning">Enviar Inscrição</button>
+    <button id="btnEnviar" class="btn btn-brand mt-2">Enviar Inscrição</button>
     <div id="status" class="mt-2"></div>
 
   </div>
@@ -165,6 +194,7 @@
 <!-- POPUP -->
 <div id="popupMsg">
   <div id="popupMsgContent">
+    <img src="assets/logo.jpg">
     <h5>Parabéns!</h5>
     <p>Inscrição do PK Bolsa realizada com sucesso!</p>
     <button id="popupOkBtn">OK</button>
@@ -173,7 +203,6 @@
 
 <hr class="hr-soft my-5">
 
-<!-- RODAPÉ -->
 <footer class="text-center py-3">
   <strong>© 2026 Agência Maravilha</strong><br>
   Desenvolvido por Adriano José Ribeiro da Silva
@@ -186,6 +215,10 @@ const hostSearch=document.getElementById('hostSearch');
 const uid=document.getElementById('uid');
 const apelido=document.getElementById('apelido');
 const kwai_id=document.getElementById('kwai_id');
+const kwaiPreview=document.getElementById('kwaiPreview');
+const kwaiLink=document.getElementById('kwaiLink');
+const kwaiProfileImg=document.getElementById('kwaiProfileImg');
+const kwaiName=document.getElementById('kwaiName');
 const horarioGroup=document.getElementById('horarioGroup');
 const btnEnviar=document.getElementById('btnEnviar');
 const status=document.getElementById('status');
@@ -217,11 +250,24 @@ hostSearch.addEventListener('input',e=>{
     uid.textContent=encontrado.member_id;
     apelido.textContent=encontrado.apelido;
     kwai_id.textContent=encontrado.kwai_id;
+
+    kwaiPreview.style.display='block';
+    kwaiLink.href=`https://kwai.com/@${encontrado.kwai_id}`;
+    kwaiName.textContent=encontrado.apelido;
+
+    supabase.from('kwai_profiles')
+      .select('avatar_url')
+      .eq('kwai_id',encontrado.kwai_id)
+      .single()
+      .then(res=>{
+        kwaiProfileImg.src=res.data?.avatar_url || 'profile-placeholder.jpg';
+      });
   }else{
     selectedHost=null;
     uid.textContent='';
     apelido.textContent='';
     kwai_id.textContent='';
+    kwaiPreview.style.display='none';
   }
 });
 
@@ -254,10 +300,7 @@ btnEnviar.addEventListener('click',async()=>{
   }
 
   popupMsg.classList.add('show');
-
-  popupOkBtn.onclick=()=>{
-    popupMsg.classList.remove('show');
-  };
+  popupOkBtn.onclick=()=> popupMsg.classList.remove('show');
 });
 </script>
 
