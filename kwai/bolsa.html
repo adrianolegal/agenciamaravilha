@@ -61,7 +61,7 @@
 
     #popupMsgContent{
       background:#1a1a1a;
-      color:#fbbf24;
+      color:#fff;
       padding:25px 30px;
       border-radius:12px;
       max-width:400px;
@@ -72,6 +72,12 @@
 
     #popupMsg.show #popupMsgContent{
       transform:scale(1);
+    }
+
+    #popupMsgContent img{
+      width:50px;
+      height:50px;
+      margin-bottom:10px;
     }
 
     #popupMsgContent button{
@@ -89,6 +95,16 @@
   </style>
 </head>
 <body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="index.html">
+      <img src="assets/logo.jpg" width="28" height="28">
+      <span>Agência Maravilha</span>
+    </a>
+  </div>
+</nav>
 
 <div class="container my-4 text-center">
 
@@ -123,12 +139,22 @@
   </div>
 </div>
 
+<!-- POPUP -->
 <div id="popupMsg">
   <div id="popupMsgContent">
-    <h5>Inscrição realizada com sucesso!</h5>
+    <img src="assets/logo.jpg">
+    <h5 class="text-warning">Parabéns!</h5>
+    <p>Inscrição realizada com sucesso.</p>
     <button id="popupOkBtn">OK</button>
   </div>
 </div>
+
+<hr class="hr-soft my-5">
+
+<footer class="text-center py-3">
+  <strong>© 2026 Agência Maravilha</strong><br>
+  Desenvolvido por Adriano José Ribeiro da Silva
+</footer>
 
 <script type="module">
 import { supabase } from './supabase.js';
@@ -226,7 +252,7 @@ btnEnviar.addEventListener('click', async ()=>{
   popupMsg.classList.add('show');
 
   popupOkBtn.onclick=()=>{
-    window.location.href="kwai";
+    window.location.href="kwai/eventos";
   };
 
 });
