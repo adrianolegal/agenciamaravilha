@@ -1,44 +1,62 @@
-/* Wrapper fixo no topo */
-.elementor-nav-menu-wrapper {
+/* ================================
+   Menu Preto Slim Elementor
+   ================================ */
+
+/* ===== Wrapper Fixo ===== */
+.elementor-nav-menu-wrapper,
+.elementor-location-header {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: #12121a; /* preto total */
+    background: #12121a !important; /* Preto total */
     z-index: 9999;
     display: flex;
     align-items: center;
-    height: 50px; /* controla altura total */
+    height: 38px; /* altura fina */
+    box-shadow: none;
 }
 
-/* Logo no menu */
+/* ===== Logo ===== */
 .menu-logo {
     display: flex;
     align-items: center;
-    padding: 0 15px; /* menor */
+    padding: 0 12px;
 }
 
 .menu-logo img {
-    height: 30px; /* menor */
-    margin-right: 20px;
+    height: 22px; /* logo menor */
+    margin-right: 15px;
 }
 
-/* Menu principal */
+/* ===== Menu Principal ===== */
 .elementor-nav-menu {
     display: flex;
     justify-content: center;
     padding: 0;
 }
 
-/* Links */
+.elementor-nav-menu ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.elementor-nav-menu > ul > li {
+    display: inline-block;
+    position: relative;
+}
+
+/* ===== Links ===== */
 .elementor-nav-menu a {
     display: block;
-    padding: 0 18px; /* remove altura vertical */
-    line-height: 50px; /* centraliza vertical */
-    color: white;
+    padding: 0 14px;
+    line-height: 38px; /* centralização vertical */
+    color: #ffffff;
     text-decoration: none;
     font-weight: 500;
     font-family: 'Poppins', sans-serif;
+    font-size: 14px;
     transition: background 0.3s ease;
 }
 
@@ -47,7 +65,61 @@
     background: #1f1f36;
 }
 
-/* Espaço do body ajustado */
+/* ===== Submenu ===== */
+.sub-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: #12121a; /* preto */
+    min-width: 250px;
+    padding: 0;
+    margin: 0;
+    border-radius: 0 0 4px 4px;
+}
+
+.sub-menu li {
+    display: block;
+}
+
+.sub-menu a {
+    padding: 8px 15px;
+    line-height: normal;
+    font-size: 13px;
+}
+
+.sub-menu a:hover {
+    background: #1f1f36;
+}
+
+/* Mostrar submenu */
+.menu-item-has-children:hover > .sub-menu {
+    display: block;
+}
+
+/* ===== Ajuste do conteúdo abaixo ===== */
 body {
-    padding-top: 50px; /* igual à altura do menu */
+    padding-top: 38px; /* igual à altura da barra */
+}
+
+/* ===== Responsivo ===== */
+@media (max-width: 768px) {
+    .elementor-nav-menu-wrapper {
+        flex-direction: column;
+        height: auto;
+    }
+
+    .elementor-nav-menu {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .elementor-nav-menu > ul > li {
+        display: block;
+        text-align: center;
+    }
+
+    .elementor-nav-menu a {
+        line-height: 40px;
+    }
 }
