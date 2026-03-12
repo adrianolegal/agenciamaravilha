@@ -39,7 +39,8 @@
         <div class="data-row mb-2"><span class="title">UID:</span> <span class="value" id="uid"></span></div>
         <div class="data-row mb-2"><span class="title">Apelido:</span> <span class="value" id="apelido"></span></div>
         <div class="data-row mb-3"><span class="title">Kwai ID:</span> <span class="value" id="kwai_id"></span></div>
-
+        <div class="data-row mb-3"><span class="title">Data Entrada:</span> <span class="value" id="data_entrada"></span></div>
+        
         <!-- Prévia do Kwai (ajustada para pegar avatar e followers já atualizados pelo Node.js) -->
         <div class="card bg-dark mb-3 p-2" id="kwaiPreview" style="display:none;">
             <h5 class="text-warning">Prévia do Kwai</h5>
@@ -121,7 +122,7 @@ let selectedHost = null;
 async function carregarHosts() {
     const { data, error } = await supabase
         .from('hosts_simplificado')
-        .select('member_id,apelido,kwai_id')
+        .select('member_id,apelido,kwai_id,data_entrada')
         .order('apelido', { ascending: true });
 
     if(error){ status.innerText = "Erro ao carregar hosts: " + error.message; return; }
