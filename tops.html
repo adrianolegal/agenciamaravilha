@@ -5,6 +5,7 @@
 
 <title>Ranking de Hosts</title>
 <link rel="icon" href="assets/logo.jpg">
+
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="menu1.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -34,7 +35,6 @@ color:#fbbf24;
 }
 
 </style>
-
 </head>
 
 <body>
@@ -45,8 +45,8 @@ color:#fbbf24;
 fetch('menu1.html')
 .then(r => r.text())
 .then(html => {
-  document.getElementById('menu-placeholder').innerHTML = html;
-});
+document.getElementById('menu-placeholder').innerHTML = html
+})
 </script>
 
 
@@ -147,7 +147,6 @@ Gerar Ranking
 
 </div>
 
-
 </div>
 
 
@@ -177,7 +176,7 @@ tabelaHoras.innerHTML = ""
    TOP 5 DIAMANTES
 ========================= */
 
-const { data: diamantes, error: erroDiamantes } = await supabase
+const { data: diamantes, error } = await supabase
 .from("host_reports_simplificado")
 .select("apelido_streamer, kwai_id, fluxo_presentes")
 .eq("mes", mes)
@@ -185,26 +184,29 @@ const { data: diamantes, error: erroDiamantes } = await supabase
 .order("fluxo_presentes", { ascending: false })
 .limit(5)
 
-if(erroDiamantes){
-console.error("Erro Supabase Diamantes:", erroDiamantes)
+if(error){
+console.error(error)
 return
 }
 
-console.log("Diamantes:", diamantes)
-
 if(!diamantes || diamantes.length === 0){
-tabelaDiamantes.innerHTML = `<tr><td colspan="4">Nenhum resultado</td></tr>`
+
+tabelaDiamantes.innerHTML =
+`<tr><td colspan="4">Nenhum resultado</td></tr>`
+
 }else{
 
 diamantes.forEach((h,i)=>{
 
-const tr=document.createElement("tr")
+const valor = parseFloat(h.fluxo_presentes) || 0
 
-tr.innerHTML=`
+const tr = document.createElement("tr")
+
+tr.innerHTML = `
 <td>${i+1}</td>
 <td>${h.apelido_streamer || "-"}</td>
 <td>@${h.kwai_id || "-"}</td>
-<td>${Number(h.fluxo_presentes || 0).toLocaleString("pt-BR")}</td>
+<td>${valor.toLocaleString("pt-BR")}</td>
 `
 
 tabelaDiamantes.appendChild(tr)
@@ -226,7 +228,7 @@ const { data: horas, error: erroHoras } = await supabase
 .eq("ano", ano)
 
 if(erroHoras){
-console.error("Erro Supabase Horas:", erroHoras)
+console.error(erroHoras)
 return
 }
 
@@ -252,9 +254,9 @@ horas
 
 const horasLive = intervaloParaHoras(h.duracao_transmissao).toFixed(1)
 
-const tr=document.createElement("tr")
+const tr = document.createElement("tr")
 
-tr.innerHTML=`
+tr.innerHTML = `
 <td>${i+1}</td>
 <td>${h.apelido_streamer || "-"}</td>
 <td>@${h.kwai_id || "-"}</td>
