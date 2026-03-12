@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Ranking de Hosts</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+padding:40px;
+font-family:Arial;
+}
+
+.card{
+background:#1e293b;
+border-radius:10px;
+padding:20px;
+margin-bottom:30px;
+}
+
+th{
+color:#fbbf24;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2 class="mb-4">Ranking de Hosts</h2>
+
+<div class="card">
+
+<h4 class="text-warning">Filtro</h4>
+
+<div class="row">
+
+<div class="col-md-4">
+
+<label>Mês</label>
+<select id="mes" class="form-select">
+
+<option value="1">Janeiro</option>
+<option value="2">Fevereiro</option>
+<option value="3">Março</option>
+<option value="4">Abril</option>
+<option value="5">Maio</option>
+<option value="6">Junho</option>
+<option value="7">Julho</option>
+<option value="8">Agosto</option>
+<option value="9">Setembro</option>
+<option value="10">Outubro</option>
+<option value="11">Novembro</option>
+<option value="12">Dezembro</option>
+
+</select>
+
+</div>
+
+<div class="col-md-4">
+
+<label>Ano</label>
+<input id="ano" type="number" value="2026" class="form-control">
+
+</div>
+
+<div class="col-md-4 d-flex align-items-end">
+
+<button id="btnBuscar" class="btn btn-primary w-100">
+Gerar Ranking
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h4 class="text-warning">Top 5 Diamantes</h4>
+
+<table class="table table-dark">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Host</th>
+<th>Kwai ID</th>
+<th>Diamantes</th>
+</tr>
+</thead>
+
+<tbody id="rankingDiamantes"></tbody>
+
+</table>
+
+</div>
+
+
+<div class="card">
+
+<h4 class="text-warning">Top 10 Horas de Live</h4>
+
+<table class="table table-dark">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Host</th>
+<th>Kwai ID</th>
+<th>Horas</th>
+</tr>
+</thead>
+
+<tbody id="rankingHoras"></tbody>
+
+</table>
+
+</div>
+
+
+</div>
+
+<script type="module">
+
+import { supabase } from "./supabase.js"
+
+const btn = document.getElementById("btnBuscar")
+
+const tabelaDiamantes = document.getElementById("rankingDiamantes")
+const tabelaHoras = document.getElementById("rankingHoras")
+
+btn.onclick = async () => {
+
+const mes = Number(document.getElementById("mes").value)
+const ano = Number(document.getElementById("ano").value)
+
+tabelaDiamantes.innerHTML = ""
+tabelaHoras.innerHTML = ""
+
+
+// TOP DIAMANTES
+
+const { data:diamantes } = await supabase
+.from("host_reports_simplificado")
+.select("apelido_streamer,kwai_id,fluxo_presentes")
+.eq("mes",mes)
+.eq("ano",ano)
+.order("fluxo_presentes",{ascending:false})
+.limit(5)
+
+
+diamantes.forEach((h,i)=>{
+
+const tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>${i+1}</td>
+<td>${h.apelido_streamer}</td>
+<td>@${h.kwai_id}</td>
+<td>${Number(h.fluxo_presentes).toLocaleString()}</td>
+`
+
+tabelaDiamantes.appendChild(tr)
+
+})
+
+
+
+// TOP HORAS
+
+const { data:horas } = await supabase
+.from("host_reports_simplificado")
+.select("apelido_streamer,kwai_id,duracao_transmissao")
+.eq("mes",mes)
+.eq("ano",ano)
+
+
+function intervaloParaHoras(intervalo){
+
+if(!intervalo) return 0
+
+const partes = intervalo.split(":")
+
+const h = parseInt(partes[0]) || 0
+const m = parseInt(partes[1]) || 0
+
+return h + (m/60)
+
+}
+
+
+horas
+.sort((a,b)=> intervaloParaHoras(b.duracao_transmissao) - intervaloParaHoras(a.duracao_transmissao))
+.slice(0,10)
+.forEach((h,i)=>{
+
+const horasLive = intervaloParaHoras(h.duracao_transmissao).toFixed(1)
+
+const tr=document.createElement("tr")
+
+tr.innerHTML=`
+<td>${i+1}</td>
+<td>${h.apelido_streamer}</td>
+<td>@${h.kwai_id}</td>
+<td>${horasLive} h</td>
+`
+
+tabelaHoras.appendChild(tr)
+
+})
+
+}
+
+</script>
+
+</body>
+</html>
