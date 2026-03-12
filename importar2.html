@@ -142,6 +142,7 @@ hostSearch.addEventListener('input', e => {
         uid.textContent = encontrado.member_id;
         apelido.textContent = encontrado.apelido;
         kwai_id.textContent = encontrado.kwai_id;
+        data_entrada.textContent = encontrado.data_entrada || '';
 
         // Prévia segura do Kwai usando dados já atualizados
         kwaiPreview.style.display = 'block';
