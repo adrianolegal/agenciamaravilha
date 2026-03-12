@@ -39,6 +39,13 @@ color:#fbbf24;
 
 <body>
 
+<div id="menu-placeholder"></div>
+<script>
+fetch('menu1.html').then(r => r.text()).then(html => {
+  document.getElementById('menu-placeholder').innerHTML = html;
+});
+</script>
+
 <div class="container">
 
 <h2 class="mb-4">Ranking de Hosts</h2>
