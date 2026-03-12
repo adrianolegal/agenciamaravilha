@@ -40,15 +40,16 @@
     }
   </style>
 </head>
+</head>
+
 <body>
 
 <div id="menu-placeholder"></div>
-
-<div id="menu-placeholder"></div>
-<nav class="navbar navbar-dark bg-dark">
-  <div class="container">
-    <span class="navbar-brand">Painel de Inscrições</span>
-    <button id="logoutBtn" class="btn btn-warning btn-sm">Sair</button>
+<script>
+fetch('menu1.html').then(r => r.text()).then(html => {
+  document.getElementById('menu-placeholder').innerHTML = html;
+});
+</script>
   </div>
 </nav>
   <div class="container my-4">
