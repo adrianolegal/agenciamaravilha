@@ -138,11 +138,22 @@ hostSearch.addEventListener('input', e => {
     );
 
     if(encontrado){
-        selectedHost = encontrado;
-        uid.textContent = encontrado.member_id;
-        apelido.textContent = encontrado.apelido;
-        kwai_id.textContent = encontrado.kwai_id;
-        data_entrada.textContent = encontrado.data_entrada || '';
+    selectedHost = encontrado;
+
+    uid.textContent = encontrado.member_id;
+    apelido.textContent = encontrado.apelido;
+    kwai_id.textContent = encontrado.kwai_id;
+
+    // Formatar data para padrão brasileiro
+    if(encontrado.data_entrada){
+        const data = new Date(encontrado.data_entrada);
+        data_entrada.textContent = data.toLocaleDateString('pt-BR');
+    } else {
+        data_entrada.textContent = '';
+    }
+
+    kwaiPreview.style.display = 'block';
+}
 
         // Prévia segura do Kwai usando dados já atualizados
         kwaiPreview.style.display = 'block';
