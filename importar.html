@@ -333,15 +333,14 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   dia_14_03: Number(String(row["DIA 14/03"] || 0).replace(/\D/g,''))
 }))
 .filter(r => r.user_id);
-      if (error) {
-        showStatus(status, "Erro: " + error.message, "btn-error");
-      } else {
-        showStatus(status, "Evento importado com sucesso ✓", "btn-success");
-      }
-
-    } catch (err) {
-      showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
-    }
+     if (error) {
+  console.error("SUPABASE ERROR:", error);
+  showStatus(
+    status,
+    "Erro: " + JSON.stringify(error, null, 2),
+    "btn-error"
+  );
+}
 
   };
 
