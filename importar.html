@@ -322,19 +322,17 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
   name: row["Name"] || null,
   agencia: row["Agência"] || null,
   kwai_id: row["KwaiId"] || null,
-  ranking_total: row["RANKING TOTAL"] || 0,
-  dia_09_03: row["DIA 09/03"] || 0,
-  dia_10_03: row["DIA 10/03"] || 0,
-  dia_11_03: row["DIA 11/03"] || 0,
-  dia_12_03: row["DIA 12/03"] || 0,
-  dia_13_03: row["DIA 13/03"] || 0,
-  dia_14_03: row["DIA 14/03"] || 0
-}))
-.filter(r => r.user_id !== null)
-      const { error } = await supabase
-        .from("kwai_evento_import")
-        .upsert(formatted, { onConflict: "user_id" });
 
+  ranking_total: Number(String(row["RANKING TOTAL"] || 0).replace(/\D/g,'')),
+
+  dia_09_03: Number(String(row["DIA 09/03"] || 0).replace(/\D/g,'')),
+  dia_10_03: Number(String(row["DIA 10/03"] || 0).replace(/\D/g,'')),
+  dia_11_03: Number(String(row["DIA 11/03"] || 0).replace(/\D/g,'')),
+  dia_12_03: Number(String(row["DIA 12/03"] || 0).replace(/\D/g,'')),
+  dia_13_03: Number(String(row["DIA 13/03"] || 0).replace(/\D/g,'')),
+  dia_14_03: Number(String(row["DIA 14/03"] || 0).replace(/\D/g,''))
+}))
+.filter(r => r.user_id);
       if (error) {
         showStatus(status, "Erro: " + error.message, "btn-error");
       } else {
