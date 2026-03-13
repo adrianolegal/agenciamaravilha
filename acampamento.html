@@ -28,7 +28,7 @@
     .btn-agencia-wrapper{
       display:flex;
       justify-content:center;
-      margin-bottom:1rem;
+      margin-bottom:16px;
     }
   </style>
 </head>
@@ -41,9 +41,11 @@
       <img src="assets/logo.jpg" width="28" height="28" alt="">
       <span>Agência Maravilha</span>
     </a>
+
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
+
     <div id="nav" class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="">Home</a></li>
@@ -78,7 +80,7 @@
       </div>
       <div class="modal-body">
         <div class="table-responsive">
-          <table class="table align-middle" id="tabelaAgencia">
+          <table class="table align-middle ranking-table" id="tabelaAgencia">
             <thead>
               <tr>
                 <th>#</th>
@@ -100,6 +102,7 @@
   <div class="container">
     <div class="card p-4">
       <h4 class="mb-4">Ranking Geral</h4>
+
       <div class="table-responsive">
         <table class="table align-middle ranking-table">
           <thead>
@@ -111,13 +114,17 @@
               <th>Pontos</th>
             </tr>
           </thead>
+
           <tbody id="rankingBody">
             <tr>
-              <td colspan="5" class="text-center py-4">Carregando ranking...</td>
+              <td colspan="5" class="text-center py-4">
+                Carregando ranking...
+              </td>
             </tr>
           </tbody>
         </table>
       </div>
+
     </div>
   </div>
 </main>
@@ -180,7 +187,7 @@ async function carregarRanking(){
       tr.innerHTML = `
         <td>${medalha(i)} ${i+1}</td>
         <td class="d-flex align-items-center gap-2">
-          <img src="${row.avatar_url}" alt="${row.name}">
+          <img src="${row.avatar_url}" alt="${row.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
           <span>${row.name ?? "-"}</span>
         </td>
         <td>${row.agencia ?? "-"}</td>
@@ -202,22 +209,27 @@ const modalAgencia = new bootstrap.Modal(document.getElementById("modalAgencia")
 const tbodyAgencia = document.querySelector("#tabelaAgencia tbody");
 
 btnAgencia.addEventListener("click", () => {
-  const rowsAgencia = data.filter(row => row.agencia?.includes("Maravilha"));
   tbodyAgencia.innerHTML = "";
-  rowsAgencia.forEach((row,i)=>{
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${medalha(i)} ${i+1}</td>
-      <td class="d-flex align-items-center gap-2">
-        <img src="${row.avatar_url}" alt="${row.name}">
-        <span>${row.name ?? "-"}</span>
-      </td>
-      <td>${row.agencia ?? "-"}</td>
-      <td>${row.kwai_id ?? "-"}</td>
-      <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
-    `;
-    tbodyAgencia.appendChild(tr);
+
+  // Mantém posição original, filtra apenas "Maravilha"
+  data.forEach((row,i)=>{
+    if(row.agencia?.includes("Maravilha")){
+      const tr = document.createElement("tr");
+      tr.className = classe(i);
+      tr.innerHTML = `
+        <td>${medalha(i)} ${i+1}</td>
+        <td class="d-flex align-items-center gap-2">
+          <img src="${row.avatar_url}" alt="${row.name}" style="width:44px;height:44px;border-radius:50%;object-fit:cover">
+          <span>${row.name ?? "-"}</span>
+        </td>
+        <td>${row.agencia ?? "-"}</td>
+        <td>${row.kwai_id ?? "-"}</td>
+        <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
+      `;
+      tbodyAgencia.appendChild(tr);
+    }
   });
+
   modalAgencia.show();
 });
 </script>
