@@ -128,11 +128,10 @@ async function carregarRanking(){
 
   try{
 
-    const { data, error } = await supabase
-      .from("ranking_evento_kwai"")
-      .select("*")
-      .order("ranking_total",{ascending:false});
-
+   const { data } = await supabase
+.from("ranking_evento_kwai")
+.select("*")
+.order("ranking_total",{ascending:false});
     if(error){
       console.error(error);
       tabela.innerHTML = `
