@@ -51,6 +51,19 @@
     </div>
   </div>
 </nav>
+
+<header class="py-5">
+  <div class="container">
+    <div class="banner-acampamento">
+      <h1 class="mb-2">🏕 Acampamento Novatos Kwai</h1>
+      <p class="mb-0">Acompanhamento do ranking do evento</p>
+    </div>
+  </div>
+</header>
+<div class="d-flex justify-content-end mb-3">
+  <button class="btn btn-primary btn-sm" id="btnAgencia">Mostrar apenas Agência</button>
+</div>
+
 <!-- Modal Bootstrap -->
 <div class="modal fade" id="modalAgencia" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-lg">
@@ -78,19 +91,6 @@
     </div>
   </div>
 </div>
-<header class="py-5">
-  <div class="container">
-    <div class="banner-acampamento">
-      <h1 class="mb-2">🏕 Acampamento Novatos Kwai</h1>
-      <p class="mb-0">Acompanhamento do ranking do evento</p>
-    </div>
-  </div>
-</header>
-<div class="d-flex justify-content-end mb-3">
-  <button class="btn btn-primary btn-sm" id="btnAgencia">Mostrar apenas Agência</button>
-</div>
-
-
 <main class="pb-5">
   <div class="container">
     <div class="card p-4">
@@ -223,6 +223,38 @@ async function carregarRanking(){
       </tr>`;
   }
 }
+
+carregarRanking();
+const btnAgencia = document.getElementById("btnAgencia");
+const modalAgencia = new bootstrap.Modal(document.getElementById("modalAgencia"));
+const tbodyAgencia = document.querySelector("#tabelaAgencia tbody");
+
+btnAgencia.addEventListener("click", () => {
+  // Filtra os da agência (contendo "Maravilha")
+  const rowsAgencia = data.filter(row => row.agencia?.includes("Maravilha"));
+
+  tbodyAgencia.innerHTML = "";
+
+  rowsAgencia.forEach((row, i) => {
+    const foto = row.avatar_url || "assets/avatar.png";
+    const tr = document.createElement("tr");
+
+    tr.innerHTML = `
+      <td>${medalha(i)} ${i+1}</td>
+      <td class="d-flex align-items-center gap-2">
+        <img src="${foto}" onerror="this.src='assets/avatar.png'">
+        <span>${row.name ?? "-"}</span>
+      </td>
+      <td>${row.agencia ?? "-"}</td>
+      <td>${row.kwai_id ?? "-"}</td>
+      <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
+    `;
+
+    tbodyAgencia.appendChild(tr);
+  });
+
+  modalAgencia.show();
+});
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
