@@ -188,7 +188,22 @@ function normalizeData(data) {
     return normalized;
   });
 }
+function excelDateToISO(value) {
 
+  if (!value) return null;
+
+  if (typeof value === "number") {
+    const date = new Date((value - 25569) * 86400 * 1000);
+    if (!isNaN(date)) return date.toISOString();
+  }
+
+  if (typeof value === "string") {
+    const date = new Date(value);
+    if (!isNaN(date)) return date.toISOString();
+  }
+
+  return null;
+}
 // 📤 IMPORT HOSTS
 document.getElementById("btnImportHosts").addEventListener("click", async () => {
   const file = document.getElementById("fileHosts").files[0];
@@ -316,26 +331,23 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       let json = XLSX.utils.sheet_to_json(sheet);
 
       const formatted = json
-      .map(row => ({
-        onboarding_date: row["Onborading Date"]
-  ? new Date((row["Onborading Date"] - 25569) * 86400 * 1000).toISOString()
-  : null,
-        user_id: row["UserId"] ? String(row["UserId"]) : null,
-        name: row["Name"] || null,
-        agencia: row["Agência"] || null,
-        kwai_id: row["KwaiId"] || null,
+.map(row => ({
+  onboarding_date: excelDateToISO(row["Onborading Date"]),
+  user_id: row["UserId"] ? String(row["UserId"]) : null,
+  name: row["Name"] || null,
+  agencia: row["Agência"] || null,
+  kwai_id: row["KwaiId"] || null,
 
-        ranking_total: Number(row["RANKING TOTAL"] || 0),
+  ranking_total: Number(row["RANKING TOTAL"] || 0),
 
-        dia_09_03: Number(row["DIA 09/03"] || 0),
-        dia_10_03: Number(row["DIA 10/03"] || 0),
-        dia_11_03: Number(row["DIA 11/03"] || 0),
-        dia_12_03: Number(row["DIA 12/03"] || 0),
-        dia_13_03: Number(row["DIA 13/03"] || 0),
-        dia_14_03: Number(row["DIA 14/03"] || 0)
-      }))
-      .filter(r => r.user_id);
-
+  dia_09_03: Number(row["DIA 09/03"] || 0),
+  dia_10_03: Number(row["DIA 10/03"] || 0),
+  dia_11_03: Number(row["DIA 11/03"] || 0),
+  dia_12_03: Number(row["DIA 12/03"] || 0),
+  dia_13_03: Number(row["DIA 13/03"] || 0),
+  dia_14_03: Number(row["DIA 14/03"] || 0)
+}))
+.filter(r => r.user_id);
       console.log("DADOS:", formatted);
 
       const { error } = await supabase
