@@ -290,7 +290,10 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
     }
   };
+  
 
+  reader.readAsArrayBuffer(file);
+});
   
   document.getElementById("btnImportEvento").addEventListener("click", async () => {
 
