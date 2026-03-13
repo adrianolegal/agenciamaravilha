@@ -129,7 +129,7 @@ async function carregarRanking(){
   try{
 
     const { data, error } = await supabase
-      .from("kwai_evento_import")
+      .from("ranking_evento_kwai"")
       .select("*")
       .order("ranking_total",{ascending:false});
 
@@ -167,7 +167,7 @@ async function carregarRanking(){
         <td>${medalha(i)} ${i+1}</td>
 
         <td class="d-flex align-items-center gap-2">
-          <img src="${foto}" onerror="this.src='assets/avatar.png'">
+         <img src="${row.avatar_url}">
           <span>${row.name ?? "-"}</span>
         </td>
 
