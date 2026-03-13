@@ -317,26 +317,23 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       let json = XLSX.utils.sheet_to_json(sheet);
 
       const formatted = json.map(row => ({
-        "Onborading Date": row["Onborading Date"] || null,
-        "UserId": row["UserId"] ? String(row["UserId"]) : null,
-        "Name": row["Name"] || null,
-        "Agência": row["Agência"] || null,
-        "KwaiId": row["KwaiId"] || null,
-        "RANKING TOTAL": row["RANKING TOTAL"] || 0,
-        "DIA 09/03": row["DIA 09/03"] || 0,
-        "DIA 10/03": row["DIA 10/03"] || 0,
-        "DIA 11/03": row["DIA 11/03"] || 0,
-        "DIA 12/03": row["DIA 12/03"] || 0,
-        "DIA 13/03": row["DIA 13/03"] || 0,
-        "DIA 14/03": row["DIA 14/03"] || 0
-      }));
+  onboarding_date: row["Onborading Date"] || null,
+  user_id: row["UserId"] ? String(row["UserId"]) : null,
+  name: row["Name"] || null,
+  agencia: row["Agência"] || null,
+  kwai_id: row["KwaiId"] || null,
+  ranking_total: row["RANKING TOTAL"] || 0,
+  dia_09_03: row["DIA 09/03"] || 0,
+  dia_10_03: row["DIA 10/03"] || 0,
+  dia_11_03: row["DIA 11/03"] || 0,
+  dia_12_03: row["DIA 12/03"] || 0,
+  dia_13_03: row["DIA 13/03"] || 0,
+  dia_14_03: row["DIA 14/03"] || 0
+}));
 
-      const { error } = await supabase
+await supabase
 .from("kwai_evento_import")
-.upsert(formatted, {
-  onConflict: "UserId",
-  ignoreDuplicates: false
-})
+.upsert(formatted, { onConflict: "user_id" });
 
       if (error) {
         showStatus(status, "Erro: " + error.message, "btn-error");
