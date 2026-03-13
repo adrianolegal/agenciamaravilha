@@ -315,32 +315,44 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
       let json = XLSX.utils.sheet_to_json(sheet);
 
-    const formatted = json
-.map(row => ({
-  onboarding_date: row["Onborading Date"] || null,
-  user_id: row["UserId"] ? String(row["UserId"]) : null,
-  name: row["Name"] || null,
-  agencia: row["Agência"] || null,
-  kwai_id: row["KwaiId"] || null,
+      const formatted = json
+      .map(row => ({
+        onboarding_date: row["Onborading Date"] || null,
+        user_id: row["UserId"] ? String(row["UserId"]) : null,
+        name: row["Name"] || null,
+        agencia: row["Agência"] || null,
+        kwai_id: row["KwaiId"] || null,
 
-  ranking_total: Number(String(row["RANKING TOTAL"] || 0).replace(/\D/g,'')),
+        ranking_total: Number(row["RANKING TOTAL"] || 0),
 
-  dia_09_03: Number(String(row["DIA 09/03"] || 0).replace(/\D/g,'')),
-  dia_10_03: Number(String(row["DIA 10/03"] || 0).replace(/\D/g,'')),
-  dia_11_03: Number(String(row["DIA 11/03"] || 0).replace(/\D/g,'')),
-  dia_12_03: Number(String(row["DIA 12/03"] || 0).replace(/\D/g,'')),
-  dia_13_03: Number(String(row["DIA 13/03"] || 0).replace(/\D/g,'')),
-  dia_14_03: Number(String(row["DIA 14/03"] || 0).replace(/\D/g,''))
-}))
-.filter(r => r.user_id);
-     if (error) {
-  console.error("SUPABASE ERROR:", error);
-  showStatus(
-    status,
-    "Erro: " + JSON.stringify(error, null, 2),
-    "btn-error"
-  );
-}
+        dia_09_03: Number(row["DIA 09/03"] || 0),
+        dia_10_03: Number(row["DIA 10/03"] || 0),
+        dia_11_03: Number(row["DIA 11/03"] || 0),
+        dia_12_03: Number(row["DIA 12/03"] || 0),
+        dia_13_03: Number(row["DIA 13/03"] || 0),
+        dia_14_03: Number(row["DIA 14/03"] || 0)
+      }))
+      .filter(r => r.user_id);
+
+      console.log("DADOS:", formatted);
+
+      const { error } = await supabase
+        .from("kwai_evento_import")
+        .upsert(formatted, { onConflict: "user_id" });
+
+      if (error) {
+        console.error(error);
+        showStatus(status, "Erro: " + error.message, "btn-error");
+      } else {
+        showStatus(status, "Evento importado com sucesso ✓", "btn-success");
+      }
+
+    } catch (err) {
+
+      console.error(err);
+      showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
+
+    }
 
   };
 
