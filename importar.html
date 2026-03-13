@@ -348,7 +348,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
     }
   };
-
+console.log(rows[0])
   reader.readAsArrayBuffer(file);
 });
 // 🚪 LOGOUT
