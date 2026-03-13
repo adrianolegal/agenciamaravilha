@@ -294,8 +294,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
   reader.readAsArrayBuffer(file);
 });
-  
-  document.getElementById("btnImportEvento").addEventListener("click", async () => {
+ document.getElementById("btnImportEvento").addEventListener("click", async () => {
 
   const file = document.getElementById("fileEvento").files[0];
   const status = document.getElementById("statusEvento");
@@ -317,32 +316,40 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       let json = XLSX.utils.sheet_to_json(sheet);
 
       const formatted = json.map(row => ({
-  onboarding_date: row["Onborading Date"] || null,
-  user_id: row["UserId"] ? String(row["UserId"]) : null,
-  name: row["Name"] || null,
-  agencia: row["Agência"] || null,
-  kwai_id: row["KwaiId"] || null,
-  ranking_total: row["RANKING TOTAL"] || 0,
-  dia_09_03: row["DIA 09/03"] || 0,
-  dia_10_03: row["DIA 10/03"] || 0,
-  dia_11_03: row["DIA 11/03"] || 0,
-  dia_12_03: row["DIA 12/03"] || 0,
-  dia_13_03: row["DIA 13/03"] || 0,
-  dia_14_03: row["DIA 14/03"] || 0
-}));
+        onboarding_date: row["Onborading Date"] || null,
+        user_id: row["UserId"] ? String(row["UserId"]) : null,
+        name: row["Name"] || null,
+        agencia: row["Agência"] || null,
+        kwai_id: row["KwaiId"] || null,
+        ranking_total: row["RANKING TOTAL"] || 0,
+        dia_09_03: row["DIA 09/03"] || 0,
+        dia_10_03: row["DIA 10/03"] || 0,
+        dia_11_03: row["DIA 11/03"] || 0,
+        dia_12_03: row["DIA 12/03"] || 0,
+        dia_13_03: row["DIA 13/03"] || 0,
+        dia_14_03: row["DIA 14/03"] || 0
+      }));
 
-const { error } = await supabase
-.from("kwai_evento_import")
-.upsert(formatted, { onConflict: "user_id" });
+      const { error } = await supabase
+        .from("kwai_evento_import")
+        .upsert(formatted, { onConflict: "user_id" });
 
-if (error) {
-  showStatus(status, "Erro: " + error.message, "btn-error");
-} else {
-  showStatus(status, "Evento importado com sucesso ✓", "btn-success");
-}
+      if (error) {
+        showStatus(status, "Erro: " + error.message, "btn-error");
+      } else {
+        showStatus(status, "Evento importado com sucesso ✓", "btn-success");
+      }
+
+    } catch (err) {
+      showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
+    }
+
+  };
+
   reader.readAsArrayBuffer(file);
+
 });
-// 🚪 LOGOUT
+  // 🚪 LOGOUT
 document.getElementById("btnLogout").addEventListener("click", logout);
 </script>
 
