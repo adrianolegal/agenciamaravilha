@@ -1,49 +1,36 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <base href="/">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Acampamento Novatos Kwai — Ranking</title>
+  <title>Acampamento Novatos KWAI — Ranking</title>
 
   <link rel="icon" type="image/png" href="assets/favicon.png">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="assets/styles.css" rel="stylesheet">
 
   <style>
-    .banner-acampamento{
-      background:linear-gradient(135deg,#3b2cff,#6f42c1);
-      color:#fff;
-      border-radius:14px;
-      padding:28px;
-      margin:28px 0;
-      text-align:center;
-    }
-    .ranking-table img{
-      width:44px;height:44px;border-radius:50%;object-fit:cover;
-    }
-    .rank-gold{background:#fff8e1;font-weight:600;}
-    .rank-silver{background:#f1f3f5;font-weight:600;}
-    .rank-bronze{background:#f7e0d6;font-weight:600;}
-    .medalha{font-size:20px;margin-right:6px;}
+    .ranking-table img { width: 50px; height: 50px; border-radius: 50%; }
+    .medalha { width: 40px; height: 40px; }
+    .badge-gold { background-color: #FFD700; color: #000; }
+    .badge-silver { background-color: #C0C0C0; color: #000; }
+    .badge-bronze { background-color: #CD7F32; color: #fff; }
+    .ranking-header { text-align: center; margin-bottom: 2rem; }
   </style>
 </head>
-
 <body>
 
 <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
   <div class="container">
     <a class="navbar-brand d-flex align-items-center gap-2" href="">
-      <img src="assets/logo.jpg" width="28" height="28" alt="">
+      <img src="assets/logo.jpg" alt="Agência Maravilha" width="28" height="28" onerror="this.style.display='none'">
       <span>Agência Maravilha</span>
     </a>
-
-    <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div id="nav" class="collapse navbar-collapse">
-      <ul class="navbar-nav ms-auto">
+      <ul class="navbar-nav ms-auto gap-lg-1">
         <li class="nav-item"><a class="nav-link" href="">Home</a></li>
         <li class="nav-item"><a class="nav-link" href="kwai/">Kwai</a></li>
         <li class="nav-item"><a class="nav-link" href="inscricao/">Inscrição</a></li>
@@ -53,152 +40,101 @@
   </div>
 </nav>
 
-<header class="py-5">
+<header class="hero py-5">
   <div class="container">
-    <div class="banner-acampamento">
-      <h1 class="mb-2">🏕 Acampamento Novatos Kwai</h1>
-      <p class="mb-0">Acompanhamento do ranking do evento</p>
+    <div class="ranking-header">
+      <h1 class="display-5 fw-semibold">Acompanhamento Ranking ACAMPAMENTO NOVATOS KWAI</h1>
+      <p class="lead muted">Confira a evolução dos participantes e destaque-se!</p>
     </div>
   </div>
 </header>
 
-<main class="pb-5">
+<main class="py-5">
   <div class="container">
-    <div class="card p-4">
-      <h4 class="mb-4">Ranking Geral</h4>
+    <div id="statusEvento" class="mb-3"></div>
 
-      <div class="table-responsive">
-        <table class="table align-middle ranking-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Host</th>
-              <th>Agência</th>
-              <th>Kwai ID</th>
-              <th>Pontos</th>
-            </tr>
-          </thead>
-
-          <tbody id="rankingBody">
-            <tr>
-              <td colspan="5" class="text-center py-4">
-                Carregando ranking...
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
+    <div class="table-responsive">
+      <table class="table table-striped ranking-table align-middle">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Medalha</th>
+            <th>Avatar</th>
+            <th>Nome</th>
+            <th>Kwai ID</th>
+            <th>Ranking Total</th>
+          </tr>
+        </thead>
+        <tbody id="rankingBody">
+          <tr><td colspan="6" class="text-center">Carregando ranking...</td></tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </main>
 
 <footer class="footer py-4">
-  <div class="container">
-    <div class="d-flex justify-content-between">
-      <div>© <span id="y"></span> Agência Maravilha</div>
-      <div>Evento Kwai</div>
-    </div>
+  <div class="container text-center">
+    © <span id="y"></span> Agência Maravilha — Todos os direitos reservados.
   </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module" src="supabase.js"></script>
 <script type="module">
-
-import { supabase } from "/supabase.js";
+import { supabase } from './supabase.js';
 
 document.getElementById("y").textContent = new Date().getFullYear();
 
-function medalha(i){
-  if(i===0) return "🥇";
-  if(i===1) return "🥈";
-  if(i===2) return "🥉";
-  return "";
-}
+async function carregarRanking() {
+  const status = document.getElementById("statusEvento");
+  status.textContent = "Carregando ranking...";
 
-function classe(i){
-  if(i===0) return "rank-gold";
-  if(i===1) return "rank-silver";
-  if(i===2) return "rank-bronze";
-  return "";
-}
+  const { data, error } = await supabase
+    .from("ranking_evento_kwai")
+    .select("*")
+    .order("ranking_total", { ascending: false });
 
-async function carregarRanking(){
-
-  const tabela = document.getElementById("rankingBody");
-
-  try{
-
-   const { data } = await supabase
-.from("ranking_evento_kwai")
-.select("*")
-.order("ranking_total",{ascending:false});
-    if(error){
-      console.error(error);
-      tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-danger text-center py-4">
-        Erro ao consultar banco
-        </td>
-      </tr>`;
-      return;
-    }
-
-    if(!data || data.length === 0){
-      tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center py-4">
-        Nenhum registro encontrado
-        </td>
-      </tr>`;
-      return;
-    }
-
-    tabela.innerHTML = "";
-
-    data.forEach((row,i)=>{
-
-      const foto = row.profile_pic || "assets/avatar.png";
-
-      const tr = document.createElement("tr");
-      tr.className = classe(i);
-
-      tr.innerHTML = `
-        <td>${medalha(i)} ${i+1}</td>
-
-        <td class="d-flex align-items-center gap-2">
-         <img src="${row.avatar_url}">
-          <span>${row.name ?? "-"}</span>
-        </td>
-
-        <td>${row.agencia ?? "-"}</td>
-
-        <td>${row.kwai_id ?? "-"}</td>
-
-        <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
-      `;
-
-      tabela.appendChild(tr);
-
-    });
-
-  }catch(e){
-
-    console.error(e);
-
-    tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-danger text-center py-4">
-        Falha ao carregar ranking
-        </td>
-      </tr>`;
+  if (error) {
+    console.error(error);
+    status.textContent = "Erro ao carregar ranking: " + error.message;
+    return;
   }
+
+  const tbody = document.getElementById("rankingBody");
+  tbody.innerHTML = "";
+
+  if (!data || !data.length) {
+    tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nenhum participante registrado.</td></tr>`;
+    return;
+  }
+
+  data.forEach((item, index) => {
+    let medalha = "";
+    if (index === 0) medalha = `<img src="assets/medalha_gold.png" class="medalha" alt="1º lugar">`;
+    else if (index === 1) medalha = `<img src="assets/medalha_silver.png" class="medalha" alt="2º lugar">`;
+    else if (index === 2) medalha = `<img src="assets/medalha_bronze.png" class="medalha" alt="3º lugar">`;
+
+    const avatar = item.avatar_url ? `<img src="${item.avatar_url}" alt="avatar">` : `<img src="assets/avatar_default.png" alt="avatar">`;
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${medalha}</td>
+        <td>${avatar}</td>
+        <td>${item.nome}</td>
+        <td>${item.kwai_id}</td>
+        <td>${item.ranking_total}</td>
+      </tr>
+    `;
+  });
+
+  status.textContent = "";
 }
 
+// Carrega o ranking ao abrir a página
 carregarRanking();
-
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>
