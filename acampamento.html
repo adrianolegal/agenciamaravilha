@@ -25,6 +25,11 @@
     .rank-gold{background:#fff8e1;font-weight:600;}
     .rank-silver{background:#f1f3f5;font-weight:600;}
     .rank-bronze{background:#f7e0d6;font-weight:600;}
+    .btn-agencia-wrapper{
+      display:flex;
+      justify-content:center;
+      margin-bottom:1rem;
+    }
   </style>
 </head>
 
@@ -36,11 +41,9 @@
       <img src="assets/logo.jpg" width="28" height="28" alt="">
       <span>Agência Maravilha</span>
     </a>
-
     <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav">
       <span class="navbar-toggler-icon"></span>
     </button>
-
     <div id="nav" class="collapse navbar-collapse">
       <ul class="navbar-nav ms-auto">
         <li class="nav-item"><a class="nav-link" href="">Home</a></li>
@@ -60,7 +63,8 @@
     </div>
   </div>
 </header>
-<div class="d-flex justify-content-end mb-3">
+
+<div class="btn-agencia-wrapper">
   <button class="btn btn-primary btn-sm" id="btnAgencia">Mostrar apenas Agência</button>
 </div>
 
@@ -91,11 +95,11 @@
     </div>
   </div>
 </div>
+
 <main class="pb-5">
   <div class="container">
     <div class="card p-4">
       <h4 class="mb-4">Ranking Geral</h4>
-
       <div class="table-responsive">
         <table class="table align-middle ranking-table">
           <thead>
@@ -107,17 +111,13 @@
               <th>Pontos</th>
             </tr>
           </thead>
-
           <tbody id="rankingBody">
             <tr>
-              <td colspan="5" class="text-center py-4">
-                Carregando ranking...
-              </td>
+              <td colspan="5" class="text-center py-4">Carregando ranking...</td>
             </tr>
           </tbody>
         </table>
       </div>
-
     </div>
   </div>
 </main>
@@ -132,7 +132,6 @@
 </footer>
 
 <script type="module">
-
 import { supabase } from "/supabase.js";
 
 document.getElementById("y").textContent = new Date().getFullYear();
@@ -151,76 +150,48 @@ function classe(i){
   return "";
 }
 
+let data = [];
+
 async function carregarRanking(){
-
   const tabela = document.getElementById("rankingBody");
-
   try{
-
-    const { data, error } = await supabase
-      .from("ranking_evento_kwai") // <--- tabela correta
+    const { data: resultado, error } = await supabase
+      .from("ranking_evento_kwai")
       .select("*")
       .order("ranking_total",{ascending:false});
 
     if(error){
       console.error(error);
-      tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-danger text-center py-4">
-        Erro ao consultar banco
-        </td>
-      </tr>`;
+      tabela.innerHTML = `<tr><td colspan="5" class="text-danger text-center py-4">Erro ao consultar banco</td></tr>`;
       return;
     }
 
-    if(!data || data.length === 0){
-      tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-center py-4">
-        Nenhum registro encontrado
-        </td>
-      </tr>`;
+    data = resultado || [];
+
+    if(!data.length){
+      tabela.innerHTML = `<tr><td colspan="5" class="text-center py-4">Nenhum registro encontrado</td></tr>`;
       return;
     }
 
     tabela.innerHTML = "";
-
     data.forEach((row,i)=>{
-
-      const foto = row.avatar_url || "assets/avatar.png";
-
       const tr = document.createElement("tr");
       tr.className = classe(i);
-
       tr.innerHTML = `
         <td>${medalha(i)} ${i+1}</td>
-
         <td class="d-flex align-items-center gap-2">
-          <img src="${foto}" onerror="this.src='assets/avatar.png'">
+          <img src="${row.avatar_url}" alt="${row.name}">
           <span>${row.name ?? "-"}</span>
         </td>
-
         <td>${row.agencia ?? "-"}</td>
-
         <td>${row.kwai_id ?? "-"}</td>
-
         <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
       `;
-
       tabela.appendChild(tr);
-
     });
-
   }catch(e){
-
     console.error(e);
-
-    tabela.innerHTML = `
-      <tr>
-        <td colspan="5" class="text-danger text-center py-4">
-        Falha ao carregar ranking
-        </td>
-      </tr>`;
+    tabela.innerHTML = `<tr><td colspan="5" class="text-danger text-center py-4">Falha ao carregar ranking</td></tr>`;
   }
 }
 
@@ -231,14 +202,10 @@ const modalAgencia = new bootstrap.Modal(document.getElementById("modalAgencia")
 const tbodyAgencia = document.querySelector("#tabelaAgencia tbody");
 
 btnAgencia.addEventListener("click", () => {
-  // Filtra os da agência (contendo "Maravilha")
   const rowsAgencia = data.filter(row => row.agencia?.includes("Maravilha"));
-
   tbodyAgencia.innerHTML = "";
-
-  rowsAgencia.forEach((row, i) => {
+  rowsAgencia.forEach((row,i)=>{
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td>${medalha(i)} ${i+1}</td>
       <td class="d-flex align-items-center gap-2">
@@ -249,10 +216,8 @@ btnAgencia.addEventListener("click", () => {
       <td>${row.kwai_id ?? "-"}</td>
       <td><strong>${Number(row.ranking_total ?? 0).toLocaleString()}</strong></td>
     `;
-
     tbodyAgencia.appendChild(tr);
   });
-
   modalAgencia.show();
 });
 </script>
