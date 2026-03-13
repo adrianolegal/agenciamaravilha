@@ -225,6 +225,7 @@ async function carregarRanking(){
 }
 
 carregarRanking();
+
 const btnAgencia = document.getElementById("btnAgencia");
 const modalAgencia = new bootstrap.Modal(document.getElementById("modalAgencia"));
 const tbodyAgencia = document.querySelector("#tabelaAgencia tbody");
@@ -236,13 +237,12 @@ btnAgencia.addEventListener("click", () => {
   tbodyAgencia.innerHTML = "";
 
   rowsAgencia.forEach((row, i) => {
-    const foto = row.avatar_url || "assets/avatar.png";
     const tr = document.createElement("tr");
 
     tr.innerHTML = `
       <td>${medalha(i)} ${i+1}</td>
       <td class="d-flex align-items-center gap-2">
-        <img src="${foto}" onerror="this.src='assets/avatar.png'">
+        <img src="${row.avatar_url}" alt="${row.name}">
         <span>${row.name ?? "-"}</span>
       </td>
       <td>${row.agencia ?? "-"}</td>
