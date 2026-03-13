@@ -332,8 +332,11 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       }));
 
       const { error } = await supabase
-        .from("kwai_evento_import")
-        .upsert(formatted, { onConflict: "UserId" });
+.from("kwai_evento_import")
+.upsert(rows, {
+  onConflict: "UserId",
+  ignoreDuplicates: false
+})
 
       if (error) {
         showStatus(status, "Erro: " + error.message, "btn-error");
