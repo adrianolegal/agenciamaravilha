@@ -177,37 +177,25 @@ Ranking evento Kwai
 </div>
 </footer>
 
+<script type="module">
 
-<script type="module" src="/supabase.js"></script>
-<script src="assets/site.js"></script>
-
-<script>
+import { supabase } from "/supabase.js"
 
 document.getElementById("y").textContent = new Date().getFullYear();
 
-
 function medalha(pos){
-
 if(pos===0) return "🥇"
 if(pos===1) return "🥈"
 if(pos===2) return "🥉"
-
 return ""
-
 }
 
-
 function classeRank(pos){
-
 if(pos===0) return "rank-gold"
 if(pos===1) return "rank-silver"
 if(pos===2) return "rank-bronze"
-
 return ""
-
 }
-
-
 
 async function carregarRanking(){
 
@@ -216,7 +204,7 @@ const tabela = document.getElementById("rankingBody")
 tabela.innerHTML = `
 <tr>
 <td colspan="5" class="text-center py-4">
-Carregando dados...
+Carregando...
 </td>
 </tr>
 `
@@ -234,38 +222,31 @@ tabela.innerHTML=""
 
 data.forEach((row,index)=>{
 
+const foto = row.profile_pic || "assets/avatar.png"
+
 const tr = document.createElement("tr")
 
 tr.className = classeRank(index)
 
-const foto = row.profile_pic || "assets/avatar.png"
-
 tr.innerHTML = `
 
 <td>
-<span class="medalha">${medalha(index)}</span>
-${index+1}
+${medalha(index)} ${index+1}
 </td>
 
 <td class="d-flex align-items-center gap-2">
 
-<img src="${foto}" onerror="this.src='assets/avatar.png'">
+<img src="${foto}" width="44" height="44" style="border-radius:50%;object-fit:cover">
 
 <span>${row.name}</span>
 
 </td>
 
-<td>
-${row.agencia || "-"}
-</td>
+<td>${row.agencia || "-"}</td>
 
-<td>
-${row.kwai_id || "-"}
-</td>
+<td>${row.kwai_id || "-"}</td>
 
-<td>
-<strong>${Number(row.ranking_total || 0).toLocaleString()}</strong>
-</td>
+<td><strong>${Number(row.ranking_total || 0).toLocaleString()}</strong></td>
 
 `
 
@@ -280,7 +261,7 @@ console.error(err)
 
 tabela.innerHTML=`
 <tr>
-<td colspan="5" class="text-center text-danger py-4">
+<td colspan="5" class="text-danger text-center py-4">
 Erro ao carregar ranking
 </td>
 </tr>
@@ -293,8 +274,6 @@ Erro ao carregar ranking
 carregarRanking()
 
 </script>
-
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
