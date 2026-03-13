@@ -95,7 +95,12 @@ fetch('menu1.html').then(r => r.text()).then(html => {
     <button class="btn btn-brand" id="btnImportHosts">Importar Hosts</button>
     <div id="statusHosts" class="status"></div>
   </div>
-
+<div class="card">
+  <h3>Importar Evento Kwai</h3>
+  <input type="file" id="fileEvento" accept=".xlsx">
+  <button class="btn btn-brand" id="btnImportEvento">Importar Evento</button>
+  <div id="statusEvento" class="status"></div>
+</div>
   <div class="card">
     <h3>Importar Relatórios Lives (Tabela 2)</h3>
     <input type="file" id="fileReports" accept=".xlsx">
@@ -283,6 +288,58 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
     } catch (err) {
       showStatus(status, "Erro inesperado: " + err.message, "btn-error");
+    }
+  };
+
+  
+  document.getElementById("btnImportEvento").addEventListener("click", async () => {
+
+  const file = document.getElementById("fileEvento").files[0];
+  const status = document.getElementById("statusEvento");
+
+  if (!file) {
+    showStatus(status, "Selecione um arquivo", "btn-error");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+
+    try {
+
+      const dataArray = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(dataArray, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let json = XLSX.utils.sheet_to_json(sheet);
+
+      const formatted = json.map(row => ({
+        "Onborading Date": row["Onborading Date"] || null,
+        "UserId": Number(row["UserId"]) || null,
+        "Name": row["Name"] || null,
+        "Agência": row["Agência"] || null,
+        "KwaiId": row["KwaiId"] || null,
+        "RANKING TOTAL": row["RANKING TOTAL"] || 0,
+        "DIA 09/03": row["DIA 09/03"] || 0,
+        "DIA 10/03": row["DIA 10/03"] || 0,
+        "DIA 11/03": row["DIA 11/03"] || 0,
+        "DIA 12/03": row["DIA 12/03"] || 0,
+        "DIA 13/03": row["DIA 13/03"] || 0,
+        "DIA 14/03": row["DIA 14/03"] || 0
+      }));
+
+      const { error } = await supabase
+        .from("kwai_evento_import")
+        .upsert(formatted, { onConflict: "UserId" });
+
+      if (error) {
+        showStatus(status, "Erro: " + error.message, "btn-error");
+      } else {
+        showStatus(status, "Evento importado com sucesso ✓", "btn-success");
+      }
+
+    } catch (err) {
+      showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
     }
   };
 
