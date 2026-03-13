@@ -317,7 +317,9 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
       const formatted = json
       .map(row => ({
-        onboarding_date: row["Onborading Date"] || null,
+        onboarding_date: row["Onborading Date"]
+  ? new Date((row["Onborading Date"] - 25569) * 86400 * 1000).toISOString()
+  : null,
         user_id: row["UserId"] ? String(row["UserId"]) : null,
         name: row["Name"] || null,
         agencia: row["Agência"] || null,
