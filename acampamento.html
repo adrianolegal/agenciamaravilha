@@ -11,10 +11,6 @@
 
   <style>
     .ranking-table img { width: 50px; height: 50px; border-radius: 50%; }
-    .medalha { width: 40px; height: 40px; }
-    .badge-gold { background-color: #FFD700; color: #000; }
-    .badge-silver { background-color: #C0C0C0; color: #000; }
-    .badge-bronze { background-color: #CD7F32; color: #fff; }
     .ranking-header { text-align: center; margin-bottom: 2rem; }
   </style>
 </head>
@@ -44,7 +40,7 @@
   <div class="container">
     <div class="ranking-header">
       <h1 class="display-5 fw-semibold">Acompanhamento Ranking ACAMPAMENTO NOVATOS KWAI</h1>
-      <p class="lead muted">Confira a evolução dos participantes e destaque-se!</p>
+      <p class="lead muted">Confira a evolução dos participantes.</p>
     </div>
   </div>
 </header>
@@ -58,7 +54,6 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Medalha</th>
             <th>Avatar</th>
             <th>Nome</th>
             <th>Kwai ID</th>
@@ -66,7 +61,7 @@
           </tr>
         </thead>
         <tbody id="rankingBody">
-          <tr><td colspan="6" class="text-center">Carregando ranking...</td></tr>
+          <tr><td colspan="5" class="text-center">Carregando ranking...</td></tr>
         </tbody>
       </table>
     </div>
@@ -105,22 +100,18 @@ async function carregarRanking() {
   tbody.innerHTML = "";
 
   if (!data || !data.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="text-center">Nenhum participante registrado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="5" class="text-center">Nenhum participante registrado.</td></tr>`;
     return;
   }
 
   data.forEach((item, index) => {
-    let medalha = "";
-    if (index === 0) medalha = `<img src="assets/medalha_gold.png" class="medalha" alt="1º lugar">`;
-    else if (index === 1) medalha = `<img src="assets/medalha_silver.png" class="medalha" alt="2º lugar">`;
-    else if (index === 2) medalha = `<img src="assets/medalha_bronze.png" class="medalha" alt="3º lugar">`;
-
-    const avatar = item.avatar_url ? `<img src="${item.avatar_url}" alt="avatar">` : `<img src="assets/avatar_default.png" alt="avatar">`;
+    const avatar = item.avatar_url
+      ? `<img src="${item.avatar_url}" alt="avatar">`
+      : `<span class="text-muted">Sem foto</span>`;
 
     tbody.innerHTML += `
       <tr>
         <td>${index + 1}</td>
-        <td>${medalha}</td>
         <td>${avatar}</td>
         <td>${item.nome}</td>
         <td>${item.kwai_id}</td>
