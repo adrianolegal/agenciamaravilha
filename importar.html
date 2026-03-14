@@ -102,6 +102,12 @@ fetch('menu1.html').then(r => r.text()).then(html => {
   <div id="statusEvento" class="status"></div>
 </div>
   <div class="card">
+  <h3>Importar Evento Live Kwai</h3>
+  <input type="file" id="fileEvento" accept=".xlsx">
+  <button class="btn btn-brand" id="btnImportEvento2">Importar Live clash</button>
+  <div id="statusEvento" class="status"></div>
+</div>
+  <div class="card">
     <h3>Importar Relatórios Lives (Tabela 2)</h3>
     <input type="file" id="fileReports" accept=".xlsx">
     <button class="btn btn-brand" id="btnImportReports">Importar Reports</button>
@@ -309,7 +315,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
   reader.readAsArrayBuffer(file);
 });
- document.getElementById("btnImportEvento").addEventListener("click", async () => {
+ document.getElementById("btnImportEvento2").addEventListener("click", async () => {
 
   const file = document.getElementById("fileEvento").files[0];
   const status = document.getElementById("statusEvento");
@@ -352,6 +358,68 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 
       const { error } = await supabase
         .from("kwai_evento_import")
+        .upsert(formatted, { onConflict: "user_id" });
+
+      if (error) {
+        console.error(error);
+        showStatus(status, "Erro: " + error.message, "btn-error");
+      } else {
+        showStatus(status, "Evento importado com sucesso ✓", "btn-success");
+      }
+
+    } catch (err) {
+
+      console.error(err);
+      showStatus(status, "Erro leitura arquivo: " + err.message, "btn-error");
+
+    }
+
+  };
+ document.getElementById("btnImportEvento2").addEventListener("click", async () => {
+
+  const file = document.getElementById("fileEvento").files[0];
+  const status = document.getElementById("statusEvento");
+
+  if (!file) {
+    showStatus(status, "Selecione um arquivo", "btn-error");
+    return;
+  }
+
+  const reader = new FileReader();
+
+  reader.onload = async (e) => {
+
+    try {
+
+      const dataArray = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(dataArray, { type: "array" });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      let json = XLSX.utils.sheet_to_json(sheet);
+
+      const formatted = json
+.map(row => ({
+ 
+  user_id: row["UID do streamer"] ? String(row["UID do streamer"]) : null,
+  agencia: row["Nome da agência"] || null,
+  kwai_id: row["ID do streamer"] || null,
+
+  ranking_total: Number(row["RANKING"] || 0),
+
+  dia_10_03: Number(row["DIA 10/03"] || 0),
+  dia_11_03: Number(row["DIA 11/03"] || 0),
+  dia_12_03: Number(row["DIA 12/03"] || 0),
+  dia_13_03: Number(row["DIA 13/03"] || 0),
+  dia_14_03: Number(row["DIA 14/03"] || 0),
+  dia_15_03: Number(row["DIA 15/03"] || 0),
+  dia_16_03: Number(row["DIA 16/03"] || 0),
+  dia_17_03: Number(row["DIA 17/03"] || 0),
+  
+}))
+.filter(r => r.user_id);
+      console.log("DADOS:", formatted);
+
+      const { error } = await supabase
+        .from("kwai_evento_import2")
         .upsert(formatted, { onConflict: "user_id" });
 
       if (error) {
