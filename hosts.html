@@ -46,12 +46,14 @@ margin:auto;
 </head>
 
 <body>
-
 <div id="menu-placeholder"></div>
+
 <script>
-fetch('menu1.html').then(r => r.text()).then(html => {
-  document.getElementById('menu-placeholder').innerHTML = html;
-});
+fetch('menu1.html')
+.then(r => r.text())
+.then(html => {
+document.getElementById('menu-placeholder').innerHTML = html
+})
 </script>
 <div class="container">
     <h2>Painel de Hosts Simplificado</h2>
