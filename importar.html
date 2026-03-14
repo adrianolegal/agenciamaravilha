@@ -103,7 +103,7 @@ fetch('menu1.html').then(r => r.text()).then(html => {
 </div>
   <div class="card">
   <h3>Importar Evento Live Kwai</h3>
-  <input type="file" id="fileEvento" accept=".xlsx">
+  <input type="file" id="fileEvento2" accept=".xlsx">
   <button class="btn btn-brand" id="btnImportEvento2">Importar Live clash</button>
   <div id="statusEvento2" class="status"></div>
 </div>
@@ -379,7 +379,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
 });
  document.getElementById("btnImportEvento2").addEventListener("click", async () => {
 
-  const file = document.getElementById("fileEvento").files[0];
+  const file = document.getElementById("fileEvento2").files[0];
   const status = document.getElementById("statusEvento2");
 
   if (!file) {
