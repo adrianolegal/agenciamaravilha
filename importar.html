@@ -375,6 +375,8 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
     }
 
   };
+   reader.readAsArrayBuffer(file);
+});
  document.getElementById("btnImportEvento2").addEventListener("click", async () => {
 
   const file = document.getElementById("fileEvento").files[0];
