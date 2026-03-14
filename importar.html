@@ -105,7 +105,7 @@ fetch('menu1.html').then(r => r.text()).then(html => {
   <h3>Importar Evento Live Kwai</h3>
   <input type="file" id="fileEvento" accept=".xlsx">
   <button class="btn btn-brand" id="btnImportEvento2">Importar Live clash</button>
-  <div id="statusEvento" class="status"></div>
+  <div id="statusEvento2" class="status"></div>
 </div>
   <div class="card">
     <h3>Importar Relatórios Lives (Tabela 2)</h3>
@@ -380,7 +380,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
  document.getElementById("btnImportEvento2").addEventListener("click", async () => {
 
   const file = document.getElementById("fileEvento").files[0];
-  const status = document.getElementById("statusEvento");
+  const status = document.getElementById("statusEvento2");
 
   if (!file) {
     showStatus(status, "Selecione um arquivo", "btn-error");
