@@ -401,7 +401,7 @@ document.getElementById("confirmarPeriodo").addEventListener("click", async () =
       const formatted = json
 .map(row => ({
  
-  user_id: row["UID do streamer"] ? String(row["UID do streamer"]) : null,
+  user_id: row["UID do streamer"] || row["UID"] || row["UserId"] || null,
   agencia: row["Nome da agência"] || null,
   kwai_id: row["ID do streamer"] || null,
 
