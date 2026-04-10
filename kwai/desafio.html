@@ -154,7 +154,7 @@ hostSearch.addEventListener('input', e => {
     kwai_id.textContent = encontrado.kwai_id;
 
     kwaiPreview.style.display = 'block';
-    kwaiLink.href = https://kwai.com/@${encontrado.kwai_id};
+    kwaiLink.href = `https://kwai.com/@${encontrado.kwai_id}`;
     kwaiName.textContent = encontrado.apelido;
 
     supabase.from('kwai_profiles').select('avatar_url')
