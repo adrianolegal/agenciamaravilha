@@ -1,22 +1,35 @@
-<button onclick="teste()">Testar</button>
+
+<input type="text" id="uid" placeholder="Digite o UID">
+<button onclick="consultar()">Consultar</button>
+
+<div id="resp"></div>
 
 <script>
-async function teste(){
+async function consultar() {
+  const uid = document.getElementById('uid').value.trim();
+  if (!uid) return;
 
-  const r = await fetch(
-    "https://live-hosts-hub.preview.emergentagent.com/api/entry-request/verify-kwai",
-    {
-      method: "POST",
-      headers: {
-        "content-type": "application/json"
-      },
-      body: JSON.stringify({
-        kwai_id: "bio289"
-      })
+  const resp = document.getElementById('resp');
+  resp.innerHTML = 'Consultando...';
+
+  try {
+    const r = await fetch('/api/consultar?uid=' + encodeURIComponent(uid));
+    const data = await r.json();
+
+    if (!data.ok) {
+      resp.innerHTML = 'Erro: ' + data.error;
+      return;
     }
-  );
 
-  const text = await r.text();
-console.log(text);
+    if (data.status === 'disponivel') {
+      resp.innerHTML = '🟢 Pode agenciar';
+    } else if (data.status === 'indisponivel') {
+      resp.innerHTML = '🔴 Já agenciado';
+    } else {
+      resp.innerHTML = '⚠️ Resultado não reconhecido: ' + data.raw;
+    }
+  } catch (e) {
+    resp.innerHTML = 'Erro de rede';
+  }
 }
 </script>
