@@ -1,0 +1,23 @@
+<button onclick="teste()">Testar</button>
+
+<script>
+async function teste(){
+
+  const r = await fetch(
+    "https://live-hosts-hub.preview.emergentagent.com/api/entry-request/verify-kwai",
+    {
+      method: "POST",
+      headers: {
+        "content-type": "application/json"
+      },
+      body: JSON.stringify({
+        kwai_id: "bio289"
+      })
+    }
+  );
+
+  const text = await r.text();
+
+  console.log(text);
+}
+</script>
