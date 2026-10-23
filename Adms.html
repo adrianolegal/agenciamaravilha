@@ -15,7 +15,7 @@
 <div class="col-md-6"><label for="filtro">Localizar host por nome, UID ou Kwai ID</label><input class="form-control" id="filtro" placeholder="Pesquisar na lista" autocomplete="off"></div>
 </div><p class="small-note mt-3 mb-0">Nomes do mesmo recrutador são agrupados sem diferenciar letras maiúsculas, acentos ou espaços. A última gravação é a mais recente cadastrada na biblioteca, não necessariamente a última live feita.</p><p id="msg" role="status" class="mt-2"></p></section>
 <section class="row g-3" id="metrics"><div class="col-md-4"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-4"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-4"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
-<section class="pane table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Host</th><th>UID (Member ID)</th><th>Kwai ID</th><th>Última gravação registrada</th><th>Dias de live no mês</th><th>Horas de live no mês</th></tr></thead><tbody id="tabela"><tr><td colspan="6">Selecione um recrutador.</td></tr></tbody></table></section>
+<section class="pane table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Host</th><th>UID (Member ID)</th><th>Kwai ID</th><th>Última gravação registrada</th><th>Dias de live no mês</th><th>Horas de live no mês</th><th>Diamantes do streamer no mês</th></tr></thead><tbody id="tabela"><tr><td colspan="7">Selecione um recrutador.</td></tr></tbody></table></section>
 </main>
 <script type="module">
 import {supabase} from './supabase.js';
@@ -64,9 +64,9 @@ function createGroups(){
 function show(list){const filter=norm($('filtro').value);const found=list.filter(x=>!filter||[x.name,x.uid,x.kwai].some(v=>norm(v).includes(filter)));
  $('tabela').replaceChildren();
  for(const r of found){const tr=document.createElement('tr');
-  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'Sem registro',timeDisplay(r.hours)]){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
+  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'Sem registro',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR')]){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
   $('tabela').append(tr)}
- if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
+ if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
  $('totalHosts').textContent=list.length;
  $('ativos').textContent=list.filter(x=>x.days!=null).length;
 }
@@ -78,9 +78,9 @@ async function consult(){
  const associated=allReports.filter(r=>norm(r.nome_agente)===key);
  const map=new Map();
  for(const r of associated){const uid=label(r.member_id),kwai=label(r.kwai_id),hostKey=uid||kwai;if(!hostKey)continue;
-  const row=map.get(hostKey)||{uid,kwai,name:r.apelido_streamer||'',days:null,hours:null,last:null};
+  const row=map.get(hostKey)||{uid,kwai,name:r.apelido_streamer||'',days:null,hours:null,diamonds:null,last:null};
   if(r.apelido_streamer)row.name=r.apelido_streamer;if(kwai)row.kwai=kwai;
-  if(Number(r.mes)===month&&Number(r.ano)===year){row.days=r.dias_transmissao;row.hours=r.duracao_transmissao;}
+  if(Number(r.mes)===month&&Number(r.ano)===year){row.days=r.dias_transmissao;row.hours=r.duracao_transmissao;row.diamonds=r.fluxo_presentes;}
   map.set(hostKey,row);
  }
  let videos=[];try{
@@ -93,5 +93,5 @@ async function consult(){
  }catch(e){msg('Erro: '+e.message)}finally{button.disabled=false}
 }
 $('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
-try{allReports=await fetchAll('host_reports_simplificado','member_id,kwai_id,apelido_streamer,nome_agente,mes,ano,dias_transmissao,duracao_transmissao',null,30);createGroups();msg(groups.size+' recrutador(es) encontrados nos relatórios. Selecione um para consultar.')}catch(e){msg('Falha ao carregar recrutadores: '+e.message)}
+try{allReports=await fetchAll('host_reports_simplificado','member_id,kwai_id,apelido_streamer,nome_agente,mes,ano,dias_transmissao,duracao_transmissao,fluxo_presentes',null,30);createGroups();msg(groups.size+' recrutador(es) encontrados nos relatórios. Selecione um para consultar.')}catch(e){msg('Falha ao carregar recrutadores: '+e.message)}
 </script></body></html>
