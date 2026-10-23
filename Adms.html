@@ -22,9 +22,11 @@ import {supabase} from './supabase.js';
 const $=id=>document.getElementById(id);
 const {data:{user},error:ae}=await supabase.auth.getUser();
 if(ae||!user){location.replace('login.html');throw Error('Faça login')}
-const {data:access,error:pe}=await supabase.from('agencia_usuarios').select('perfil,ativo').eq('user_id',user.id).maybeSingle();
-if(pe||!access?.ativo||access.perfil!=='administrador'){document.querySelector('main').textContent='Área exclusiva do administrador da Agência Maravilha.';throw Error('Acesso não permitido')}
+const {data:access,error:pe}=await supabase.from('agencia_usuarios').select('perfil,ativo,nome_agente').eq('user_id',user.id).maybeSingle();
+if(pe||!access?.ativo||!['administrador','recrutador'].includes(access.perfil)){document.querySelector('main').textContent='Sem permissão para consultar relatórios.';throw Error('Acesso não permitido')}
 fetch('menu1.html').then(x=>x.text()).then(html=>$('menu-placeholder').innerHTML=html).catch(()=>{});
+const recruiter=access.perfil==='recrutador';
+if(recruiter){$('agente').disabled=true;$('agente').closest('.col-md-5').querySelector('label').textContent='Seu recrutador';}
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');
 const label=s=>String(s??'').trim();
 const msg=s=>$('msg').textContent=s;
@@ -75,7 +77,7 @@ function show(list){const filter=norm($('filtro').value);const found=list.filter
  $('totalHours').textContent=list.reduce((sum,x)=>sum+hoursValue(x.hours),0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h';
 }
 async function consult(){
- const key=$('agente').value;if(!key){msg('Selecione um recrutador.');return}
+ const key=recruiter?norm(access.nome_agente):$('agente').value;if(!key){msg('Selecione um recrutador.');return}
  const button=$('buscar');button.disabled=true;msg('Consultando relatórios e gravações...');
  try{
  const month=Number($('mes').value),year=Number($('ano').value);
@@ -88,7 +90,7 @@ async function consult(){
   map.set(hostKey,row);
  }
  let videos=[];try{
-  videos=await fetchAll('kwai_gravacoes','streamer,inicio',null,10);
+  videos=recruiter?[]:await fetchAll('kwai_gravacoes','streamer,inicio',null,10);
  }catch(err){msg('Aviso: não foi possível carregar a biblioteca de gravações: '+err.message)}
  const latest=new Map();for(const v of videos){const k=norm(v.streamer);if(v.inicio&&(!latest.has(k)||v.inicio>latest.get(k)))latest.set(k,v.inicio)}
  current=[...map.values()].map(x=>({...x,last:latest.get(norm(x.kwai))||null})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
@@ -97,5 +99,21 @@ async function consult(){
  }catch(e){msg('Erro: '+e.message)}finally{button.disabled=false}
 }
 $('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
-try{allReports=await fetchAll('host_reports_simplificado','member_id,kwai_id,apelido_streamer,nome_agente,mes,ano,dias_transmissao,duracao_transmissao,fluxo_presentes',null,30);createGroups();msg(groups.size+' recrutador(es) encontrados nos relatórios. Selecione um para consultar.')}catch(e){msg('Falha ao carregar recrutadores: '+e.message)}
+try{
+ if(recruiter){
+  const {data,error}=await supabase.rpc('agencia_meus_hosts');
+  if(error)throw Error(error.message);
+  allReports=(data||[]).map(r=>({...r,nome_agente:access.nome_agente}));
+  createGroups();
+  const key=norm(access.nome_agente);
+  if(!groups.has(key))groups.set(key,{display:access.nome_agente,names:new Set([access.nome_agente])});
+  $('agente').replaceChildren(new Option(access.nome_agente,key));
+  $('agente').value=key;
+  await consult();
+ }else{
+  allReports=await fetchAll('host_reports_simplificado','member_id,kwai_id,apelido_streamer,nome_agente,mes,ano,dias_transmissao,duracao_transmissao,fluxo_presentes',null,30);
+  createGroups();
+  msg(groups.size+' recrutador(es) encontrados nos relatórios. Selecione um para consultar.');
+ }
+}catch(e){msg('Falha ao carregar relatórios: '+e.message)}
 </script></body></html>
