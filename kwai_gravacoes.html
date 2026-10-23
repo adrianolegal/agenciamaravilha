@@ -66,4 +66,4 @@ $('bat').onclick=()=>{if(!isAdmin)return;const checked=new Set([...document.quer
 await loadHosts();
 const now=new Date();const day=d=>new Intl.DateTimeFormat('sv-SE',{timeZone:'America/Sao_Paulo',year:'numeric',month:'2-digit',day:'2-digit'}).format(d);$('end').value=day(now);$('start').value=day(new Date(now.getTime()-6*86400000));
 $('rows').innerHTML='<tr><td colspan="8">Selecione um host e clique em Consultar biblioteca.</td></tr>';
-</script></body></html>
+</script><script type="module" src="menu-acessos.js"></script></body></html>
