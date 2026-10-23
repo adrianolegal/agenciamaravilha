@@ -70,7 +70,7 @@ if (acessoErr || !conta || !conta.ativo) {
   await supabase.auth.signOut();
   throw new Error('Conta sem perfil ativo');
 }
-const destino = conta.perfil === 'recrutador' ? 'recrutador.html' : 'restrito.html';
+const destino = conta.perfil === 'recrutador' ? 'Adms.html' : 'restrito.html';
 setTimeout(() => window.location.href = destino, 800);
     } catch (err) {
       msg.style.color = "#f87171";
