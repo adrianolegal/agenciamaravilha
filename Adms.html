@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Recrutadores e Hosts — Agência Maravilha</title>
+<link rel="stylesheet" href="menu1.css"><link rel="stylesheet" href="assets/styles.css">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>body{background:#0f172a;color:#eef3fb;padding:76px 12px 32px}main{max-width:1350px;margin:auto}.pane{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin:16px 0}.form-select,.form-control{background:#0f172a;color:#f8fafc;border-color:#64748b}.form-select:focus,.form-control:focus{background:#0f172a;color:#fff}.table{--bs-table-bg:transparent;--bs-table-color:#eef3fb;--bs-table-border-color:#334155}.table th{white-space:nowrap;color:#fbbf24}.muted{color:#b6c6d9}.metric{background:#101b2d;border:1px solid #344358;border-radius:10px;padding:13px}.metric strong{font-size:1.3rem;display:block}.small-note{font-size:.84rem;color:#bac9db}</style></head>
+<body><div id="menu-placeholder"></div><main>
+<h1>Recrutadores — Hosts vinculados</h1>
+<p class="muted">Consulta dos hosts atuais e históricos por recrutador, com dados mensais do Voyager.</p>
+<section class="pane"><div class="row g-3 align-items-end">
+<div class="col-md-5"><label for="agente">Recrutador</label><select class="form-select" id="agente"><option value="">Carregando...</option></select></div>
+<div class="col-md-2"><label for="mes">Mês</label><select class="form-select" id="mes"></select></div>
+<div class="col-md-2"><label for="ano">Ano</label><input class="form-control" id="ano" type="number" min="2020" max="2100"></div>
+<div class="col-md-3"><button class="btn btn-warning w-100" id="buscar">Consultar</button></div>
+<div class="col-md-6"><label for="filtro">Localizar host por nome, UID ou Kwai ID</label><input class="form-control" id="filtro" placeholder="Pesquisar na lista" autocomplete="off"></div>
+</div><p class="small-note mt-3 mb-0">Nomes do mesmo recrutador são agrupados sem diferenciar letras maiúsculas, acentos ou espaços. A última gravação é a mais recente cadastrada na biblioteca, não necessariamente a última live feita.</p><p id="msg" role="status" class="mt-2"></p></section>
+<section class="row g-3" id="metrics"><div class="col-md-4"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-4"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-4"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
+<section class="pane table-responsive"><table class="table table-hover align-middle"><thead><tr><th>Host</th><th>UID (Member ID)</th><th>Kwai ID</th><th>Última gravação registrada</th><th>Dias de live no mês</th><th>Horas de live no mês</th></tr></thead><tbody id="tabela"><tr><td colspan="6">Selecione um recrutador.</td></tr></tbody></table></section>
+</main>
+<script type="module">
+import {supabase} from './supabase.js';
+const $=id=>document.getElementById(id);
+const {data:{user},error:ae}=await supabase.auth.getUser();
+if(ae||!user){location.replace('login.html');throw Error('Faça login')}
+const {data:access,error:pe}=await supabase.from('agencia_usuarios').select('perfil,ativo').eq('user_id',user.id).maybeSingle();
+if(pe||!access?.ativo||access.perfil!=='administrador'){document.querySelector('main').textContent='Área exclusiva do administrador da Agência Maravilha.';throw Error('Acesso não permitido')}
+fetch('menu1.html').then(x=>x.text()).then(html=>$('menu-placeholder').innerHTML=html).catch(()=>{});
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');
+const label=s=>String(s??'').trim();
+const msg=s=>$('msg').textContent=s;
+const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+months.forEach((x,i)=>$('mes').add(new Option(x,i+1)));
+const now=new Date();const parts=new Intl.DateTimeFormat('en-US',{timeZone:'America/Sao_Paulo',year:'numeric',month:'numeric'}).formatToParts(now);
+$('mes').value=parts.find(x=>x.type==='month').value;$('ano').value=parts.find(x=>x.type==='year').value;
+async function fetchAll(table,fields,filter,maxPages=20){
+ let result=[];
+ for(let offset=0,p=0;p<maxPages;offset+=1000,p++){
+  let q=supabase.from(table).select(fields).range(offset,offset+999);
+  if(filter)q=filter(q);
+  const {data,error}=await q;
+  if(error)throw Error(table+': '+error.message);
+  result.push(...(data||[]));if(!data||data.length<1000)return result;
+ }
+ throw Error('Consulta excedeu o limite de paginação; refine os filtros.');
+}
+let allReports=[],groups=new Map(),current=[];
+function fmtDate(value){if(!value)return '—';const d=new Date(value);return isNaN(d)?'—':new Intl.DateTimeFormat('pt-BR',{timeZone:'America/Sao_Paulo',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'}).format(d)}
+function timeDisplay(val){
+ if(val==null||val==='')return '—';
+ if(typeof val==='number'&&Number.isFinite(val))return (val/3600).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h';
+ const s=String(val).trim();
+ if(/^\d{1,3}:\d{2}(:\d{2})?$/.test(s)){const x=s.split(':').map(Number);return (x.length===3?x[0]+x[1]/60+x[2]/3600:x[0]+x[1]/60).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h'}
+ return s;
+}
+function createGroups(){
+ groups=new Map();
+ for(const r of allReports){if(!r.nome_agente)continue;const key=norm(r.nome_agente);if(!key)continue;
+  if(!groups.has(key))groups.set(key,{display:label(r.nome_agente),names:new Set()});
+  groups.get(key).names.add(label(r.nome_agente));
+ }
+ const select=$('agente');select.replaceChildren(new Option('Selecione o recrutador',''));
+ [...groups].sort((a,b)=>a[1].display.localeCompare(b[1].display,'pt-BR')).forEach(([key,g])=>select.add(new Option(g.display+' ('+g.names.size+' grafia'+(g.names.size>1?'s':'')+')',key)));
+}
+function show(list){const filter=norm($('filtro').value);const found=list.filter(x=>!filter||[x.name,x.uid,x.kwai].some(v=>norm(v).includes(filter)));
+ $('tabela').replaceChildren();
+ for(const r of found){const tr=document.createElement('tr');
+  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'Sem registro',timeDisplay(r.hours)]){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
+  $('tabela').append(tr)}
+ if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=6;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
+ $('totalHosts').textContent=list.length;
+ $('ativos').textContent=list.filter(x=>x.days!=null).length;
+}
+async function consult(){
+ const key=$('agente').value;if(!key){msg('Selecione um recrutador.');return}
+ const button=$('buscar');button.disabled=true;msg('Consultando relatórios e gravações...');
+ try{
+ const month=Number($('mes').value),year=Number($('ano').value);
+ const associated=allReports.filter(r=>norm(r.nome_agente)===key);
+ const map=new Map();
+ for(const r of associated){const uid=label(r.member_id),kwai=label(r.kwai_id),hostKey=uid||kwai;if(!hostKey)continue;
+  const row=map.get(hostKey)||{uid,kwai,name:r.apelido_streamer||'',days:null,hours:null,last:null};
+  if(r.apelido_streamer)row.name=r.apelido_streamer;if(kwai)row.kwai=kwai;
+  if(Number(r.mes)===month&&Number(r.ano)===year){row.days=r.dias_transmissao;row.hours=r.duracao_transmissao;}
+  map.set(hostKey,row);
+ }
+ let videos=[];try{
+  videos=await fetchAll('kwai_gravacoes','streamer,inicio',null,10);
+ }catch(err){msg('Aviso: não foi possível carregar a biblioteca de gravações: '+err.message)}
+ const latest=new Map();for(const v of videos){const k=norm(v.streamer);if(v.inicio&&(!latest.has(k)||v.inicio>latest.get(k)))latest.set(k,v.inicio)}
+ current=[...map.values()].map(x=>({...x,last:latest.get(norm(x.kwai))||null})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
+ $('selectedAgent').textContent=groups.get(key)?.display||'—';show(current);
+ msg(current.length+' host(s) vinculados. Métricas de '+months[month-1]+'/'+year+'. Última gravação depende dos registros já publicados na biblioteca.');
+ }catch(e){msg('Erro: '+e.message)}finally{button.disabled=false}
+}
+$('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
+try{allReports=await fetchAll('host_reports_simplificado','member_id,kwai_id,apelido_streamer,nome_agente,mes,ano,dias_transmissao,duracao_transmissao',null,30);createGroups();msg(groups.size+' recrutador(es) encontrados nos relatórios. Selecione um para consultar.')}catch(e){msg('Falha ao carregar recrutadores: '+e.message)}
+</script></body></html>
