@@ -4,8 +4,31 @@ const {data:{user}}=await supabase.auth.getUser();if(!user){location.replace('lo
 const {data:prof,error:e}=await supabase.from('agencia_usuarios').select('perfil,ativo').eq('user_id',user.id).maybeSingle();if(e||!prof?.ativo){document.querySelector('main').textContent='Conta não autorizada';throw Error('Sem permissão')}
 fetch('menu1.html').then(r=>r.text()).then(t=>$('menu-placeholder').innerHTML=t).catch(()=>{});
 const say=s=>$('msg').textContent=s;
-$('kwai').oninput=()=>{$('check').textContent='Vínculo ainda não verificado pelo Voyager'};
+let timer,foundExisting=false,lastChecked='';
+$('origem').value='Kwai';
+$('kwai').addEventListener('input',()=>{
+ clearTimeout(timer);foundExisting=false;lastChecked='';
+ const id=$('kwai').value.trim();
+ $('check').textContent=id?'Aguardando consulta ao cadastro da agência...':'Informe o Kwai ID';
+ if(id)timer=setTimeout(()=>checkHost(id),450);
+});
+async function checkHost(id){
+ if($('kwai').value.trim()!==id)return;
+ $('check').textContent='Consultando hosts cadastrados na Agência Maravilha...';
+ const {data,error}=await supabase.from('host_reports_simplificado').select('kwai_id,apelido_streamer,nome_agente').ilike('kwai_id',id).limit(1);
+ if($('kwai').value.trim()!==id)return;
+ if(error){$('check').textContent='Falha na consulta interna: '+error.message+'. Vínculo Voyager não verificado.';return}
+ lastChecked=id;foundExisting=!!data?.length;
+ if(foundExisting){
+ const h=data[0];$('nome').value=h.apelido_streamer||$('nome').value;
+ $('check').textContent='Já consta nos relatórios da agência'+(h.nome_agente?' — recrutador: '+h.nome_agente:'')+'. Confirmar vínculo atual no Voyager.';
+ $('check').style.color='#ffb454';
+ }else{
+ $('check').textContent='Não encontrado nos relatórios da agência. Vínculo com outras agências ainda NÃO verificado no Voyager.';
+ $('check').style.color='#b9c6d8';
+ }
+}
 async function load(){const {data,error}=await supabase.from('agencia_solicitacoes_ingresso').select('created_at,kwai_id,nome_host,status,retorno_verificacao').order('created_at',{ascending:false}).limit(200);if(error){say('Erro ao consultar solicitações: '+error.message+(error.code==='PGRST205'||/Could not find the table/i.test(error.message)?' | Execute o SQL agencia_solicitacoes_ingresso.sql no Supabase da Agência Maravilha.':''));return}const body=$('rows');body.replaceChildren();for(const r of data||[]){const tr=document.createElement('tr');for(const val of [new Date(r.created_at).toLocaleString('pt-BR'),r.kwai_id,r.nome_host||'—',r.status,r.retorno_verificacao||'Não verificado']){const td=document.createElement('td');td.textContent=val;tr.append(td)}body.append(tr)}}
-$('form').onsubmit=async event=>{event.preventDefault();$('send').disabled=true;try{const kwai=$('kwai').value.trim();if(!kwai)throw Error('Informe o Kwai ID');const {data:existing,error:checkErr}=await supabase.from('agencia_solicitacoes_ingresso').select('id,status').eq('kwai_id',kwai).in('status',['pendente_verificacao','aguardando_aprovacao','aprovado','enviado']).limit(1);if(checkErr)throw checkErr;if(existing?.length)throw Error('Já existe uma solicitação ativa para este Kwai ID');const payload={solicitante_id:user.id,kwai_id:kwai,nome_host:$('nome').value.trim()||null,plataforma_origem:$('origem').value||null,id_plataforma:$('idOrigem').value.trim()||null,seguidores_plataforma:$('seguidores').value?Number($('seguidores').value):null,informacoes_adicionais:$('notas').value.trim()||null};const {error}=await supabase.from('agencia_solicitacoes_ingresso').insert(payload);if(error)throw error;say('Pedido registrado para conferência pelo administrador. Não foi enviado ao Voyager.');$('form').reset();await load()}catch(err){say('Erro: '+err.message)}finally{$('send').disabled=false}};
+$('form').onsubmit=async event=>{event.preventDefault();$('send').disabled=true;try{const kwai=$('kwai').value.trim();if(!kwai)throw Error('Informe o Kwai ID');if(foundExisting&&lastChecked===kwai&&!window.confirm('Este Kwai ID já aparece nos relatórios da agência. Deseja registrar mesmo assim para análise?'))return;const {data:existing,error:checkErr}=await supabase.from('agencia_solicitacoes_ingresso').select('id,status').eq('kwai_id',kwai).in('status',['pendente_verificacao','aguardando_aprovacao','aprovado','enviado']).limit(1);if(checkErr)throw checkErr;if(existing?.length)throw Error('Já existe uma solicitação ativa para este Kwai ID');const payload={solicitante_id:user.id,kwai_id:kwai,nome_host:$('nome').value.trim()||null,plataforma_origem:$('origem').value||null,id_plataforma:$('idOrigem').value.trim()||null,seguidores_plataforma:$('seguidores').value?Number($('seguidores').value):null,informacoes_adicionais:$('notas').value.trim()||null};const {error}=await supabase.from('agencia_solicitacoes_ingresso').insert(payload);if(error)throw error;say('Pedido registrado para conferência pelo administrador. Não foi enviado ao Voyager.');$('form').reset();await load()}catch(err){say('Erro: '+err.message)}finally{$('send').disabled=false}};
 await load();
 </script><script type="module" src="menu-acessos.js"></script></body></html>
