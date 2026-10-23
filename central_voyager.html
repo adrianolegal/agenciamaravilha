@@ -14,4 +14,4 @@ $('approve').onclick=()=>status('aguardando_aprovacao');$('sent').onclick=()=>st
 const channel=supabase.channel('central-ingressos-admin').on('postgres_changes',{event:'INSERT',schema:'public',table:'agencia_solicitacoes_ingresso'},()=>load()).subscribe();
 window.addEventListener('pagehide',()=>supabase.removeChannel(channel));
 await load();
-</script><script type="module" src="menu-acessos.js"></script></body></html>
+</script><script type="module" src="menu-acessos.js"></script><script type="module" src="ponte-admin.js"></script></body></html>
