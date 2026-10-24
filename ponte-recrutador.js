@@ -19,7 +19,7 @@ if(user&&$('kwai')&&$('check')){
     clearInterval(interval);btn.disabled=false;
     if(r.nome_host)$('nome').value=r.nome_host;else $('nome').value='';uidLabel.textContent=r.uid_host?'UID Kwai: '+r.uid_host:'UID Kwai: não retornado pela consulta';
     current={id,liberado:r.status==='concluida'&&r.liberado===true};
-    const msg=String(r.mensagem||'');const missing=/sem UID reconhecido|member\/name|não localizad|nao localizad|não encontrad|nao encontrad|not found|no results/i.test(msg);status.textContent=r.status==='erro'?(missing?'Kwai ID não localizado. Confira se o usuário alterou seu ID.':'Não foi possível concluir a consulta ao Kwai: '+msg):r.liberado?'Host liberado pelo Kwai. Pode prosseguir com o pedido de ingresso na agência.':'Kwai: impedido — '+msg;
+    const msg=String(r.mensagem||'');const missing=/sem UID reconhecido|member\/name|não localizad|nao localizad|não encontrad|nao encontrad|not found|no results/i.test(msg);status.textContent=r.status==='erro'?(missing?'Kwai ID não localizado. Confira se o usuário alterou seu ID.':'Não foi possível concluir a consulta ao Kwai: '+msg):r.liberado?'Host liberado pelo Kwai, sem agência. Pode prosseguir com o pedido de ingresso na agência. Ainda será verificado o tempo de live, que pode impedir a autorização, e o ingresso dependerá da análise final dos administradores do Kwai.':'Kwai: impedido — '+msg;
     status.style.color=current.liberado?'#86efac':'#fca5a5';return;
    }
    if(r.status==='processando')status.textContent='Consultando o Kwai no computador administrativo...';
