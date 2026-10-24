@@ -4,7 +4,7 @@ export function instalarEnvioKwai({supabase, getSolicitacao, getRecrutador, dest
   const botao=document.createElement('button');
   botao.type='button';botao.className='btn btn-success';
   botao.textContent='Enviar convite ao Kwai';
-  destino.appendChild(botao);
+  destino.querySelectorAll('[data-kwai-enviar]').forEach(x=>x.remove());botao.dataset.kwaiEnviar='1';destino.appendChild(botao);
   let emAndamento=false;
   const padronizar=n=>/^(adm game|adm game over|adm gamer|adm gamer over)$/i.test(String(n||'').trim())?'Adm Gamer Over':String(n||'').trim();
   botao.addEventListener('click',async()=>{
@@ -13,6 +13,7 @@ export function instalarEnvioKwai({supabase, getSolicitacao, getRecrutador, dest
     if(!solicitacao){alert('Selecione uma solicitação.');return;}
     if(['enviado','confirmado','vinculo_existente'].includes(solicitacao.status)){alert('Convite já enviado ou vínculo existente.');return;}
     emAndamento=true;botao.disabled=true;
+    let tentativaReal=false;
     try{
       const {data:consultas,error:erroConsulta}=await supabase.from('agencia_consultas_voyager').select('uid_host,nome_host,liberado,status').eq('kwai_id',solicitacao.kwai_id).eq('status','concluida').order('criado_em',{ascending:false}).limit(1);
       if(erroConsulta)throw erroConsulta;
@@ -27,6 +28,7 @@ export function instalarEnvioKwai({supabase, getSolicitacao, getRecrutador, dest
       if(erroAtual)throw erroAtual;
       if(['enviado','confirmado','vinculo_existente'].includes(atual.status))throw Error('Esta solicitação já foi enviada.');
       const payload={memberId:Number(uid),contractMonths:-1,agreementId:2,brokerName:agente,byAnchor:0,comment:String(solicitacao.informacoes_adicionais||'').slice(0,200),areaCode:'+55',contactInfo:'41991161317',contactType:1,platformType:99,platformId:String(solicitacao.id_plataforma||''),platformInfoUrl:'',platformLink:'',toAnchorExtraMsg:'',userName:nome};
+      tentativaReal=true;
       const requestId=crypto.randomUUID();
       const resposta=await new Promise((resolve,reject)=>{
         const timer=setTimeout(()=>{window.removeEventListener('message',receber);reject(Error('Tempo esgotado. CONFIRA o histórico de convites antes de tentar novamente.'))},30000);
@@ -38,6 +40,16 @@ export function instalarEnvioKwai({supabase, getSolicitacao, getRecrutador, dest
       const {error:erroSalvar}=await supabase.from('agencia_solicitacoes_ingresso').update({status:'enviado',retorno_verificacao:'Convite enviado ao Kwai — aguardando aceite',updated_at:new Date().toISOString()}).eq('id',solicitacao.id);
       if(erroSalvar)throw Error('Kwai aceitou o convite, mas o Supabase não gravou: '+erroSalvar.message+'. NÃO REENVIE.');
       alert('Convite enviado ao Kwai. Aguardando aceite da streamer.');location.reload();
-    }catch(e){alert('Envio não confirmado: '+e.message)}finally{emAndamento=false;botao.disabled=false}
+    }catch(e){
+      const motivo=String(e?.message||e);
+      const incerto=/tempo esgotado|timeout|extensão não respondeu|extensao nao respondeu/i.test(motivo);
+      if(tentativaReal&&!incerto){
+        const regra=/não atende o requisito de tempo de live|nao atende o requisito de tempo de live|tempo de live|live duration/i.test(motivo);
+        const mensagem=regra?'Convite recusado pelo Kwai: não atende ao requisito de tempo de live.':'Convite não enviado pelo Kwai: '+motivo;
+        const {error:saveError}=await supabase.from('agencia_solicitacoes_ingresso').update({retorno_verificacao:mensagem,updated_at:new Date().toISOString()}).eq('id',solicitacao.id);
+        if(saveError)alert('Falha ao informar o recrutador: '+saveError.message);
+      }
+      alert('Envio não confirmado: '+motivo);
+    }finally{emAndamento=false;botao.disabled=false}
   });
 }
