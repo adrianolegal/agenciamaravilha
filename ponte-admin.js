@@ -18,7 +18,7 @@ if(profile?.perfil==='administrador'&&profile?.ativo){
    const {data:claimed,error:claimError}=await supabase.from('agencia_consultas_voyager').update({status:'processando',atualizado_em:new Date().toISOString()}).eq('id',row.id).eq('status','pendente').select('id');
    if(claimError||!claimed?.length)continue;
    try{const result=await consultar(row.kwai_id);const valid=result.status==='consultado'&&typeof result.eligible==='boolean';
-    await supabase.from('agencia_consultas_voyager').update({status:valid?'concluida':'erro',nome_host:result.name||null,liberado:valid?result.eligible:null,mensagem:valid?(result.message||'Consulta concluída'):(result.error||'Resposta não reconhecida'),atualizado_em:new Date().toISOString()}).eq('id',row.id);
+    await supabase.from('agencia_consultas_voyager').update({status:valid?'concluida':'erro',nome_host:result.name||null,uid_host:result.uid||null,liberado:valid?result.eligible:null,mensagem:valid?(result.message||'Consulta concluída'):(result.error||'Resposta não reconhecida'),atualizado_em:new Date().toISOString()}).eq('id',row.id);
    }catch(e){await supabase.from('agencia_consultas_voyager').update({status:'erro',mensagem:e.message,atualizado_em:new Date().toISOString()}).eq('id',row.id)}
   }
  }catch(e){label.textContent='Ponte Voyager: '+e.message}finally{busy=false}}
