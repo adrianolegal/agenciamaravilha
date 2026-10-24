@@ -27,8 +27,8 @@ if(pe||!access?.ativo||!['administrador','recrutador'].includes(access.perfil)){
 fetch('menu1.html').then(x=>x.text()).then(html=>$('menu-placeholder').innerHTML=html).catch(()=>{});
 const recruiter=access.perfil==='recrutador';
 if(recruiter){$('agente').disabled=true;$('agente').closest('.col-md-5').querySelector('label').textContent='Seu recrutador';}
-const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');
-const label=s=>String(s??'').trim();
+const norm=s=>{const n=String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');return ['adm game','adm gamer','adm game over','adm gamer over'].includes(n)?'adm gamer over':n};
+const label=s=>norm(s)==='adm gamer over'?'Adm Gamer Over':String(s??'').trim();
 const msg=s=>$('msg').textContent=s;
 const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 months.forEach((x,i)=>$('mes').add(new Option(x,i+1)));
@@ -90,7 +90,7 @@ async function consult(){
   map.set(hostKey,row);
  }
  let videos=[];try{
-  videos=recruiter?[]:await fetchAll('kwai_gravacoes','streamer,inicio',null,10);
+  videos=await fetchAll('kwai_gravacoes','streamer,inicio',null,10);
  }catch(err){msg('Aviso: não foi possível carregar a biblioteca de gravações: '+err.message)}
  const latest=new Map();for(const v of videos){const k=norm(v.streamer);if(v.inicio&&(!latest.has(k)||v.inicio>latest.get(k)))latest.set(k,v.inicio)}
  current=[...map.values()].map(x=>({...x,last:latest.get(norm(x.kwai))||null})).sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
