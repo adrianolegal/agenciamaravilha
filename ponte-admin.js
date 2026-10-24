@@ -9,18 +9,19 @@ if(profile?.perfil==='administrador'&&profile?.ativo){
   const timeout=setTimeout(()=>{window.removeEventListener('message',handler);reject(Error('Extensão não respondeu em 20 segundos'))},20000);
   window.addEventListener('message',handler);window.postMessage({type:'MARAVILHA_VOYAGER_CHECK',kwaiId,requestId},location.origin);
  })}
- let busy=false;
+ let busy=false;let lastRecovery=0;
  async function tick(){if(busy)return;busy=true;try{
-  const {data,error}=await supabase.from('agencia_consultas_voyager').select('id,kwai_id,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(5);
+  if(Date.now()-lastRecovery>60000){lastRecovery=Date.now();const cutoff=new Date(Date.now()-90000).toISOString();const recovery=await supabase.from('agencia_consultas_voyager').update({status:'pendente',mensagem:'Consulta retomada após interrupção',atualizado_em:new Date().toISOString()}).eq('status','processando').lt('atualizado_em',cutoff);if(recovery.error)label.textContent='Ponte Kwai: não foi possível recuperar consultas interrompidas: '+recovery.error.message;}
+  const {data,error}=await supabase.from('agencia_consultas_voyager').select('id,kwai_id,criado_em').eq('status','pendente').order('criado_em',{ascending:true}).limit(3);
   if(error)throw error;
-  label.textContent='Ponte Voyager ativa — '+(data?.length||0)+' consulta(s) aguardando';
-  for(const row of data||[]){
+  label.textContent='Ponte Kwai ativa — '+(data?.length||0)+' consulta(s) aguardando';
+  for(const row of data||[]){label.textContent='Ponte Kwai: consultando '+row.kwai_id+'…';
    const {data:claimed,error:claimError}=await supabase.from('agencia_consultas_voyager').update({status:'processando',atualizado_em:new Date().toISOString()}).eq('id',row.id).eq('status','pendente').select('id');
    if(claimError||!claimed?.length)continue;
    try{const result=await consultar(row.kwai_id);const valid=result.status==='consultado'&&typeof result.eligible==='boolean';const uid=result.uid??result.memberId??result.member_id??result.userId??result.data?.memberId??result.data?.uid??null;
     const {error:saveError}=await supabase.from('agencia_consultas_voyager').update({status:valid?'concluida':'erro',nome_host:result.name||null,uid_host:uid?String(uid):null,liberado:valid?result.eligible:null,mensagem:valid?(result.message||'Consulta concluída'):(result.error||'Resposta não reconhecida'),atualizado_em:new Date().toISOString()}).eq('id',row.id);if(saveError)throw saveError;
-   }catch(e){await supabase.from('agencia_consultas_voyager').update({status:'erro',mensagem:e.message,atualizado_em:new Date().toISOString()}).eq('id',row.id)}
+   }catch(e){const failed=await supabase.from('agencia_consultas_voyager').update({status:'erro',mensagem:e.message,atualizado_em:new Date().toISOString()}).eq('id',row.id);if(failed.error)label.textContent='Ponte Kwai: erro ao salvar consulta '+row.kwai_id+': '+failed.error.message}
   }
  }catch(e){label.textContent='Ponte Voyager: '+e.message}finally{busy=false}}
- await tick();setInterval(tick,4000);
+ await tick();setInterval(tick,2000);
 }
