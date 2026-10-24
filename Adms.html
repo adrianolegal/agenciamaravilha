@@ -28,8 +28,8 @@ if(pe||!access?.ativo||!['administrador','recrutador'].includes(access.perfil)){
 fetch('menu1.html').then(x=>x.text()).then(html=>$('menu-placeholder').innerHTML=html).catch(()=>{});
 const recruiter=access.perfil==='recrutador';
 if(recruiter){$('agente').disabled=true;$('agente').closest('.col-md-5').querySelector('label').textContent='Seu recrutador';}
-const norm=s=>{const n=String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');return /^adm gam(?:e|er)(?: over)?$/.test(n)?'adm gamer over':n};
-const label=s=>norm(s)==='adm gamer over'?'Adm Gamer Over':String(s??'').trim();
+const norm=s=>{const n=String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLocaleLowerCase('pt-BR').trim().replace(/\s+/g,' ');const compact=n.replace(/[^a-z0-9]/g,'');if(/^admgam(?:e|er)(?:over)?$/.test(compact))return 'adm gamer over';if(/^admvovo(?:malokeiro|maloqueiro)?$/.test(compact))return 'adm vovo malokeiro';return n};
+const label=s=>norm(s)==='adm gamer over'?'Adm Gamer Over':norm(s)==='adm vovo malokeiro'?'Adm Vovo Malokeiro':String(s??'').trim();
 const msg=s=>$('msg').textContent=s;
 const months=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
 months.forEach((x,i)=>$('mes').add(new Option(x,i+1)));
@@ -135,7 +135,8 @@ async function consult(){
 $('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
 try{
  if(recruiter){
-  let {data,error}=await supabase.rpc('agencia_meus_hosts_unificados');
+  let {data,error}=await supabase.rpc('agencia_meus_hosts_variacoes');
+  if(error&&/PGRST202|Could not find the function|does not exist/i.test(error.message||''))({data,error}=await supabase.rpc('agencia_meus_hosts_unificados'));
   if(error&&/PGRST202|Could not find the function|does not exist/i.test(error.message||''))({data,error}=await supabase.rpc('agencia_meus_hosts'));
   if(error)throw Error(error.message);
   allReports=(data||[]).map(r=>({...r,nome_agente:access.nome_agente}));
