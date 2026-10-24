@@ -17,9 +17,9 @@ if(user&&$('kwai')&&$('check')){
    if(e){clearInterval(interval);btn.disabled=false;status.textContent='Falha ao acompanhar consulta: '+e.message;return}
    if(r.status==='concluida'||r.status==='erro'){
     clearInterval(interval);btn.disabled=false;
-    if(r.nome_host)$('nome').value=r.nome_host;uidLabel.textContent=r.uid_host?'UID Kwai: '+r.uid_host:'UID Kwai: não retornado pela consulta';
+    if(r.nome_host)$('nome').value=r.nome_host;else $('nome').value='';uidLabel.textContent=r.uid_host?'UID Kwai: '+r.uid_host:'UID Kwai: não retornado pela consulta';
     current={id,liberado:r.status==='concluida'&&r.liberado===true};
-    status.textContent=r.status==='erro'?'Kwai: falha — '+r.mensagem:r.liberado?'Kwai: liberado para análise':'Kwai: impedido — '+r.mensagem;
+    const msg=String(r.mensagem||'');const missing=/sem UID reconhecido|member\/name|não localizad|nao localizad|não encontrad|nao encontrad|not found|no results/i.test(msg);status.textContent=r.status==='erro'?(missing?'Kwai ID não localizado. Confira se o usuário alterou seu ID.':'Não foi possível concluir a consulta ao Kwai: '+msg):r.liberado?'Kwai: liberado para análise':'Kwai: impedido — '+msg;
     status.style.color=current.liberado?'#86efac':'#fca5a5';return;
    }
    if(++checks>=60){clearInterval(interval);btn.disabled=false;status.textContent='Consulta pendente: mantenha a central administrativa aberta no Chrome administrativo.'}
