@@ -9,8 +9,8 @@ const fn='criar-usuario';
 async function call(body){const {data,error}=await supabase.functions.invoke(fn,{body});if(error)throw Error(error.message);if(data?.error)throw Error(data.error);return data}
 let agentes=[];
 function normalizarAgente(nome){
- const original=String(nome||'').trim().replace(/\\s+/g,' ');
- const chave=original.normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const original=String(nome||'').trim().replace(/\s+/g,' ');
+ const chave=original.normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,'');
  if(['admgamer','admgame','admgameover','admgamerover'].includes(chave))return 'Adm Gamer Over';
  return original;
 }
