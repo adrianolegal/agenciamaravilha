@@ -7,11 +7,11 @@ if(user&&$('kwai')&&$('check')){
  const status=$('check');status.style.cssText='display:block;min-height:42px;margin-top:6px';let current=null,interval=null;const uidLabel=document.createElement('div');uidLabel.id='uidKwaiResultado';uidLabel.style.cssText='color:#a5d8ff;font-size:.9rem;margin-top:6px;min-height:22px';uidLabel.textContent='UID Kwai: aguardando consulta';$('nome').parentElement.append(uidLabel);
  btn.onclick=async()=>{
   const id=$('kwai').value.trim();if(!/^[\w.-]{3,80}$/.test(id)){status.textContent='Informe um Kwai ID válido';return}
-  if(interval)clearInterval(interval);current=null;uidLabel.textContent='UID Kwai: consultando...';btn.disabled=true;status.textContent='Aguardando consulta no computador administrativo...';
+  if(interval)clearInterval(interval);current=null;$('nome').value='';uidLabel.textContent='UID Kwai: consultando...';btn.disabled=true;status.textContent='Aguardando consulta no computador administrativo...';
   const {data,error}=await supabase.from('agencia_consultas_voyager').insert({solicitante_id:user.id,kwai_id:id}).select('id').single();
   if(error){status.textContent='Erro ao solicitar consulta: '+error.message;btn.disabled=false;return}
-  const queryId=data.id;let checks=0;
-  async function refresh(){
+  const queryId=data.id;let checks=0;let polling=false;
+  async function refresh(){if(polling)return;polling=true;try{
    if($('kwai').value.trim()!==id){clearInterval(interval);btn.disabled=false;return}
    const {data:r,error:e}=await supabase.from('agencia_consultas_voyager').select('status,nome_host,uid_host,liberado,mensagem').eq('id',queryId).single();
    if(e){clearInterval(interval);btn.disabled=false;status.textContent='Falha ao acompanhar consulta: '+e.message;return}
@@ -22,9 +22,10 @@ if(user&&$('kwai')&&$('check')){
     const msg=String(r.mensagem||'');const missing=/sem UID reconhecido|member\/name|não localizad|nao localizad|não encontrad|nao encontrad|not found|no results/i.test(msg);status.textContent=r.status==='erro'?(missing?'Kwai ID não localizado. Confira se o usuário alterou seu ID.':'Não foi possível concluir a consulta ao Kwai: '+msg):r.liberado?'Kwai: liberado para análise':'Kwai: impedido — '+msg;
     status.style.color=current.liberado?'#86efac':'#fca5a5';return;
    }
-   if(++checks>=60){clearInterval(interval);btn.disabled=false;status.textContent='Consulta pendente: mantenha a central administrativa aberta no Chrome administrativo.'}
-  }
-  await refresh();if(!current&&checks<60)interval=setInterval(refresh,3000);
+   if(r.status==='processando')status.textContent='Consultando o Kwai no computador administrativo...';
+   if(++checks>=40){clearInterval(interval);btn.disabled=false;status.textContent='Consulta ainda pendente. Verifique se a central administrativa está aberta e conectada.'}
+  }catch(err){clearInterval(interval);btn.disabled=false;status.textContent='Não foi possível acompanhar a consulta: '+err.message}finally{polling=false}}
+  await refresh();if(!current&&checks<40)interval=setInterval(refresh,3000);
  };
  $('kwai').addEventListener('input',()=>{current=null;uidLabel.textContent='UID Kwai: aguardando consulta';status.style.color='';});
  // Captura submissão antes do handler antigo; nunca permite envio após negativa confirmada.
