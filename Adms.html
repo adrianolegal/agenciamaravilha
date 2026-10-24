@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Recrutadores e Hosts — Agência Maravilha</title><link rel="icon" href="/logo.jpg" type="image/jpeg">
+<title>Recrutadores e Hosts — Agência Maravilha</title><link rel="icon" href="assets/logo.jpg">
 <link rel="stylesheet" href="menu1.css"><link rel="stylesheet" href="assets/styles.css">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>body{background:#0f172a;color:#eef3fb;padding:76px 12px 32px}main{max-width:1350px;margin:auto}.pane{background:#1e293b;border:1px solid #334155;border-radius:12px;padding:20px;margin:16px 0}.form-select,.form-control{background:#0f172a;color:#f8fafc;border-color:#64748b}.form-select:focus,.form-control:focus{background:#0f172a;color:#fff}.form-select:disabled,.form-select[disabled]{background-color:#172338!important;color:#ffac42!important;-webkit-text-fill-color:#ffac42!important;opacity:1!important;border-color:#475569!important;cursor:default}.form-select option{background:#172338;color:#fff}.table{--bs-table-bg:transparent;--bs-table-color:#eef3fb;--bs-table-border-color:#334155}.table th{white-space:nowrap;color:#fbbf24}.table.table-hover tbody tr:hover{--bs-table-hover-bg:#334155;--bs-table-hover-color:#ffab40}.table.table-hover tbody tr:hover td,.table.table-hover tbody tr:hover td *{color:#ffab40!important}.table.table-hover tbody tr:hover td{background-color:#334155!important}.muted{color:#b6c6d9}.metric{background:#101b2d;border:1px solid #344358;border-radius:10px;padding:13px}.metric strong{font-size:1.3rem;display:block}.small-note{font-size:.84rem;color:#bac9db}.sort-head{border:0;background:transparent;color:#fbbf24;font-weight:700;text-align:left;padding:4px;white-space:nowrap}.sort-head:hover,.sort-head:focus{color:#fff;text-decoration:underline}.sort-head .arrow{margin-left:5px}</style></head>
@@ -14,8 +14,8 @@
 <div class="col-md-3"><button class="btn btn-warning w-100" id="buscar">Consultar</button></div>
 <div class="col-md-3"><button class="btn btn-success w-100" id="exportar" type="button" disabled>Baixar Excel</button></div><div class="col-md-6"><label for="filtro">Localizar host por nome, UID ou Kwai ID</label><input class="form-control" id="filtro" placeholder="Pesquisar na lista" autocomplete="off"></div>
 </div><p class="small-note mt-3 mb-0">Nomes do mesmo recrutador são agrupados sem diferenciar letras maiúsculas, acentos ou espaços. A última gravação é a mais recente cadastrada na biblioteca, não necessariamente a última live feita.</p><p id="msg" role="status" class="mt-2"></p></section>
-<section class="row g-3" id="metrics"><div class="col-md-3"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-3"><div class="metric">Total de diamantes no mês<strong id="totalDiamonds">—</strong></div></div><div class="col-md-3"><div class="metric">Total de horas de live no mês<strong id="totalHours">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts inativos no mês<strong id="inativos">—</strong></div></div></section><section class="row g-3"><div class="col-12"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
-<section class="pane table-responsive"><table class="table table-hover align-middle"><thead><tr><th><button class="sort-head" data-sort="name">Host <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="uid">UID (Member ID) <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="kwai">Kwai ID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="last">Última gravação registrada <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="days">Dias de live no mês <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="hours">Horas de live no mês <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="diamonds">Diamantes do streamer no mês <span class="arrow">↕</span></button></th></tr></thead><tbody id="tabela"><tr><td colspan="7">Selecione um recrutador.</td></tr></tbody></table></section>
+<section class="row g-3" id="metrics"><div class="col-md-3"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-3"><div class="metric">Total de diamantes no mês<strong id="totalDiamonds">—</strong></div></div><div class="col-md-3"><div class="metric">Total de horas de live no mês<strong id="totalHours">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts sem live no mês<strong id="inativos">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts que saíram da agência<strong id="desligados">—</strong></div></div></section><section class="row g-3"><div class="col-12"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
+<section class="pane table-responsive"><table class="table table-hover align-middle"><thead><tr><th><button class="sort-head" data-sort="name">Host <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="category">Categoria <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="linked">Vínculo <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="uid">UID (Member ID) <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="kwai">Kwai ID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="last">Última gravação registrada <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="days">Dias de live no mês <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="hours">Horas de live no mês <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="diamonds">Diamantes do streamer no mês <span class="arrow">↕</span></button></th></tr></thead><tbody id="tabela"><tr><td colspan="9">Selecione um recrutador.</td></tr></tbody></table></section>
 </main>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module">
@@ -56,6 +56,8 @@ function visibleRows(){
   let av=a[sortKey],bv=b[sortKey];
   if(numberKeys.includes(sortKey)){av=sortKey==='hours'?hoursValue(av):asNumber(av);bv=sortKey==='hours'?hoursValue(bv):asNumber(bv)}
   else if(sortKey==='last'){av=av?new Date(av).getTime():0;bv=bv?new Date(bv).getTime():0}
+  else if(sortKey==='category'){av=hostCategory(a.entry);bv=hostCategory(b.entry)}
+  else if(sortKey==='linked'){av=a.linked===false?'Inativo':a.linked===true?'Ativo':'Não informado';bv=b.linked===false?'Inativo':b.linked===true?'Ativo':'Não informado'}
   else if(sortKey==='uid'){av=String(av??'');bv=String(bv??'');return sortDirection*av.localeCompare(bv,'pt-BR',{numeric:true})}
   else {av=norm(av);bv=norm(bv)}
   return sortDirection*(typeof av==='number'?av-bv:String(av).localeCompare(String(bv),'pt-BR',{numeric:true}));
@@ -68,11 +70,11 @@ document.querySelectorAll('[data-sort]').forEach(btn=>btn.addEventListener('clic
 function exportExcel(){
  const rows=visibleRows();if(!rows.length){msg('Nenhum host para exportar.');return}
  if(!window.XLSX){msg('Biblioteca Excel indisponível. Atualize a página e tente novamente.');return}
- const headers=['Host novo (Kwai)','Host','UID (Member ID)','Kwai ID','Última gravação registrada','Dias de live no mês','Horas de live no mês','Diamantes do streamer no mês'];
- const data=rows.map(r=>[isNewHost(r.entry)?'Novo':'',r.name||'',String(r.uid||''),r.kwai||'',fmtDate(r.last)==='—'?'':fmtDate(r.last),r.days==null?'':asNumber(r.days),r.hours==null?'':hoursValue(r.hours),r.diamonds==null?'':asNumber(r.diamonds)]);
+ const headers=['Categoria','Vínculo','Host','UID (Member ID)','Kwai ID','Última gravação registrada','Dias de live no mês','Horas de live no mês','Diamantes do streamer no mês'];
+ const data=rows.map(r=>[hostCategory(r.entry),r.linked===false?'Saiu da agência':r.linked===true?'Ativo':'Não informado',r.name||'',String(r.uid||''),r.kwai||'',fmtDate(r.last)==='—'?'':fmtDate(r.last),r.days==null?'':asNumber(r.days),r.hours==null?'':hoursValue(r.hours),r.diamonds==null?'':asNumber(r.diamonds)]);
  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
- ws['!cols']=[{wch:18},{wch:30},{wch:23},{wch:26},{wch:27},{wch:24},{wch:25},{wch:34}];
- for(let i=1;i<=data.length;i++){const cell=ws['B'+(i+1)];if(cell){cell.t='s';cell.v=String(cell.v)}}
+ ws['!cols']=[{wch:18},{wch:20},{wch:30},{wch:23},{wch:26},{wch:27},{wch:24},{wch:25},{wch:34}];
+ for(let i=1;i<=data.length;i++){const cell=ws['D'+(i+1)];if(cell){cell.t='s';cell.v=String(cell.v)}}
  const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Hosts');
  const agent=($('selectedAgent').textContent||'Recrutador').replace(/[^a-zA-Z0-9_-]+/g,'_').slice(0,50);
  XLSX.writeFile(wb,'Hosts_'+agent+'_'+$('ano').value+'-'+String($('mes').value).padStart(2,'0')+'.xlsx');
@@ -97,6 +99,16 @@ function createGroups(){
  const select=$('agente');select.replaceChildren(new Option('Selecione o recrutador',''));
  [...groups].sort((a,b)=>a[1].display.localeCompare(b[1].display,'pt-BR')).forEach(([key,g])=>select.add(new Option(g.display+' ('+g.names.size+' grafia'+(g.names.size>1?'s':'')+')',key)));
 }
+function hostCategory(entry){
+ if(!entry)return 'Não informado';
+ const m=String(entry).match(/^(\d{4})-(\d{2})/);if(!m)return 'Não informado';
+ const selected=Number($('ano').value)*12+Number($('mes').value)-1;
+ const joined=Number(m[1])*12+Number(m[2])-1;
+ if(selected<joined)return 'Não informado';
+ if(selected===joined)return 'Novo';
+ if(selected-joined<=2)return 'Novato';
+ return 'Veterano';
+}
 function isNewHost(entry){
  if(!entry)return false;
  const m=String(entry).match(/^(\d{4})-(\d{2})/);if(!m)return false;
@@ -109,12 +121,13 @@ function show(list){const found=visibleRows();
  document.querySelectorAll('[data-sort]').forEach(btn=>{btn.querySelector('.arrow').textContent=btn.dataset.sort===sortKey?(sortDirection===1?'▲':'▼'):'↕';btn.setAttribute('aria-sort',btn.dataset.sort===sortKey?(sortDirection===1?'ascending':'descending'):'none')});
  $('tabela').replaceChildren();
  for(const r of found){const tr=document.createElement('tr');
-  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'Sem registro',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR')]){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
-  if(isNewHost(r.entry)){const tag=document.createElement('span');tag.className='badge bg-success ms-2';tag.textContent='Novo';tr.cells[0].append(tag)}$('tabela').append(tr)}
- if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
+  for(const v of [r.name,hostCategory(r.entry),r.linked===false?'Saiu da agência':r.linked===true?'Ativo':'Não informado',r.uid,r.kwai,fmtDate(r.last),r.days??'Sem registro',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR')]){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
+  $('tabela').append(tr)}
+ if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=9;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
  $('totalHosts').textContent=list.length;
  $('ativos').textContent=list.filter(x=>x.days!=null).length;
  $('inativos').textContent=list.filter(x=>asNumber(x.days)===0).length;
+ $('desligados').textContent=list.filter(x=>x.linked===false).length;
  $('totalDiamonds').textContent=list.reduce((sum,x)=>sum+asNumber(x.diamonds),0).toLocaleString('pt-BR',{maximumFractionDigits:2});
  $('totalHours').textContent=list.reduce((sum,x)=>sum+hoursValue(x.hours),0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h';
 }
