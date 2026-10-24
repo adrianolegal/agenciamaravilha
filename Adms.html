@@ -101,7 +101,8 @@ async function consult(){
 $('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
 try{
  if(recruiter){
-  const {data,error}=await supabase.rpc('agencia_meus_hosts');
+  let {data,error}=await supabase.rpc('agencia_meus_hosts_unificados');
+  if(error&&/PGRST202|Could not find the function|does not exist/i.test(error.message||''))({data,error}=await supabase.rpc('agencia_meus_hosts'));
   if(error)throw Error(error.message);
   allReports=(data||[]).map(r=>({...r,nome_agente:access.nome_agente}));
   createGroups();
