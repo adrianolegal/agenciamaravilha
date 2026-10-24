@@ -214,29 +214,57 @@ function excelDateToISO(value) {
 
   return null;
 }
-// 📤 IMPORT HOSTS
+// Importação da lista COMPLETA de membros em cooperação com a agência.
+// A ausência só caracteriza saída depois da confirmação explícita de lista completa.
 document.getElementById("btnImportHosts").addEventListener("click", async () => {
-  const file = document.getElementById("fileHosts").files[0];
-  const status = document.getElementById("statusHosts");
-  if (!file) return showStatus(status, "Selecione um arquivo", "btn-error");
-
-  const reader = new FileReader();
-  reader.onload = async (e) => {
-    try {
-      const workbook = XLSX.read(e.target.result, { type: 'binary' });
-      const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      let data = XLSX.utils.sheet_to_json(sheet);
-
-      data = normalizeData(data);
-
-      const { error } = await supabase.from('hosts').upsert(data, { onConflict: 'member_Id' });
-      if (error) showStatus(status, "Erro ao importar: " + error.message, "btn-error");
-      else showStatus(status, "Importado com sucesso ✓", "btn-success");
-    } catch (err) {
-      showStatus(status, "Erro na leitura do arquivo: " + err.message, "btn-error");
+  const file=document.getElementById("fileHosts").files[0];
+  const status=document.getElementById("statusHosts");
+  if(!file)return showStatus(status,"Selecione a Tabela 1 completa do Voyager.","btn-error");
+  const button=document.getElementById("btnImportHosts");
+  button.disabled=true;
+  try{
+    const bytes=await file.arrayBuffer();
+    const book=XLSX.read(bytes,{type:"array",cellDates:true});
+    const sheet=book.Sheets[book.SheetNames[0]];
+    const raw=XLSX.utils.sheet_to_json(sheet,{defval:""});
+    const valid=raw.filter(x=>String(x.member_Id||"").trim());
+    const ids=valid.map(x=>String(x.member_Id).trim());
+    if(raw.length===0||valid.length!==raw.length||new Set(ids).size!==ids.length){
+      throw Error("Lista vazia, IDs ausentes ou repetidos. Nenhum vínculo foi alterado.");
     }
-  };
-  reader.readAsBinaryString(file);
+    if(!confirm("ATENÇÃO: esta deve ser a Tabela 1 COMPLETA do Voyager, com TODOS os hosts atualmente em cooperação com a Agência Maravilha. Hosts antigos ausentes serão marcados como SAÍRAM DA AGÊNCIA, sem exclusão do histórico. Confirma que exportou a lista completa?"))return;
+    showStatus(status,"Conferindo registros existentes antes de atualizar...","");
+    const existing=[];
+    for(let offset=0;;offset+=800){
+      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada').order('member_Id',{ascending:true}).range(offset,offset+799);
+      if(error)throw Error("Não foi possível ler todos os hosts existentes: "+error.message);
+      existing.push(...(data||[]));
+      if((data||[]).length<800)break;
+    }
+    const oldById=new Map(existing.map(x=>[String(x.member_Id),x]));
+    const currentIds=new Set(ids);
+    const normalized=normalizeData(valid).map(row=>{
+      const old=oldById.get(String(row.member_Id));
+      // O Kwai pode omitir apelido em caso de banimento: manter o nome histórico.
+      if(old&&(!String(row["Apelido de streamer"]||"").trim()))row["Apelido de streamer"]=old["Apelido de streamer"];
+      if(old&&!row["Data de entrada"])row["Data de entrada"]=old["Data de entrada"];
+      row.vinculo_ativo=true;
+      return row;
+    });
+    const departed=existing.filter(x=>!currentIds.has(String(x.member_Id))).map(x=>x.member_Id);
+    showStatus(status,"Importando "+normalized.length+" membros atuais...","");
+    for(let i=0;i<normalized.length;i+=200){
+      const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+200),{onConflict:"member_Id"});
+      if(error)throw Error("Falha na gravação; não foi concluída a atualização dos vínculos: "+error.message);
+    }
+    // Somente depois de importar TODOS os membros atuais, marcar os ausentes.
+    for(let i=0;i<departed.length;i+=150){
+      const {error}=await supabase.from("hosts").update({vinculo_ativo:false}).in("member_Id",departed.slice(i,i+150));
+      if(error)throw Error("Membros atuais importados, mas falhou a atualização dos desligados: "+error.message);
+    }
+    showStatus(status,"Importação concluída: "+normalized.length+" ativos e "+departed.length+" fora da lista atual. Histórico preservado.","btn-success");
+  }catch(err){showStatus(status,"Erro: "+err.message,"btn-error")}
+  finally{button.disabled=false}
 });
 
 // 📤 IMPORT REPORTS
