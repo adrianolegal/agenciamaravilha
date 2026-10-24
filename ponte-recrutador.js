@@ -29,5 +29,5 @@ if(user&&$('kwai')&&$('check')){
  };
  $('kwai').addEventListener('input',()=>{current=null;uidLabel.textContent='UID Kwai: aguardando consulta';status.style.color='';});
  // Captura submissão antes do handler antigo; nunca permite envio após negativa confirmada.
- $('form')?.addEventListener('submit',event=>{if(current?.id===$('kwai').value.trim()&&!current.liberado){event.preventDefault();event.stopImmediatePropagation();status.textContent='Ingresso impedido pelo Kwai. Não é possível registrar este pedido como liberado.'}},true);
+ $('form')?.addEventListener('submit',event=>{if(current?.id!==$('kwai').value.trim()||!current.liberado){event.preventDefault();event.stopImmediatePropagation();status.textContent=current?.id===$('kwai').value.trim()?'Ingresso impedido pelo Kwai. Não é possível registrar esta solicitação.':'Consulta obrigatória: clique em Consultar Kwai e aguarde a confirmação de liberação antes de registrar.';status.style.color='#fca5a5'}},true);
 }
