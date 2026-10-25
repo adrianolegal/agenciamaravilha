@@ -247,8 +247,7 @@ function excelDateToISO(value) {
 
   return null;
 }
-// Teste da importação da Tabela 1: somente datas e cadastro de hosts.
-// Não altera vínculo, não marca saídas e não cria tabelas.
+// Importação Voyager: atualiza presentes e marca ausentes como INATIVO, preservando BANIDO.
 document.getElementById("btnImportHosts").addEventListener("click", async () => {
   const file=document.getElementById("fileHosts").files[0];
   const status=document.getElementById("statusHosts");
@@ -265,7 +264,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       throw Error("Planilha vazia, UID inválido ou duplicado. Nada foi gravado.");
     const existing=[];
     for(let offset=0;;offset+=800){
-      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada,vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
+      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada,Status de streamer,vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
       if(error)throw Error("Falha ao consultar hosts existentes: "+error.message);
       existing.push(...(data||[]));
       if((data||[]).length<800)break;
@@ -289,13 +288,13 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       ". Exemplo UID "+(exemplo?.member_Id||"")+" = "+(exemplo?.["Data de entrada"]||"");
     const presentes=new Set(ids);
     const ausentes=existing.filter(h=>!presentes.has(String(h.member_Id)));
-    const desativar=ausentes.filter(h=>h.vinculo_ativo!==false);
+    const desativar=ausentes.filter(h=>String(h["Status de streamer"]||"").trim().toUpperCase()!=="BANIDO"&&(String(h["Status de streamer"]||"").trim().toUpperCase()!=="INATIVO"||h.vinculo_ativo!==false));
     const reativar=existing.filter(h=>presentes.has(String(h.member_Id))&&h.vinculo_ativo===false);
-    if(!confirm("CONFERÊNCIA DA TABELA 1 COMPLETA\\n"+resumo+
-      "\\nHosts existentes ausentes desta lista: "+ausentes.length+
-      "\\nSerão marcados como inativos: "+desativar.length+
-      "\\nSerão reativados: "+reativar.length+
-      "\\n\\nConfirma que este arquivo contém TODOS os hosts atuais da agência?"))return;
+    if(!confirm("CONFERÊNCIA DA TABELA 1 COMPLETA\n"+resumo+
+      "\nHosts existentes ausentes desta lista: "+ausentes.length+
+      "\nSerão marcados como inativos: "+desativar.length+
+      "\nSerão reativados: "+reativar.length+
+      "\n\nConfirma que este arquivo contém TODOS os hosts atuais da agência?"))return;
     showStatus(status,"Importando... "+resumo,"");
     for(let i=0;i<normalized.length;i+=150){
       const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+150),{onConflict:"member_Id"});
@@ -306,20 +305,12 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     for(let i=0;i<desativar.length;i+=100){
       const lote=desativar.slice(i,i+100).map(h=>h.member_Id);
       const {data,error}=await supabase.from("hosts")
-        .update({vinculo_ativo:false,atualizado_vinculo_em:new Date().toISOString()})
+        .update({"Status de streamer":"INATIVO",vinculo_ativo:false,atualizado_vinculo_em:new Date().toISOString()})
         .in("member_Id",lote).select("member_Id");
       if(error)throw Error("Falha ao marcar hosts ausentes: "+error.message);
       if((data||[]).length!==lote.length)throw Error("Atualização incompleta de hosts ausentes. Verifique permissões.");
     }
-    // Confirma que os presentes estão realmente ativos, inclusive antigos inativos.
-    for(let i=0;i<reativar.length;i+=100){
-      const lote=reativar.slice(i,i+100).map(h=>h.member_Id);
-      const {data,error}=await supabase.from("hosts")
-        .update({vinculo_ativo:true,data_saida_agencia:null,atualizado_vinculo_em:new Date().toISOString()})
-        .in("member_Id",lote).select("member_Id");
-      if(error)throw Error("Falha ao reativar hosts: "+error.message);
-      if((data||[]).length!==lote.length)throw Error("Reativação incompleta. Verifique permissões.");
-    }
+    // Os presentes já recebem o status original do Voyager e vínculo ativo no upsert.
     showStatus(status,"Importação concluída. "+normalized.length+" na lista atual; "+
       desativar.length+" marcados como inativos; "+reativar.length+" reativados. Histórico mantido.","btn-success");
   }catch(err){showStatus(status,"Erro: "+err.message,"btn-error")}
