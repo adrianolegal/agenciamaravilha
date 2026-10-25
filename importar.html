@@ -265,7 +265,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       throw Error("Planilha vazia, UID inválido ou duplicado. Nada foi gravado.");
     const existing=[];
     for(let offset=0;;offset+=800){
-      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada').order('member_Id',{ascending:true}).range(offset,offset+799);
+      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada,vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
       if(error)throw Error("Falha ao consultar hosts existentes: "+error.message);
       existing.push(...(data||[]));
       if((data||[]).length<800)break;
@@ -275,8 +275,8 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       const old=oldById.get(String(row.member_Id));
       if(old&&!String(row["Apelido de streamer"]||"").trim())row["Apelido de streamer"]=old["Apelido de streamer"];
       if(old&&!row["Data de entrada"])row["Data de entrada"]=old["Data de entrada"];
-      // Não enviar campos de vínculo nem colunas desconhecidas nesta etapa.
-      delete row.vinculo_ativo;
+      row.vinculo_ativo=true;
+      // Campos históricos são atualizados somente após a comparação completa.
       delete row.ultima_confirmacao_kwai;
       delete row.data_saida_agencia;
       delete row.atualizado_vinculo_em;
@@ -287,13 +287,41 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     if(!datas)throw Error("Nenhuma Data de entrada reconhecida. Importação cancelada.");
     const resumo="Datas reconhecidas: "+datas+"/"+normalized.length+
       ". Exemplo UID "+(exemplo?.member_Id||"")+" = "+(exemplo?.["Data de entrada"]||"");
-    if(!confirm("CONFERÊNCIA DA TABELA 1\n"+resumo+"\n\nAtualizar os hosts existentes sem modificar vínculos?"))return;
+    const presentes=new Set(ids);
+    const ausentes=existing.filter(h=>!presentes.has(String(h.member_Id)));
+    const desativar=ausentes.filter(h=>h.vinculo_ativo!==false);
+    const reativar=existing.filter(h=>presentes.has(String(h.member_Id))&&h.vinculo_ativo===false);
+    if(!confirm("CONFERÊNCIA DA TABELA 1 COMPLETA\\n"+resumo+
+      "\\nHosts existentes ausentes desta lista: "+ausentes.length+
+      "\\nSerão marcados como inativos: "+desativar.length+
+      "\\nSerão reativados: "+reativar.length+
+      "\\n\\nConfirma que este arquivo contém TODOS os hosts atuais da agência?"))return;
     showStatus(status,"Importando... "+resumo,"");
     for(let i=0;i<normalized.length;i+=150){
       const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+150),{onConflict:"member_Id"});
       if(error)throw Error("Erro ao gravar hosts: "+error.message);
     }
-    showStatus(status,"Importação concluída. "+resumo+". Nenhum vínculo foi alterado.","btn-success");
+    // Só desativar os ausentes DEPOIS de concluir o upsert de todos os atuais.
+    showStatus(status,"Atualizando vínculos de "+desativar.length+" hosts ausentes...","");
+    for(let i=0;i<desativar.length;i+=100){
+      const lote=desativar.slice(i,i+100).map(h=>h.member_Id);
+      const {data,error}=await supabase.from("hosts")
+        .update({vinculo_ativo:false,atualizado_vinculo_em:new Date().toISOString()})
+        .in("member_Id",lote).select("member_Id");
+      if(error)throw Error("Falha ao marcar hosts ausentes: "+error.message);
+      if((data||[]).length!==lote.length)throw Error("Atualização incompleta de hosts ausentes. Verifique permissões.");
+    }
+    // Confirma que os presentes estão realmente ativos, inclusive antigos inativos.
+    for(let i=0;i<reativar.length;i+=100){
+      const lote=reativar.slice(i,i+100).map(h=>h.member_Id);
+      const {data,error}=await supabase.from("hosts")
+        .update({vinculo_ativo:true,data_saida_agencia:null,atualizado_vinculo_em:new Date().toISOString()})
+        .in("member_Id",lote).select("member_Id");
+      if(error)throw Error("Falha ao reativar hosts: "+error.message);
+      if((data||[]).length!==lote.length)throw Error("Reativação incompleta. Verifique permissões.");
+    }
+    showStatus(status,"Importação concluída. "+normalized.length+" na lista atual; "+
+      desativar.length+" marcados como inativos; "+reativar.length+" reativados. Histórico mantido.","btn-success");
   }catch(err){showStatus(status,"Erro: "+err.message,"btn-error")}
   finally{button.disabled=false}
 });
