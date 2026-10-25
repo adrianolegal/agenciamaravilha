@@ -170,8 +170,11 @@ import * as XLSX from "https://cdn.sheetjs.com/xlsx-latest/package/xlsx.mjs";
 await protectPage(); // protege a página
 
 function showStatus(element, text, type="") {
-  element.className = "status fade " + type;
+  element.className = "status " + type;
   element.innerText = text;
+  element.style.opacity = "1";
+  element.style.animation = "none";
+  element.style.display = "block";
 }
 
 // normaliza IDs e datas
@@ -262,10 +265,11 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     const ids=raw.map(r=>String(r.member_Id||"").trim());
     if(!raw.length||ids.some(id=>!/^\d+$/.test(id))||new Set(ids).size!==ids.length)
       throw Error("Planilha vazia, UID inválido ou duplicado. Nada foi gravado.");
+    showStatus(status,"Lendo hosts existentes no Supabase...","");
     const existing=[];
     for(let offset=0;;offset+=800){
       const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada,Status de streamer,vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
-      if(error)throw Error("Falha ao consultar hosts existentes: "+error.message);
+      if(error)throw Error("Falha ao consultar hosts existentes: "+JSON.stringify({message:error.message,code:error.code,details:error.details,hint:error.hint}));
       existing.push(...(data||[]));
       if((data||[]).length<800)break;
     }
@@ -298,7 +302,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     showStatus(status,"Importando... "+resumo,"");
     for(let i=0;i<normalized.length;i+=150){
       const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+150),{onConflict:"member_Id"});
-      if(error)throw Error("Erro ao gravar hosts: "+error.message);
+      if(error)throw Error("Erro ao gravar hosts (lote "+(i+1)+"-"+Math.min(i+150,normalized.length)+"): "+JSON.stringify({message:error.message,code:error.code,details:error.details,hint:error.hint}));
     }
     // Só desativar os ausentes DEPOIS de concluir o upsert de todos os atuais.
     showStatus(status,"Atualizando vínculos de "+desativar.length+" hosts ausentes...","");
@@ -307,13 +311,13 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       const {data,error}=await supabase.from("hosts")
         .update({"Status de streamer":"INATIVO",vinculo_ativo:false,atualizado_vinculo_em:new Date().toISOString()})
         .in("member_Id",lote).select("member_Id");
-      if(error)throw Error("Falha ao marcar hosts ausentes: "+error.message);
+      if(error)throw Error("Falha ao marcar hosts ausentes: "+JSON.stringify({message:error.message,code:error.code,details:error.details,hint:error.hint}));
       if((data||[]).length!==lote.length)throw Error("Atualização incompleta de hosts ausentes. Verifique permissões.");
     }
     // Os presentes já recebem o status original do Voyager e vínculo ativo no upsert.
     showStatus(status,"Importação concluída. "+normalized.length+" na lista atual; "+
       desativar.length+" marcados como inativos; "+reativar.length+" reativados. Histórico mantido.","btn-success");
-  }catch(err){showStatus(status,"Erro: "+err.message,"btn-error")}
+  }catch(err){console.error("Falha na importação Voyager:",err);showStatus(status,"ERRO NA IMPORTAÇÃO — "+err.message,"btn-error")}
   finally{button.disabled=false}
 });
 
