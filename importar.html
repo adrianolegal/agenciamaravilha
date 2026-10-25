@@ -268,7 +268,7 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
     showStatus(status,"Lendo hosts existentes no Supabase...","");
     const existing=[];
     for(let offset=0;;offset+=800){
-      const {data,error}=await supabase.from("hosts").select('member_Id,Apelido de streamer,Data de entrada,Status de streamer,vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
+      const {data,error}=await supabase.from("hosts").select('member_Id,"Apelido de streamer","Data de entrada","Status de streamer",vinculo_ativo').order('member_Id',{ascending:true}).range(offset,offset+799);
       if(error)throw Error("Falha ao consultar hosts existentes: "+JSON.stringify({message:error.message,code:error.code,details:error.details,hint:error.hint}));
       existing.push(...(data||[]));
       if((data||[]).length<800)break;
