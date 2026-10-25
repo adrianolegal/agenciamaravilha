@@ -19,13 +19,29 @@ async function checkHost(id){
  if($('kwai').value.trim()!==id)return;
  if(error){$('check').textContent='Falha na consulta interna: '+error.message+'. Situação no Kwai não verificada.';return}
  lastChecked=id;foundExisting=!!data?.length;
- if(foundExisting){
- const h=data[0];$('nome').value=h.apelido_streamer||$('nome').value;
- $('check').textContent='Já consta nos relatórios da agência'+(h.nome_agente?' — recrutador: '+h.nome_agente:'')+'. Confirmar situação atual no Kwai.';
- $('check').style.color='#ffb454';
+ const {data:hosts,error:hostError}=await supabase.from('hosts').select('kwaiId,"Apelido de streamer","Status de streamer",vinculo_ativo').ilike('kwaiId',id).limit(1);
+ if($('kwai').value.trim()!==id)return;
+ const host=hosts?.[0];
+ const statusHost=String(host?.['Status de streamer']||'').trim();
+ const ativo=/^em coopera[cç][aã]o$/i.test(statusHost);
+ if(hostError){
+  $('check').textContent='Não foi possível verificar o vínculo atual: '+hostError.message;
+  $('check').style.color='#ffb454';
+ }else if(host&&ativo){
+  $('nome').value=host['Apelido de streamer']||data?.[0]?.apelido_streamer||$('nome').value;
+  $('check').textContent='Host atualmente em cooperação com a Agência Maravilha'+(data?.[0]?.nome_agente?' — recrutador: '+data[0].nome_agente:'')+'.';
+  $('check').style.color='#ffb454';
+ }else if(host){
+  $('nome').value=host['Apelido de streamer']||data?.[0]?.apelido_streamer||$('nome').value;
+  $('check').textContent='(Já foi agenciado pela Agência Maravilha; vínculo atual: '+(statusHost||'não informado')+'). Consulte a situação atual no Kwai.';
+  $('check').style.color='#b9c6d8';
+ }else if(foundExisting){
+  $('nome').value=data[0].apelido_streamer||$('nome').value;
+  $('check').textContent='Já consta no histórico da agência'+(data[0].nome_agente?' — recrutador: '+data[0].nome_agente:'')+'. Vínculo atual não confirmado.';
+  $('check').style.color='#b9c6d8';
  }else{
- $('check').textContent='Não encontrado nos relatórios da agência. Vínculo com outras agências ainda NÃO verificado no Kwai.';
- $('check').style.color='#b9c6d8';
+  $('check').textContent='Não encontrado no cadastro da agência. Vínculo com outras agências ainda NÃO verificado no Kwai.';
+  $('check').style.color='#b9c6d8';
  }
 }
 
