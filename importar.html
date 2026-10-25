@@ -199,6 +199,28 @@ function dataVoyagerISO(value) {
   const d=new Date(s);
   return Number.isNaN(d.getTime())?null:d.toISOString();
 }
+function chaveColuna(texto) {
+  return String(texto||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/\u00a0/g," ").toLowerCase().replace(/[^a-z0-9]/g,"");
+}
+function prepararTabelaVoyager(linhas) {
+  const primeira=linhas[0]||{};
+  const colunas=Object.keys(primeira);
+  const encontrar=(...nomes)=>colunas.find(c=>nomes.some(n=>chaveColuna(c)===chaveColuna(n)));
+  const id=encontrar("member_Id","memberId","Member ID","UID","UID do streamer");
+  const entrada=encontrar("Data de entrada","Data de ingresso","Data de adesão","Data de cooperacao","Data de cooperação","Join Date","Joining Date","Onboarding Date","Onborading Date","Cooperation Start Time");
+  const apelido=encontrar("Apelido de streamer","Apelido do streamer","Streamer nickname");
+  if(!id)throw Error("Coluna UID/member_Id não encontrada. Colunas da planilha: "+colunas.join(", "));
+  if(!entrada)throw Error("Coluna Data de entrada não encontrada. Nenhum dado foi alterado. Colunas: "+colunas.join(", "));
+  return {id,entrada,apelido,linhas:linhas.map(l=>{
+    const r={...l,member_Id:l[id],"Data de entrada":l[entrada]};
+    if(apelido)r["Apelido de streamer"]=l[apelido];
+    // Não enviar nomes alternativos como colunas inexistentes ao Supabase.
+    for(const c of [id,entrada,apelido])if(c&&
+      !["member_Id","Data de entrada","Apelido de streamer"].includes(c))delete r[c];
+    return r;
+  })};
+}
 function normalizeData(data) {
   return data.map(row => {
     const normalized = {...row};
@@ -263,13 +285,13 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       return row;
     });
     const departed=existing.filter(x=>!currentIds.has(String(x.member_Id))).map(x=>x.member_Id);
-    const datasPresentes=normalized.filter(x=>!!x["Data de entrada"]).length;
+    const datasPresentes=normalized.filter(x=>!!x["Data de entrada"]).length;\n    const datasArquivo=valid.filter(x=>!!dataVoyagerISO(x["Data de entrada"])).length;
     const datasVazias=normalized.length-datasPresentes;
     if(datasVazias) {
       const ok=confirm("ATENÇÃO: "+datasVazias+" de "+normalized.length+" hosts estão sem Data de entrada no arquivo e no histórico. As datas antigas foram preservadas quando existentes. Continuar a importação?");
       if(!ok)return;
     }
-    showStatus(status,"Datas de entrada identificadas: "+datasPresentes+" de "+normalized.length+". Gravando...","");
+    const exemplo=valid.find(x=>x["Data de entrada"]!=="");\n    const diagnostico="Coluna encontrada: "+preparada.entrada+". Datas válidas no arquivo: "+datasArquivo+"/"+valid.length+"; após preservar histórico: "+datasPresentes+"/"+normalized.length+". Exemplo: "+String(exemplo?.["Data de entrada"]??"vazio")+" → "+String(dataVoyagerISO(exemplo?.["Data de entrada"])??"não reconhecida");\n    if(datasArquivo===0)throw Error("IMPORTAÇÃO CANCELADA: nenhuma data de entrada foi reconhecida. "+diagnostico);\n    if(!confirm("CONFERÊNCIA ANTES DE GRAVAR\\n"+diagnostico+"\\n\\nGravar agora na tabela hosts?"))return;\n    showStatus(status,diagnostico+" Gravando...","");
     showStatus(status,"Importando "+normalized.length+" membros atuais...","");
     for(let i=0;i<normalized.length;i+=200){
       const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+200),{onConflict:"member_Id"});
