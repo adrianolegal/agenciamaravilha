@@ -72,7 +72,7 @@ function visibleRows(){
   if(numberKeys.includes(sortKey)){av=sortKey==='hours'?hoursValue(av):asNumber(av);bv=sortKey==='hours'?hoursValue(bv):asNumber(bv)}
   else if(sortKey==='last'){av=av?new Date(av).getTime():0;bv=bv?new Date(bv).getTime():0}
   else if(sortKey==='category'){av=hostCategory(a.entry);bv=hostCategory(b.entry)}
-  else if(sortKey==='linked'){av=a.linked===false?'Inativo':a.linked===true?'Ativo':'Não informado';bv=b.linked===false?'Inativo':b.linked===true?'Ativo':'Não informado'}
+  else if(sortKey==='linked'){av=a.statusHost||'Não informado';bv=b.statusHost||'Não informado'}
   else if(sortKey==='uid'){av=String(av??'');bv=String(bv??'');return sortDirection*av.localeCompare(bv,'pt-BR',{numeric:true})}
   else {av=norm(av);bv=norm(bv)}
   return sortDirection*(typeof av==='number'?av-bv:String(av).localeCompare(String(bv),'pt-BR',{numeric:true}));
@@ -86,7 +86,7 @@ function exportExcel(){
  const rows=visibleRows();if(!rows.length){msg('Nenhum host para exportar.');return}
  if(!window.XLSX){msg('Biblioteca Excel indisponível. Atualize a página e tente novamente.');return}
  const headers=['Host','UID (Member ID)','Kwai ID','Última gravação registrada','Dias de live no mês','Horas de live no mês','Diamantes do streamer no mês','Categoria','Vínculo'];
- const data=rows.map(r=>[r.name||'',String(r.uid||''),r.kwai||'',fmtDate(r.last)==='—'?'':fmtDate(r.last),r.days==null?'':asNumber(r.days),r.hours==null?'':hoursValue(r.hours),r.diamonds==null?'':asNumber(r.diamonds),hostCategory(r.entry),r.linked===false?'Saiu da agência':r.linked===true?'Ativo':'Não informado']);
+ const data=rows.map(r=>[r.name||'',String(r.uid||''),r.kwai||'',fmtDate(r.last)==='—'?'':fmtDate(r.last),r.days==null?'':asNumber(r.days),r.hours==null?'':hoursValue(r.hours),r.diamonds==null?'':asNumber(r.diamonds),hostCategory(r.entry),r.statusHost||'Não informado']);
  const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
  ws['!cols']=[{wch:30},{wch:23},{wch:26},{wch:27},{wch:18},{wch:18},{wch:18},{wch:15},{wch:18}];
  for(let i=1;i<=data.length;i++){const cell=ws['B'+(i+1)];if(cell){cell.t='s';cell.v=String(cell.v)}}
@@ -136,7 +136,7 @@ function show(list){const found=visibleRows();
  document.querySelectorAll('[data-sort]').forEach(btn=>{btn.querySelector('.arrow').textContent=btn.dataset.sort===sortKey?(sortDirection===1?'▲':'▼'):'↕';btn.setAttribute('aria-sort',btn.dataset.sort===sortKey?(sortDirection===1?'ascending':'descending'):'none')});
  $('tabela').replaceChildren();
  for(const r of found){const tr=document.createElement('tr');
-  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'—',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR'),hostCategory(r.entry),r.linked===false?'Saiu':r.linked===true?'Ativo':'—']){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
+  for(const v of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'—',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR'),hostCategory(r.entry),r.statusHost||'—']){const td=document.createElement('td');td.textContent=v??'—';tr.append(td)}
   $('tabela').append(tr)}
  if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=9;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
  $('totalHosts').textContent=list.length;
@@ -167,12 +167,13 @@ async function consult(){
  try {
   const uids=[...map.values()].map(x=>x.uid).filter(Boolean);
   for(let i=0;i<uids.length;i+=150){
-   const {data,error}=await supabase.from('hosts').select('member_Id,Apelido de streamer,kwaiId,Data de entrada,vinculo_ativo').in('member_Id',uids.slice(i,i+150));
+   const {data,error}=await supabase.from('hosts').select('member_Id,"Apelido de streamer",kwaiId,"Data de entrada","Status de streamer",vinculo_ativo').in('member_Id',uids.slice(i,i+150));
    if(error)break; // RLS pode restringir acesso; não presumir vínculo nem data.
    for(const h of data||[]){
     const row=map.get(String(h.member_Id));if(!row)continue;
     if(h['Data de entrada'])row.entry=h['Data de entrada'];
-    if(h.vinculo_ativo!==null&&h.vinculo_ativo!==undefined)row.linked=h.vinculo_ativo;
+    row.statusHost=String(h['Status de streamer']||'').trim();
+    if(row.statusHost)row.linked=/^em coopera[cç][aã]o$/i.test(row.statusHost);else if(h.vinculo_ativo!==null&&h.vinculo_ativo!==undefined)row.linked=h.vinculo_ativo;
     if(!row.name&&h['Apelido de streamer'])row.name=h['Apelido de streamer'];
     if(!row.kwai&&h.kwaiId)row.kwai=h.kwaiId;
    }
