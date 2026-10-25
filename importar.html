@@ -175,26 +175,37 @@ function showStatus(element, text, type="") {
 }
 
 // normaliza IDs e datas
+// Converte datas da Tabela 1 sem depender de Date.parse para formatos brasileiros.
+// O SheetJS usa objetos Date quando cellDates:true; o Voyager também pode
+// exportar números seriais do Excel ou strings DD/MM/AAAA.
+function dataVoyagerISO(value) {
+  if(value == null || value === "") return null;
+  if(value instanceof Date) return Number.isNaN(value.getTime()) ? null : value.toISOString();
+  if(typeof value === "number") {
+    const d = XLSX.SSF.parse_date_code(value);
+    if(!d) return null;
+    return new Date(Date.UTC(d.y,d.m-1,d.d,d.H||0,d.M||0,Math.floor(d.S||0))).toISOString();
+  }
+  const s=String(value).trim();
+  if(!s) return null;
+  const br=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if(br) {
+    const day=+br[1],month=+br[2],year=+br[3];
+    const d=new Date(Date.UTC(year,month-1,day,+(br[4]||0),+(br[5]||0),+(br[6]||0)));
+    return d.getUTCFullYear()===year&&d.getUTCMonth()===month-1&&d.getUTCDate()===day?d.toISOString():null;
+  }
+  const iso=/^\d{4}-\d{2}-\d{2}(?:[T\s].*)?$/.test(s);
+  if(!iso)return null;
+  const d=new Date(s);
+  return Number.isNaN(d.getTime())?null:d.toISOString();
+}
 function normalizeData(data) {
   return data.map(row => {
-    const normalized = { ...row };
-    if (normalized.member_Id) normalized.member_Id = Number(normalized.member_Id);
-
-    const dateFields = [
-      "Data de entrada",
-      "Última transmissão ao vivo em",
-      "Última publicação em"
-    ];
-
-    dateFields.forEach(field => {
-      if (normalized[field]) {
-        const d = new Date(normalized[field]);
-        normalized[field] = isNaN(d.getTime()) ? null : d.toISOString();
-      } else {
-        normalized[field] = null;
-      }
-    });
-
+    const normalized = {...row};
+    if(normalized.member_Id) normalized.member_Id=Number(normalized.member_Id);
+    for(const field of ["Data de entrada","Última transmissão ao vivo em","Última publicação em"]) {
+      normalized[field]=dataVoyagerISO(row[field]);
+    }
     return normalized;
   });
 }
@@ -252,6 +263,13 @@ document.getElementById("btnImportHosts").addEventListener("click", async () => 
       return row;
     });
     const departed=existing.filter(x=>!currentIds.has(String(x.member_Id))).map(x=>x.member_Id);
+    const datasPresentes=normalized.filter(x=>!!x["Data de entrada"]).length;
+    const datasVazias=normalized.length-datasPresentes;
+    if(datasVazias) {
+      const ok=confirm("ATENÇÃO: "+datasVazias+" de "+normalized.length+" hosts estão sem Data de entrada no arquivo e no histórico. As datas antigas foram preservadas quando existentes. Continuar a importação?");
+      if(!ok)return;
+    }
+    showStatus(status,"Datas de entrada identificadas: "+datasPresentes+" de "+normalized.length+". Gravando...","");
     showStatus(status,"Importando "+normalized.length+" membros atuais...","");
     for(let i=0;i<normalized.length;i+=200){
       const {error}=await supabase.from("hosts").upsert(normalized.slice(i,i+200),{onConflict:"member_Id"});
