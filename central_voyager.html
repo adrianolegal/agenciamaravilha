@@ -1,4 +1,4 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Central Voyager — Agência Maravilha</title><link rel="stylesheet" href="menu1.css"><link rel="stylesheet" href="assets/styles.css"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background:#0f172a;color:#f1f5f9;padding:75px 12px}main{max-width:1300px;margin:auto}.panel{background:#1e293b;padding:18px;border-radius:12px;border:1px solid #334155;margin:16px 0}.table{--bs-table-bg:transparent;--bs-table-color:#f1f5f9;--bs-table-border-color:#475569}.table-hover tbody tr:hover{--bs-table-hover-bg:#344155;--bs-table-hover-color:#ffad47}.form-select,.form-control{background:#111827;border-color:#64748b;color:white}.form-select:focus{background:#111827;color:white}.muted{color:#b9c7da}button{margin:2px}#details{white-space:pre-line;line-height:1.7}</style></head><body><div id="menu-placeholder"></div><main><h1>Central de solicitações — Kwai</h1><p class="muted">Pedidos enviados pelos recrutadores. A conta Kwai continua exclusiva do administrador; nesta versão, o convite é enviado manualmente no Kwai.</p><section class="panel"><div class="d-flex gap-2 flex-wrap align-items-center"><button class="btn btn-warning" id="refresh">Atualizar pedidos</button><a class="btn btn-outline-light" href="https://voyager.kwai.com/anchor/list" target="_blank" rel="noopener">Abrir Kwai</a><label class="btn btn-outline-info mb-0" for="voyagerFiles">Sincronizar respostas Voyager (JSON)</label><input id="voyagerFiles" type="file" accept=".json,.txt,application/json,text/plain" multiple hidden><span id="counter"></span></div><p id="message" role="status" class="mt-2"></p></section><section class="panel table-responsive"><table class="table table-hover"><thead><tr><th>Data</th><th>Recrutador</th><th>Kwai ID</th><th>Host</th><th>Origem</th><th>Estado</th><th>Ações</th></tr></thead><tbody id="rows"><tr><td colspan="7">Carregando...</td></tr></tbody></table></section><section class="panel" id="detail" hidden><h2 class="h5">Solicitação selecionada</h2><div id="details"></div><p class="muted mt-2">Padrão: entretenimento · prazo indeterminado · agência preenche · contato (41) 99116-1317. Confira os dados no Kwai antes de confirmar.</p><div class="d-flex flex-wrap"><button id="copy" class="btn btn-outline-light">Copiar dados</button><button id="approve" class="btn btn-outline-warning">Aguardando envio</button><button id="sent" class="btn btn-success">Marcar enviado (após confirmar no Kwai)</button><button id="linked" class="btn btn-outline-light">Já vinculado</button><button id="reject" class="btn btn-outline-danger">Recusar</button></div></section></main><script type="module">
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Central Voyager — Agência Maravilha</title><link rel="stylesheet" href="menu1.css"><link rel="stylesheet" href="assets/styles.css"><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"><style>body{background:#0f172a;color:#f1f5f9;padding:75px 12px}main{max-width:1300px;margin:auto}.panel{background:#1e293b;padding:18px;border-radius:12px;border:1px solid #334155;margin:16px 0}.table{--bs-table-bg:transparent;--bs-table-color:#f1f5f9;--bs-table-border-color:#475569}.table-hover tbody tr:hover{--bs-table-hover-bg:#344155;--bs-table-hover-color:#ffad47}.form-select,.form-control{background:#111827;border-color:#64748b;color:white}.form-select:focus{background:#111827;color:white}.muted{color:#b9c7da}button{margin:2px}#details{white-space:pre-line;line-height:1.7}</style></head><body><div id="menu-placeholder"></div><main><h1>Central de solicitações — Kwai</h1><p class="muted">Pedidos enviados pelos recrutadores. A conta Kwai continua exclusiva do administrador; nesta versão, o convite é enviado manualmente no Kwai.</p><section class="panel"><div class="d-flex gap-2 flex-wrap align-items-center"><button class="btn btn-warning" id="refresh">Atualizar pedidos</button><a class="btn btn-outline-light" href="https://voyager.kwai.com/anchor/list" target="_blank" rel="noopener">Abrir Kwai</a><button class="btn btn-outline-info" id="syncVoyager" type="button">Sincronizar com Voyager</button><span id="counter"></span></div><p id="message" role="status" class="mt-2"></p></section><section class="panel table-responsive"><table class="table table-hover"><thead><tr><th>Data</th><th>Recrutador</th><th>Kwai ID</th><th>Host</th><th>Origem</th><th>Estado</th><th>Ações</th></tr></thead><tbody id="rows"><tr><td colspan="7">Carregando...</td></tr></tbody></table></section><section class="panel" id="detail" hidden><h2 class="h5">Solicitação selecionada</h2><div id="details"></div><p class="muted mt-2">Padrão: entretenimento · prazo indeterminado · agência preenche · contato (41) 99116-1317. Confira os dados no Kwai antes de confirmar.</p><div class="d-flex flex-wrap"><button id="copy" class="btn btn-outline-light">Copiar dados</button><button id="approve" class="btn btn-outline-warning">Aguardando envio</button><button id="sent" class="btn btn-success">Marcar enviado (após confirmar no Kwai)</button><button id="linked" class="btn btn-outline-light">Já vinculado</button><button id="reject" class="btn btn-outline-danger">Recusar</button></div></section></main><script type="module">
 import {supabase} from './supabase.js';
   import {instalarEnvioKwai} from './kwai-envio.js';
 const $=id=>document.getElementById(id),say=s=>$('message').textContent=s;
@@ -14,64 +14,52 @@ uidHost='';lastEligibility=null;$('detail').hidden=false;$('details').textConten
 $('copy').onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summary());say('Dados copiados. Confira e conclua no Kwai.')}catch(e){say('Não foi possível copiar: '+e.message)}};
 async function status(next){if(!current)return;if(next==='enviado'&&!window.confirm('Você confirmou manualmente este convite no Kwai?'))return;const {error}=await supabase.from('agencia_solicitacoes_ingresso').update({status:next,updated_at:new Date().toISOString()}).eq('id',current.id);if(error){say('Erro ao salvar: '+error.message);return}$('detail').hidden=true;current=null;await load()}
 
-function parseVoyagerJSON(texto){
- const bruto=JSON.parse(texto);
- const data=bruto?.data;
- if(bruto?.result!==1||!Array.isArray(data?.list)||!Number.isFinite(Number(data.total)))throw Error('Resposta Voyager inválida: esperado result=1, data.total e data.list.');
- const list=data.list;
- const membros=list.some(x=>x.orgId!==undefined||x.onBoardTime!==undefined||x.statusText==='Em cooperação');
- const convites=list.some(x=>x.inviteProcess!==undefined||x.inviteProcessText!==undefined);
- if(!membros&&!convites)throw Error('Arquivo não contém lista de membros nem histórico de convites.');
- return {tipo:membros?'membros':'convites',list,total:Number(data.total)};
-}
-const situacoesVoyager={1:'A ser revisado',2:'Revisão rejeitada',3:'Confirmando o convite',4:'Rejeitado pelo usuário',5:'Convite expirado',6:'Removido',7:'Informações a serem carregadas'};
-async function sincronizarVoyagerArquivos(files){
- if(!files.length)return;
- const origens=[];
- try{
-  for(const file of files){const parsed=parseVoyagerJSON(await file.text());origens.push(parsed)}
-  const convites=origens.filter(x=>x.tipo==='convites').flatMap(x=>x.list);
-  const membros=origens.filter(x=>x.tipo==='membros').flatMap(x=>x.list);
-  const byId=new Map(),byKwai=new Map();
-  for(const item of convites){
-   if(item.memberId)byId.set(String(item.memberId),item);
-   if(item.kwaiId)byKwai.set(String(item.kwaiId).trim().toLowerCase(),item);
-  }
-  const membroId=new Map(),membroKwai=new Map();
-  for(const item of membros){
-   if(item.memberId)membroId.set(String(item.memberId),item);
-   if(item.kwaiId)membroKwai.set(String(item.kwaiId).trim().toLowerCase(),item);
-  }
-  const {data:pedidos,error:err}=await supabase.from('agencia_solicitacoes_ingresso').select('id,kwai_id,status,retorno_verificacao').order('created_at',{ascending:false}).limit(1000);
-  if(err)throw err;
-  let alterados=0,semCorrespondencia=0,erros=[];
-  for(const pedido of pedidos||[]){
-   const chave=String(pedido.kwai_id||'').trim().toLowerCase();
-   if(!chave)continue;
-   const membro=membroKwai.get(chave),convite=byKwai.get(chave);
-   if(!membro&&!convite){semCorrespondencia++;continue}
-   let novoStatus=pedido.status,descricao='';
-   if(membro&&String(membro.statusText||'').toLowerCase()==='em cooperação'){
-    novoStatus='confirmado';
-    descricao='Voyager — membro ativo / Em cooperação'+(membro.onBoardTimeText?' — entrada: '+membro.onBoardTimeText:'');
-   }else if(convite){
-    const codigo=Number(convite.inviteProcess);
-    const rotulo=situacoesVoyager[codigo]||String(convite.inviteProcessText||'Estado não identificado');
-    descricao='Voyager — '+rotulo+(convite.updateTimeText?' — atualização: '+convite.updateTimeText:'');
-    // Não inventar novos valores de status sem conhecer as restrições do banco.
-    // A situação detalhada fica em retorno_verificacao, preservando o status existente.
-   }
-   if(!descricao||((pedido.retorno_verificacao||'')===descricao&&novoStatus===pedido.status))continue;
-   const {error:e}=await supabase.from('agencia_solicitacoes_ingresso').update({status:novoStatus,retorno_verificacao:descricao,updated_at:new Date().toISOString()}).eq('id',pedido.id);
-   if(e)erros.push(pedido.kwai_id+': '+e.message);else alterados++;
-  }
-  const contagens=origens.map(x=>x.tipo+': '+x.list.length+'/'+x.total).join('; ');
-  say('Sincronização concluída: '+alterados+' solicitações atualizadas. Arquivos: '+contagens+'. '+semCorrespondencia+' solicitações sem correspondência nos arquivos fornecidos.'+(erros.length?' Erros: '+erros.slice(0,5).join(' | '):'')+' Para cobertura completa, importe todas as páginas do Voyager.');
-  await load();say('Sincronização: '+alterados+' atualizadas. '+contagens+'. '+(erros.length?erros.join(' | '):'Nenhum erro de gravação.')+' Importar todas as páginas para cobertura completa.');
- }catch(e){console.error('Sincronização Voyager',e);say('Falha na sincronização: '+e.message)}
-}
-$('voyagerFiles').addEventListener('change',async e=>{const files=[...e.target.files];e.target.value='';await sincronizarVoyagerArquivos(files)});
 
+const estadosConvite={1:'A ser revisado',2:'Revisão rejeitada',3:'Confirmando o convite',4:'Rejeitado pelo usuário',5:'Convite expirado',6:'Removido',7:'Informações a serem carregadas'};
+async function sincronizarRespostasVoyager(membros,convites){
+ const mById=new Map(),mByKwai=new Map(),cById=new Map(),cByKwai=new Map();
+ const chave=v=>String(v||'').trim().toLowerCase();
+ for(const m of membros){if(m.memberId)mById.set(String(m.memberId),m);if(m.kwaiId)mByKwai.set(chave(m.kwaiId),m)}
+ for(const c of convites){if(c.memberId)cById.set(String(c.memberId),c);if(c.kwaiId)cByKwai.set(chave(c.kwaiId),c)}
+ const {data:pedidos,error}=await supabase.from('agencia_solicitacoes_ingresso').select('id,kwai_id,status,retorno_verificacao').order('created_at',{ascending:false}).limit(1000);
+ if(error)throw error;
+ let atualizados=0;const erros=[];
+ for(const p of pedidos||[]){
+  const key=chave(p.kwai_id);if(!key)continue;
+  const m=mByKwai.get(key),c=cByKwai.get(key);
+  let status=p.status,retorno='';
+  if(m&&Number(m.status)===1){status='confirmado';retorno='Voyager — Em cooperação'+(m.onBoardTimeText?' — entrada: '+m.onBoardTimeText:'')}
+  else if(c){const n=Number(c.inviteProcess);retorno='Voyager — '+(estadosConvite[n]||c.inviteProcessText||'Situação não identificada');}
+  if(!retorno||(status===p.status&&retorno===p.retorno_verificacao))continue;
+  const {error:e}=await supabase.from('agencia_solicitacoes_ingresso').update({status,retorno_verificacao:retorno,updated_at:new Date().toISOString()}).eq('id',p.id);
+  if(e)erros.push(key+': '+e.message);else atualizados++;
+ }
+ await load();
+ say('Voyager: '+membros.length+' membros e '+convites.length+' convites consultados; '+atualizados+' solicitações atualizadas.'+(erros.length?' Erros: '+erros.slice(0,5).join(' | '):''));
+}
+$('syncVoyager').onclick=async()=>{
+ const btn=$('syncVoyager');btn.disabled=true;say('Consultando Voyager pela extensão (100 registros por página)...');
+ const requestId=crypto.randomUUID();
+ try{
+  const resposta=await new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>{window.removeEventListener('message',receber);reject(Error('A extensão não respondeu. Atualize a extensão para suportar MARAVILHA_KWAI_SINCRONIZAR.'))},45000);
+   function receber(event){
+    if(event.source!==window||event.origin!==location.origin||event.data?.type!=='MARAVILHA_KWAI_SINCRONIZAR_RESPOSTA'||event.data.requestId!==requestId)return;
+    clearTimeout(timer);window.removeEventListener('message',receber);resolve(event.data);
+   }
+   window.addEventListener('message',receber);
+   window.postMessage({type:'MARAVILHA_KWAI_SINCRONIZAR',requestId,consultas:[
+    {url:'/rest/org/live/member/list',payload:{memberName:'',brokerName:'',subOrgId:'',page:1,count:100,memberQueryType:1}},
+    {url:'/rest/org/live/member/invite/list',payload:{memberName:'',type:'',inviteProcess:'',page:1,count:100}}
+   ],paginacao:true},location.origin);
+  });
+  if(resposta.error)throw Error(resposta.error);
+  const membros=resposta.membros,convites=resposta.convites;
+  if(!Array.isArray(membros)||!Array.isArray(convites)||!resposta.completo)throw Error('Extensão retornou dados incompletos; nenhuma alteração feita.');
+  await sincronizarRespostasVoyager(membros,convites);
+ }catch(e){say('Sincronização não concluída: '+e.message)}
+ finally{btn.disabled=false}
+};
 $('approve').onclick=()=>status('aguardando_aprovacao');$('sent').onclick=()=>status('enviado');$('linked').onclick=()=>status('vinculo_existente');$('reject').onclick=()=>status('recusado');$('refresh').onclick=load;
 const channel=supabase.channel('central-ingressos-admin').on('postgres_changes',{event:'INSERT',schema:'public',table:'agencia_solicitacoes_ingresso'},()=>load()).subscribe();window.addEventListener('pagehide',()=>supabase.removeChannel(channel));await load();
 </script><script type="module" src="menu-acessos.js"></script><script type="module" src="ponte-admin.js"></script></body></html>
