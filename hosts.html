@@ -233,19 +233,19 @@ btnFiltrar.addEventListener('click', async () => {
       if(v==null||v==='')return 0;
       if(typeof v==='number')return Number.isFinite(v)?v:0;
       const t=String(v).trim();
-      if(/^\\d+:\\d{2}(?::\\d{2})?$/.test(t)){const p=t.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*3600+p[1]*60}
+      if(/^\d+:\d{2}(?::\d{2})?$/.test(t)){const p=t.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*3600+p[1]*60}
       return numero(t);
     };
     const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
     if(todosMeses){
-      const totalHoras=data.reduce((sum,d)=>sum+segundos(d.duracao_transmissao),0)/3600;
+      const totalTransmissao=data.reduce((sum,d)=>sum+segundos(d.duracao_transmissao),0);const totalVideo=data.reduce((sum,d)=>sum+segundos(d.duracao_video),0);const totalAudio=data.reduce((sum,d)=>sum+segundos(d.duracao_audio),0);const formatarDuracao=v=>{const n=Math.round(v);return String(Math.floor(n/3600))+':'+String(Math.floor(n%3600/60)).padStart(2,'0')+':'+String(n%60).padStart(2,'0')};
       const totalDias=data.reduce((sum,d)=>sum+numero(d.dias_efetivos),0);
       const totalDiamantes=data.reduce((sum,d)=>sum+numero(d.fluxo_presentes),0);
-      for(const [rotulo,valor] of [['Horas de live',totalHoras.toLocaleString('pt-BR',{maximumFractionDigits:2})+' h'],['Dias efetivos',totalDias.toLocaleString('pt-BR')],['Diamantes',totalDiamantes.toLocaleString('pt-BR')]]){
-        const item=document.createElement('div');item.className='col-md-4';
-        const card=document.createElement('div');card.className='bg-dark border border-secondary rounded p-3 h-100';
+      for(const [rotulo,valor] of [['Duração transmissão',formatarDuracao(totalTransmissao)],['Duração vídeo',formatarDuracao(totalVideo)],['Duração áudio',formatarDuracao(totalAudio)],['Dias efetivos',totalDias.toLocaleString('pt-BR')],['Diamantes',totalDiamantes.toLocaleString('pt-BR')]]){
+        const item=document.createElement('div');item.className='col-md-4 col-lg';
+        const card=document.createElement('div');card.className='border border-secondary rounded p-3 h-100';card.style.cssText='background:#111827;color:#fff;min-height:94px';
         const titulo=document.createElement('div');titulo.className='text-warning';titulo.textContent=rotulo;
-        const value=document.createElement('strong');value.textContent=valor;card.append(titulo,value);item.append(card);resumo.append(item);
+        const value=document.createElement('strong');value.className='d-block fs-5 mt-2';value.style.color='#fff';value.textContent=valor;card.append(titulo,value);item.append(card);resumo.append(item);
       }
       resumo.style.display='';
     }
