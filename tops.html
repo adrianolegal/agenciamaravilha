@@ -63,6 +63,7 @@ document.getElementById('menu-placeholder').innerHTML = html
 <div class="col-md-4">
 <label>Mês</label>
 <select id="mes" class="form-select">
+<option value="todos">Todos os meses</option>
 <option value="1">Janeiro</option>
 <option value="2">Fevereiro</option>
 <option value="3">Março</option>
@@ -147,7 +148,9 @@ const tabelaHoras = document.getElementById("rankingHoras")
 
 btn.onclick = async () => {
 
-const mes = Number(document.getElementById("mes").value)
+const mesSelecionado = document.getElementById("mes").value
+const todosMeses = mesSelecionado === "todos"
+const mes = Number(mesSelecionado)
 const ano = Number(document.getElementById("ano").value)
 
 tabelaDiamantes.innerHTML = ""
@@ -159,11 +162,10 @@ tabelaHoras.innerHTML = ""
    BUSCAR DADOS
 ========================= */
 
-const { data, error } = await supabase
-.from("host_reports_simplificado")
-.select("apelido_streamer, kwai_id, fluxo_presentes, duracao_transmissao")
-.eq("mes", mes)
-.eq("ano", ano)
+let query=supabase.from("host_reports_simplificado")
+.select("member_id,apelido_streamer,kwai_id,fluxo_presentes,duracao_transmissao,mes").eq("ano",ano);
+if(!todosMeses)query=query.eq("mes",mes);
+const {data,error}=await query
 
 if(error){
 console.error(error)
@@ -193,11 +195,29 @@ function preencherHost(tr,h){
  wrap.append(img,name);td.append(wrap);
 }
 
+function segundos(v){
+ if(v==null||v==='')return 0;
+ if(typeof v==='number')return Number.isFinite(v)?v:0;
+ const txt=String(v).trim();
+ if(/^\\d+:\\d{2}(?::\\d{2})?$/.test(txt)){const p=txt.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*3600+p[1]*60}
+ return Number(txt.replace(',','.'))||0;
+}
+const agrupados=new Map();
+for(const h of data||[]){
+ const id=String(h.member_id||h.kwai_id||'').trim().toLowerCase();
+ if(!id)continue;
+ const atual=agrupados.get(id)||{...h,fluxo_presentes:0,segundosLive:0};
+ atual.fluxo_presentes+=(Number(h.fluxo_presentes)||0);
+ atual.segundosLive+=segundos(h.duracao_transmissao);
+ if(h.apelido_streamer)atual.apelido_streamer=h.apelido_streamer;
+ agrupados.set(id,atual);
+}
+const rankingData=[...agrupados.values()];
 /* =========================
    TOP DIAMANTES
 ========================= */
 
-const topDiamantes = [...data]
+const topDiamantes = [...rankingData]
 .sort((a,b)=> (Number(b.fluxo_presentes)||0) - (Number(a.fluxo_presentes)||0))
 .slice(0,5)
 
@@ -243,13 +263,13 @@ return h + (m/60)
    TOP HORAS
 ========================= */
 
-const topHoras = [...data]
-.sort((a,b)=> intervaloParaHoras(b.duracao_transmissao) - intervaloParaHoras(a.duracao_transmissao))
+const topHoras = [...rankingData]
+.sort((a,b)=> b.segundosLive - a.segundosLive)
 .slice(0,10)
 
 topHoras.forEach((h,i)=>{
 
-const horasLive = intervaloParaHoras(h.duracao_transmissao).toFixed(1)
+const horasLive = (h.segundosLive/3600).toFixed(1)
 
 const tr = document.createElement("tr")
 
