@@ -27,7 +27,7 @@
 <div class="col-md-2"><label for="mes">Mês</label><select class="form-select" id="mes"></select></div>
 <div class="col-md-2"><label for="ano">Ano</label><input class="form-control" id="ano" type="number" min="2020" max="2100"></div>
 <div class="col-md-3"><button class="btn btn-warning w-100" id="buscar">Consultar</button></div>
-<div class="col-md-3"><button class="btn btn-success w-100" id="exportar" type="button" disabled>Baixar Excel</button></div><div class="col-md-6"><label for="filtro">Localizar host por nome, UID ou Kwai ID</label><input class="form-control" id="filtro" placeholder="Pesquisar na lista" autocomplete="off"></div>
+<div class="col-md-3"><label for="filtroVinculo">Vínculo</label><select class="form-select" id="filtroVinculo"><option value="todos">Todos</option><option value="ativos">Ativos — em cooperação</option><option value="inativos">Inativos — saíram da agência</option><option value="nao_informado">Não informado</option></select></div><div class="col-md-3"><button class="btn btn-success w-100" id="exportar" type="button" disabled>Baixar Excel</button></div><div class="col-md-6"><label for="filtro">Localizar host por nome, UID ou Kwai ID</label><input class="form-control" id="filtro" placeholder="Pesquisar na lista" autocomplete="off"></div>
 </div><p class="small-note mt-3 mb-0">Nomes do mesmo recrutador são agrupados sem diferenciar letras maiúsculas, acentos ou espaços. A última gravação é a mais recente cadastrada na biblioteca, não necessariamente a última live feita.</p><p id="msg" role="status" class="mt-2"></p></section>
 <section class="row g-3" id="metrics"><div class="col-md-3"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-3"><div class="metric">Total de diamantes no mês<strong id="totalDiamonds">—</strong></div></div><div class="col-md-3"><div class="metric">Total de horas de live no mês<strong id="totalHours">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts sem live no mês<strong id="inativos">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts que saíram da agência<strong id="desligados">—</strong></div></div></section><section class="row g-3"><div class="col-12"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
 <section class="pane table-responsive"><table class="table table-hover align-middle hosts-table"><thead><tr><th><button class="sort-head" data-sort="name">Host <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="uid">UID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="kwai">Kwai ID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="last">Última gravação <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="days">Dias de live <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="hours">Horas de live <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="diamonds">Diamantes <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="category">Categoria <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="linked">Vínculo <span class="arrow">↕</span></button></th></tr></thead><tbody id="tabela"><tr><td colspan="9">Selecione um recrutador.</td></tr></tbody></table></section>
@@ -65,7 +65,7 @@ let allReports=[],groups=new Map(),current=[];
 let sortKey='days',sortDirection=-1;
 function visibleRows(){
  const filter=norm($('filtro').value);
- const rows=current.filter(x=>!filter||[x.name,x.uid,x.kwai].some(v=>norm(v).includes(filter)));
+ const vinculo=$('filtroVinculo').value;const rows=current.filter(x=>(!filter||[x.name,x.uid,x.kwai].some(v=>norm(v).includes(filter)))&&(vinculo==='todos'||(vinculo==='ativos'&&x.linked===true)||(vinculo==='inativos'&&x.linked===false)||(vinculo==='nao_informado'&&x.linked==null)));
  const numberKeys=['days','hours','diamonds'];
  rows.sort((a,b)=>{
   let av=a[sortKey],bv=b[sortKey];
@@ -173,7 +173,7 @@ async function consult(){
     const row=map.get(String(h.member_Id));if(!row)continue;
     if(h['Data de entrada'])row.entry=h['Data de entrada'];
     row.statusHost=String(h['Status de streamer']||'').trim();
-    if(row.statusHost)row.linked=/^em coopera[cç][aã]o$/i.test(row.statusHost);else if(h.vinculo_ativo!==null&&h.vinculo_ativo!==undefined)row.linked=h.vinculo_ativo;
+    if(row.statusHost&&/^em coopera[cç][aã]o$/i.test(row.statusHost))row.linked=true;else if(h.vinculo_ativo!==null&&h.vinculo_ativo!==undefined)row.linked=h.vinculo_ativo;else if(row.statusHost&&/desligad|removid|encerrad|inativ|saiu|fora da ag[eê]ncia/i.test(row.statusHost))row.linked=false;
     if(!row.name&&h['Apelido de streamer'])row.name=h['Apelido de streamer'];
     if(!row.kwai&&h.kwaiId)row.kwai=h.kwaiId;
    }
@@ -195,7 +195,7 @@ async function consult(){
  msg(current.length+' host(s) vinculados. Métricas de '+months[month-1]+'/'+year+'. Última gravação depende dos registros já publicados na biblioteca.');
  }catch(e){msg('Erro: '+e.message)}finally{button.disabled=false}
 }
-$('buscar').onclick=consult;$('filtro').oninput=()=>show(current);
+$('buscar').onclick=consult;$('filtro').oninput=()=>show(current);$('filtroVinculo').onchange=()=>show(current);
 try{
  if(recruiter){
   let {data,error}=await supabase.rpc('agencia_meus_hosts_variacoes');
