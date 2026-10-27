@@ -162,10 +162,21 @@ tabelaHoras.innerHTML = ""
    BUSCAR DADOS
 ========================= */
 
-let query=supabase.from("host_reports_simplificado")
-.select("member_id,apelido_streamer,kwai_id,fluxo_presentes,duracao_transmissao,mes").eq("ano",ano);
-if(!todosMeses)query=query.eq("mes",mes);
-const {data,error}=await query
+// Paginar: Supabase limita cada resposta a 1000 registros por padrão.
+const data=[];
+let error=null;
+for(let offset=0;offset<50000;offset+=1000){
+ let query=supabase.from("host_reports_simplificado")
+  .select("member_id,apelido_streamer,kwai_id,fluxo_presentes,duracao_transmissao,mes")
+  .eq("ano",ano).order("member_id",{ascending:true}).order("mes",{ascending:true})
+  .range(offset,offset+999);
+ if(!todosMeses)query=query.eq("mes",mes);
+ const page=await query;
+ if(page.error){error=page.error;break}
+ data.push(...(page.data||[]));
+ if(!page.data||page.data.length<1000)break;
+ if(offset===49000)error=new Error("Limite de 50.000 registros excedido.");
+}
 
 if(error){
 console.error(error)
