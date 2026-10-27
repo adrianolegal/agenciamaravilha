@@ -73,7 +73,7 @@ document.getElementById('menu-placeholder').innerHTML = html
 
         <div class="mb-3">
             <label class="text-warning">Mês</label>
-            <select id="mesInput" class="form-select">
+            <select id="mesInput" class="form-select"><option value="todos">Todos os meses</option>
                 <option value="1">Janeiro</option><option value="2">Fevereiro</option>
                 <option value="3">Março</option><option value="4">Abril</option>
                 <option value="5">Maio</option><option value="6">Junho</option>
@@ -92,11 +92,11 @@ document.getElementById('menu-placeholder').innerHTML = html
     </div>
 
     <div class="card">
-        <h4 class="text-warning">Resultados da Transmissão</h4>
+        <h4 class="text-warning">Resultados da Transmissão</h4><div id="resumoAnual" class="row g-2 mb-3" style="display:none"></div>
         <table class="table" id="resultTable">
             <thead>
                 <tr>
-                    <th>Duração Transmissão</th>
+                    <th id="colMes" style="display:none">Mês</th><th>Duração Transmissão</th>
                     <th>Dias Efetivos</th>
                     <th>Fluxo Presentes</th>
                     <th>Duração Vídeo</th>
@@ -214,35 +214,49 @@ btnFiltrar.addEventListener('click', async () => {
         status.style.color = 'white';
     }
 
-    const mes = Number(mesInput.value);
-    const ano = Number(anoInput.value);
+    const todosMeses=mesInput.value==='todos';
+    const mes=Number(mesInput.value);
+    const ano=Number(anoInput.value);
+    const resumo=document.getElementById('resumoAnual');
+    const colMes=document.getElementById('colMes');
+    colMes.style.display=todosMeses?'':'none';
+    resumo.style.display='none';resumo.replaceChildren();
+    let query=supabase.from('host_reports_simplificado')
+      .select('mes,duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
+      .eq('member_id',selectedHost.member_id).eq('ano',ano);
+    if(!todosMeses)query=query.eq('mes',mes);
+    const {data,error}=await query.order('mes',{ascending:true});
+    if(error){status.innerText='Erro: '+error.message;return}
+    if(!data?.length){status.innerText='Nenhum dado encontrado';return}
+    const numero=v=>{if(v==null||v==='')return 0;const n=Number(String(v).replace(',','.'));return Number.isFinite(n)?n:0};
+    const segundos=v=>{
+      if(v==null||v==='')return 0;
+      if(typeof v==='number')return Number.isFinite(v)?v:0;
+      const t=String(v).trim();
+      if(/^\\d+:\\d{2}(?::\\d{2})?$/.test(t)){const p=t.split(':').map(Number);return p.length===3?p[0]*3600+p[1]*60+p[2]:p[0]*3600+p[1]*60}
+      return numero(t);
+    };
+    const meses=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+    if(todosMeses){
+      const totalHoras=data.reduce((sum,d)=>sum+segundos(d.duracao_transmissao),0)/3600;
+      const totalDias=data.reduce((sum,d)=>sum+numero(d.dias_efetivos),0);
+      const totalDiamantes=data.reduce((sum,d)=>sum+numero(d.fluxo_presentes),0);
+      for(const [rotulo,valor] of [['Horas de live',totalHoras.toLocaleString('pt-BR',{maximumFractionDigits:2})+' h'],['Dias efetivos',totalDias.toLocaleString('pt-BR')],['Diamantes',totalDiamantes.toLocaleString('pt-BR')]]){
+        const item=document.createElement('div');item.className='col-md-4';
+        const card=document.createElement('div');card.className='bg-dark border border-secondary rounded p-3 h-100';
+        const titulo=document.createElement('div');titulo.className='text-warning';titulo.textContent=rotulo;
+        const value=document.createElement('strong');value.textContent=valor;card.append(titulo,value);item.append(card);resumo.append(item);
+      }
+      resumo.style.display='';
+    }
+    for(const d of data){
+      const tr=document.createElement('tr');
+      const valores=[...(todosMeses?[meses[Number(d.mes)-1]||String(d.mes)]:[]),d.duracao_transmissao,d.dias_efetivos,d.fluxo_presentes,d.duracao_video,d.duracao_audio,d.receita_video,d.receita_audio,d.dias_video];
+      for(const v of valores){const td=document.createElement('td');td.textContent=v??'';tr.append(td)}
+      resultTable.append(tr);
+    }
+    status.innerText=todosMeses?'Mostrando '+data.length+' registro(s) de '+ano+' — totais do ano acima.':'Mostrando '+data.length+' registro(s)';
 
-    const { data, error } = await supabase
-        .from('host_reports_simplificado')
-        .select('duracao_transmissao,dias_efetivos,fluxo_presentes,duracao_video,duracao_audio,receita_video,receita_audio,dias_video')
-        .eq('member_id', selectedHost.member_id)
-        .eq('mes', mes)
-        .eq('ano', ano);
-
-    if(error){ status.innerText = "Erro: " + error.message; return; }
-    if(!data || data.length===0){ status.innerText='Nenhum dado encontrado'; return; }
-
-    data.forEach(d => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-            <td>${d.duracao_transmissao || ''}</td>
-            <td>${d.dias_efetivos || ''}</td>
-            <td>${d.fluxo_presentes || ''}</td>
-            <td>${d.duracao_video || ''}</td>
-            <td>${d.duracao_audio || ''}</td>
-            <td>${d.receita_video || ''}</td>
-            <td>${d.receita_audio || ''}</td>
-            <td>${d.dias_video || ''}</td>
-        `;
-        resultTable.appendChild(tr);
-    });
-
-    status.innerText = `Mostrando ${data.length} registro(s)`;
 });
 
 // Inicializa
