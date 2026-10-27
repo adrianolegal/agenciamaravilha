@@ -169,6 +169,27 @@ return
 
 
 
+// Fotos dos perfis Kwai; falhas na consulta não interrompem o ranking.
+const avatarMap=new Map();
+const kwaiIds=[...new Set((data||[]).map(h=>String(h.kwai_id||'').trim()).filter(Boolean))];
+for(let i=0;i<kwaiIds.length;i+=150){
+ const {data:profiles,error:profileError}=await supabase.from('kwai_profiles')
+  .select('kwai_id,avatar_url').in('kwai_id',kwaiIds.slice(i,i+150));
+ if(profileError){console.warn('Fotos indisponíveis:',profileError.message);break}
+ for(const p of profiles||[])if(p.avatar_url)avatarMap.set(String(p.kwai_id).trim().toLowerCase(),p.avatar_url);
+}
+function preencherHost(tr,h){
+ const td=tr.children[1];if(!td)return;
+ td.replaceChildren();
+ const wrap=document.createElement('div');wrap.className='host-cell';
+ const img=document.createElement('img');img.className='host-avatar';
+ img.loading='lazy';img.alt='';img.referrerPolicy='no-referrer';
+ img.src=avatarMap.get(String(h.kwai_id||'').trim().toLowerCase())||'assets/profile-placeholder.jpg';
+ img.onerror=()=>{img.onerror=null;img.src='assets/profile-placeholder.jpg'};
+ const name=document.createElement('span');name.textContent=h.apelido_streamer||'-';
+ wrap.append(img,name);td.append(wrap);
+}
+
 /* =========================
    TOP DIAMANTES
 ========================= */
