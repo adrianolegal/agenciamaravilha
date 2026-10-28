@@ -213,7 +213,7 @@ function renderRiscos(){
   $('riskRows').append(tr);
  }
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='Nenhum host ativo nesta faixa de alerta.';tr.append(td);$('riskRows').append(tr)}
- $('riskStatus').textContent=rows.length+' host(s) em alerta';
+ $('riskStatus').textContent=rows.length+' host(s) nesta seleção ('+riskData.filter(x=>x.ativo).length+' ativos em alerta; '+riskData.filter(x=>!x.ativo).length+' desligados no total).';
 }
 $('fecharRiscos').onclick=()=>riskModal.classList.remove('open');
 riskModal.addEventListener('click',e=>{if(e.target===riskModal)riskModal.classList.remove('open')});
@@ -245,20 +245,41 @@ $('abrirRiscos').onclick=async()=>{
    if(!data||data.length<800)break;
   }
   const byUid=new Map(vinculos.map(h=>[String(h.member_Id||'').trim(),h]));
-  riskData=records.map(h=>{
-   const uid=String(h.member_id||'').trim();
-   const vinculo=byUid.get(uid);
-   if(!vinculo)return null;
+  // Fonte primária de última live: hosts_simplificado.
+  // NÃO exigir correspondência com hosts: isso ocultava os ativos.
+  const viewByUid=new Map(records.map(h=>[String(h.member_id||'').trim(),h]));
+  const makeRow=(h,vinculo,ativo)=>{
+   const uid=String(h.member_id||vinculo?.member_Id||'').trim();
    if(permitted&&!permitted.has(uid))return null;
-   const status=norm(vinculo['Status de streamer']||'');
-   const ativo=vinculo.vinculo_ativo===true||(vinculo.vinculo_ativo==null&&status==='em cooperacao');
-   const inativo=vinculo.vinculo_ativo===false||status==='inativo';
-   if(!ativo&&!inativo)return null;
    const last=dateOnly(h.ultima_transmissao);
    const days=last==null?null:todayUTC-last;
    if(ativo&&(days==null||days<75))return null;
-   return {...h,apelido:h.apelido||vinculo['Apelido de streamer'],kwai_id:h.kwai_id||vinculo.kwaiId,days,ativo,recruiter:recruiter?access.nome_agente:(owners.get(uid)||'Não informado')};
-  }).filter(Boolean).sort((a,b)=>(b.days??-1)-(a.days??-1));
+   return {...h,member_id:uid,apelido:h.apelido||vinculo?.['Apelido de streamer'],
+    kwai_id:h.kwai_id||vinculo?.kwaiId,days,ativo,
+    recruiter:recruiter?access.nome_agente:(owners.get(uid)||'Não informado')};
+  };
+  riskData=[];
+  for(const h of records){
+   const uid=String(h.member_id||'').trim(),vinculo=byUid.get(uid);
+   const st=norm(vinculo?.['Status de streamer']||'');
+   const viewStatus=norm(h.status||'');
+   const desligado=vinculo?.vinculo_ativo===false||st==='inativo'||st==='banido'||/desligad|inativ|removid/.test(viewStatus);
+   const row=makeRow(h,vinculo,!desligado);
+   if(row)riskData.push(row);
+  }
+  // Histórico de desligados permanece em hosts, mesmo quando a view já não os inclui.
+  for(const vinculo of vinculos){
+   const uid=String(vinculo.member_Id||'').trim();
+   if(viewByUid.has(uid))continue;
+   const st=norm(vinculo['Status de streamer']||'');
+   if(vinculo.vinculo_ativo!==false&&st!=='inativo'&&st!=='banido')continue;
+   const row=makeRow({member_id:uid,apelido:vinculo['Apelido de streamer'],kwai_id:vinculo.kwaiId,ultima_transmissao:null},vinculo,false);
+   if(row)riskData.push(row);
+  }
+  riskData.sort((a,b)=>(b.days??-1)-(a.days??-1));
+  const ativosAlerta=riskData.filter(x=>x.ativo).length;
+  const desligadosAlerta=riskData.length-ativosAlerta;
+  $('riskStatus').textContent=ativosAlerta+' ativos em alerta; '+desligadosAlerta+' desligados.';
   // Fotos opcionais: indisponibilidade não impede a lista.
   try{
    const ids=[...new Set(riskData.map(h=>h.kwai_id).filter(Boolean))],avatars=new Map();
