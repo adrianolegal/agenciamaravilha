@@ -31,7 +31,7 @@
 </div><p class="small-note mt-3 mb-0">Nomes do mesmo recrutador são agrupados sem diferenciar letras maiúsculas, acentos ou espaços. A última gravação é a mais recente cadastrada na biblioteca, não necessariamente a última live feita.</p><p id="msg" role="status" class="mt-2"></p></section>
 <section class="row g-3" id="metrics"><div class="col-md-3"><div class="metric">Hosts vinculados<strong id="totalHosts">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts com registro no mês<strong id="ativos">—</strong></div></div><div class="col-md-3"><div class="metric">Total de diamantes no mês<strong id="totalDiamonds">—</strong></div></div><div class="col-md-3"><div class="metric">Total de horas de live no mês<strong id="totalHours">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts sem live no mês<strong id="inativos">—</strong></div></div><div class="col-md-3"><div class="metric">Hosts que saíram da agência<strong id="desligados">—</strong></div></div></section><section class="row g-3"><div class="col-12"><div class="metric">Recrutador selecionado<strong id="selectedAgent" style="font-size:1rem">—</strong></div></div></section>
 <section class="pane table-responsive"><table class="table table-hover align-middle hosts-table"><thead><tr><th><button class="sort-head" data-sort="name">Host <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="uid">UID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="kwai">Kwai ID <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="last">Última gravação <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="days">Dias de live <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="hours">Horas de live <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="diamonds">Diamantes <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="category">Categoria <span class="arrow">↕</span></button></th><th><button class="sort-head" data-sort="linked">Vínculo <span class="arrow">↕</span></button></th></tr></thead><tbody id="tabela"><tr><td colspan="9">Selecione um recrutador.</td></tr></tbody></table></section>
-</main><div class="risk-modal" id="modalRiscos" role="dialog" aria-modal="true" aria-labelledby="riskTitle"><div class="risk-panel"><div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h2 id="riskTitle" class="h5 mb-0">Hosts ativos — risco de 90 e 180 dias sem live</h2><button class="btn btn-outline-light btn-sm" id="fecharRiscos" type="button">Fechar</button></div><div class="d-flex flex-wrap align-items-center gap-2 mb-3"><label for="riskFiltro">Situação</label><select id="riskFiltro" class="form-select"><option value="todos">Todos os alertas</option><option value="90">75 a 164 dias — risco de migração</option><option value="180">165 dias ou mais — risco de desligamento</option></select><span id="riskStatus" class="small-note"></span></div><div class="risk-scroll"><table class="table risk-table"><thead><tr><th>Host</th><th>UID / Kwai ID</th><th>Recrutador</th><th>Última live</th><th>Dias sem live</th><th>90 dias</th><th>180 dias</th></tr></thead><tbody id="riskRows"></tbody></table></div></div></div>
+</main><div class="risk-modal" id="modalRiscos" role="dialog" aria-modal="true" aria-labelledby="riskTitle"><div class="risk-panel"><div class="d-flex justify-content-between align-items-center gap-2 mb-3"><h2 id="riskTitle" class="h5 mb-0">Hosts ativos — risco de 90 e 180 dias sem live</h2><button class="btn btn-outline-light btn-sm" id="fecharRiscos" type="button">Fechar</button></div><div class="d-flex flex-wrap align-items-center gap-2 mb-3"><label for="riskFiltro">Situação</label><select id="riskFiltro" class="form-select"><option value="todos">Todos os alertas</option><option value="90">75 a 164 dias — risco de migração</option><option value="180">165 dias ou mais — risco de desligamento</option><option value="desligados">Desligados identificados na importação</option></select><span id="riskStatus" class="small-note"></span></div><div class="risk-scroll"><table class="table risk-table"><thead><tr><th>Host</th><th>UID / Kwai ID</th><th>Recrutador</th><th>Última live</th><th>Dias sem live</th><th>90 dias</th><th>180 dias</th></tr></thead><tbody id="riskRows"></tbody></table></div></div></div>
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script type="module">
 import {supabase} from './supabase.js';
@@ -202,14 +202,14 @@ const dateBR=value=>{const m=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2}
 const diasRestantes=(dias,prazo)=>{const n=prazo-dias;return n>0?n+' dias restantes':n===0?'Vence hoje':Math.abs(n)+' dias vencidos'};
 function renderRiscos(){
  const filtro=$('riskFiltro').value;
- const rows=riskData.filter(x=>filtro==='todos'||(filtro==='90'&&x.days<165)||(filtro==='180'&&x.days>=165));
+ const rows=riskData.filter(x=>filtro==='todos'||(filtro==='90'&&x.ativo&&x.days<165)||(filtro==='180'&&x.ativo&&x.days>=165)||(filtro==='desligados'&&!x.ativo));
  $('riskRows').replaceChildren();
  for(const x of rows){
   const tr=document.createElement('tr');
   const tdHost=document.createElement('td');const wrap=document.createElement('div');wrap.className='host-identity';
   const img=document.createElement('img');img.className='host-avatar';img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=x.avatar||'assets/profile-placeholder.jpg';img.onerror=()=>{img.onerror=null;img.src='assets/profile-placeholder.jpg'};
   const name=document.createElement('span');name.textContent=x.apelido||x.kwai_id||'UID '+x.member_id;wrap.append(img,name);tdHost.append(wrap);tr.append(tdHost);
-  for(const v of [String(x.member_id||'')+' / '+(x.kwai_id||'—'),x.recruiter,dateBR(x.ultima_transmissao),x.days,diasRestantes(x.days,90),diasRestantes(x.days,180)]){const td=document.createElement('td');td.textContent=v;tr.append(td)}
+  for(const v of [String(x.member_id||'')+' / '+(x.kwai_id||'—'),x.recruiter,dateBR(x.ultima_transmissao),x.days==null?'Sem data':x.days,x.ativo?diasRestantes(x.days,90):'Desligado',x.ativo?diasRestantes(x.days,180):'Desligado']){const td=document.createElement('td');td.textContent=v;tr.append(td)}
   $('riskRows').append(tr);
  }
  if(!rows.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=7;td.textContent='Nenhum host ativo nesta faixa de alerta.';tr.append(td);$('riskRows').append(tr)}
@@ -233,12 +233,32 @@ $('abrirRiscos').onclick=async()=>{
   const today=new Date(),todayUTC=Date.UTC(today.getFullYear(),today.getMonth(),today.getDate())/86400000;
   const owners=new Map();
   if(!recruiter)for(const report of allReports){const id=String(report.member_id||'').trim();if(id&&report.nome_agente&&!owners.has(id))owners.set(id,label(report.nome_agente))}
-  riskData=records.filter(h=>{
-   if(permitted&&!permitted.has(String(h.member_id||'').trim()))return false;
-   // Não presumir vínculo ativo para status desconhecido.
-   return /^em coopera[cç][aã]o$|^ativo$|^active$/i.test(String(h.status||'').trim());
-  }).map(h=>({...h,days:dateOnly(h.ultima_transmissao)==null?null:todayUTC-dateOnly(h.ultima_transmissao),recruiter:recruiter?access.nome_agente:(owners.get(String(h.member_id||'').trim())||'Não informado')}))
-   .filter(h=>h.days!=null&&h.days>=75).sort((a,b)=>b.days-a.days);
+  // A importação já mantém os desligados em hosts, com vinculo_ativo=false.
+  // hosts_simplificado fornece a data da última transmissão, não o vínculo.
+  const vinculos=[];
+  for(let offset=0;offset<50000;offset+=800){
+   const {data,error}=await supabase.from('hosts')
+    .select('member_Id,"Apelido de streamer",kwaiId,"Status de streamer",vinculo_ativo')
+    .order('member_Id',{ascending:true}).range(offset,offset+799);
+   if(error)throw error;
+   vinculos.push(...(data||[]));
+   if(!data||data.length<800)break;
+  }
+  const byUid=new Map(vinculos.map(h=>[String(h.member_Id||'').trim(),h]));
+  riskData=records.map(h=>{
+   const uid=String(h.member_id||'').trim();
+   const vinculo=byUid.get(uid);
+   if(!vinculo)return null;
+   if(permitted&&!permitted.has(uid))return null;
+   const status=norm(vinculo['Status de streamer']||'');
+   const ativo=vinculo.vinculo_ativo===true||(vinculo.vinculo_ativo==null&&status==='em cooperacao');
+   const inativo=vinculo.vinculo_ativo===false||status==='inativo';
+   if(!ativo&&!inativo)return null;
+   const last=dateOnly(h.ultima_transmissao);
+   const days=last==null?null:todayUTC-last;
+   if(ativo&&(days==null||days<75))return null;
+   return {...h,apelido:h.apelido||vinculo['Apelido de streamer'],kwai_id:h.kwai_id||vinculo.kwaiId,days,ativo,recruiter:recruiter?access.nome_agente:(owners.get(uid)||'Não informado')};
+  }).filter(Boolean).sort((a,b)=>(b.days??-1)-(a.days??-1));
   // Fotos opcionais: indisponibilidade não impede a lista.
   try{
    const ids=[...new Set(riskData.map(h=>h.kwai_id).filter(Boolean))],avatars=new Map();
