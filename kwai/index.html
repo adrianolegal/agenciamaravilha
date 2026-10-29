@@ -50,8 +50,8 @@
 <!-- Evento Kwai: Dia das Bruxas — imagens reais dos perfis no Supabase -->
 <section class="container my-4" aria-label="Votação Dia das Bruxas Kwai">
  <a class="halloween-voto" href="https://forms.gle/pRQc5Ay1gmJuKUXw6" target="_blank" rel="noopener noreferrer" aria-label="Votar nas fantasias de Iris e Mulher Maravilha">
-  <div class="halloween-titulo"><span class="halloween-kicker">🎃 KWAI • AGÊNCIA MARAVILHA</span><strong>DIA DAS BRUXAS</strong><span>VOTEM NAS MELHORES FANTASIAS!</span><b>VOTOS ATÉ DIA 30/10</b><small>Votem quantas vezes quiserem • Toque para votar</small></div>
-  <div class="halloween-participantes"><div class="halloween-pessoa"><img data-kwai-avatar="iristhainara" alt="Foto de perfil de Iris no Kwai" loading="lazy"><b>IRIS</b></div><div class="halloween-pessoa"><img data-kwai-avatar="IDofmulhermaravilha" alt="Foto de perfil de Mulher Maravilha no Kwai" loading="lazy"><b>MULHER MARAVILHA</b></div></div>
+  <div class="halloween-titulo"><span class="halloween-kicker">🎃 KWAI • <img src="/assets/logo.jpg" alt="Logo oficial da Agência Maravilha" style="width:48px;height:48px;object-fit:contain;vertical-align:middle;border-radius:4px"> AGÊNCIA MARAVILHA</span><strong>DIA DAS BRUXAS</strong><span>VOTEM NAS MELHORES FANTASIAS!</span><b>VOTOS ATÉ DIA 30/10</b><small>Votem quantas vezes quiserem • Toque para votar</small></div>
+  <div class="halloween-participantes"><div class="halloween-pessoa"><img data-kwai-avatar="iristhainara" alt="Foto de perfil de Iris no Kwai" loading="lazy"><b>IRIS</b></div><div class="halloween-pessoa"><img data-kwai-avatar="ofmulhermaravilha" alt="Foto de perfil de Mulher Maravilha no Kwai" loading="lazy"><b>MULHER MARAVILHA</b></div></div>
  </a>
 </section>
 
@@ -266,7 +266,7 @@
 
 <script type="module">
 import {supabase} from '/supabase.js';
-for(const id of ['iristhainara','IDofmulhermaravilha']){
+for(const id of ['iristhainara','ofmulhermaravilha']){
  const img=document.querySelector('[data-kwai-avatar="'+id+'"]');if(!img)continue;
  const {data,error}=await supabase.from('kwai_profiles').select('avatar_url').ilike('kwai_id',id).limit(1).maybeSingle();
  if(!error&&data?.avatar_url){img.src=data.avatar_url;img.style.display='block'}else{img.style.display='none';img.parentElement.setAttribute('title','Foto de perfil não disponível na consulta pública')}
