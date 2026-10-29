@@ -110,40 +110,17 @@ body {
     padding-top: 60px;
 }
 
-/* Responsividade */
-@media (max-width: 768px) {
-    .elementor-nav-menu-wrapper {
-        flex-direction: column;
-    }
-    .elementor-nav-menu {
-        flex-direction: column;
-    }
-    .elementor-nav-menu > ul > li {
-        display: block;
-    }
-}
-@media (max-width:768px){
-
-.menu{
-flex-direction:column;
-align-items:flex-start;
-}
-
-.menu ul{
-flex-direction:column;
-width:100%;
-gap:10px;
-margin-top:10px;
-}
-
-.menu li{
-width:100%;
-}
-
-.menu a{
-display:block;
-width:100%;
-padding:10px 0;
-}
-
+/* Menu compacto no celular, sem empurrar o formulario para baixo */
+@media(max-width:768px){
+ .elementor-nav-menu-wrapper{flex-direction:row!important;align-items:center!important;justify-content:space-between;gap:2px!important;min-height:54px;padding:0 6px;flex-wrap:nowrap}
+ .menu-logo{padding:3px!important;flex:0 0 auto}
+ .menu-logo img{height:32px!important;margin:0!important}
+ .elementor-nav-menu{display:flex;flex-direction:row!important;min-width:0;padding:0!important;flex:1 1 auto;justify-content:center}
+ .elementor-nav-menu>ul>li{display:block!important;position:relative}
+ .elementor-nav-menu a{font-size:clamp(10px,2.5vw,13px);padding:10px 3px!important;white-space:nowrap}
+ .elementor-nav-menu a i{margin-left:1px}
+ .elementor-nav-menu .sub-menu{position:absolute!important;top:100%;left:0;min-width:220px;max-width:calc(100vw - 20px);z-index:10002;max-height:70vh;overflow-y:auto}
+ .elementor-nav-menu:nth-of-type(2) .sub-menu{left:auto;right:0}
+ #logoutBtn{flex:0 0 auto;font-size:12px!important;padding:5px 8px!important;margin-right:2px}
+ body{padding-top:58px!important}
 }
