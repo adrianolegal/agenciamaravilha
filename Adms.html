@@ -132,19 +132,19 @@ function isNewHost(entry){
  return selected>=joined&&selected-joined<=2;
 }
 function show(list){const found=visibleRows();
- $('exportar').disabled=!current.length;
+ $('exportar').disabled=!found.length;
  document.querySelectorAll('[data-sort]').forEach(btn=>{btn.querySelector('.arrow').textContent=btn.dataset.sort===sortKey?(sortDirection===1?'▲':'▼'):'↕';btn.setAttribute('aria-sort',btn.dataset.sort===sortKey?(sortDirection===1?'ascending':'descending'):'none')});
  $('tabela').replaceChildren();
  for(const r of found){const tr=document.createElement('tr');
   for(const [idx,v] of [r.name,r.uid,r.kwai,fmtDate(r.last),r.days??'—',timeDisplay(r.hours),r.diamonds==null?'—':Number(r.diamonds).toLocaleString('pt-BR'),hostCategory(r.entry),r.statusHost||'—'].entries()){const td=document.createElement('td');if(idx===0){const wrap=document.createElement('div');wrap.className='host-identity';const img=document.createElement('img');img.className='host-avatar';img.alt='';img.loading='lazy';img.referrerPolicy='no-referrer';img.src=r.avatar||'assets/profile-placeholder.jpg';img.onerror=()=>{img.onerror=null;img.src='assets/profile-placeholder.jpg'};const name=document.createElement('span');name.className='host-name';name.textContent=v??'—';wrap.append(img,name);td.append(wrap)}else td.textContent=v??'—';tr.append(td)}
   $('tabela').append(tr)}
  if(!found.length){const tr=document.createElement('tr'),td=document.createElement('td');td.colSpan=9;td.textContent='Nenhum host encontrado para o filtro.';tr.append(td);$('tabela').append(tr)}
- $('totalHosts').textContent=list.length;
- $('ativos').textContent=list.filter(x=>x.days!=null).length;
- $('inativos').textContent=list.filter(x=>asNumber(x.days)===0).length;
- $('desligados').textContent=list.filter(x=>x.linked===false).length;
- $('totalDiamonds').textContent=list.reduce((sum,x)=>sum+asNumber(x.diamonds),0).toLocaleString('pt-BR',{maximumFractionDigits:2});
- $('totalHours').textContent=list.reduce((sum,x)=>sum+hoursValue(x.hours),0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h';
+ $('totalHosts').textContent=found.length;
+ $('ativos').textContent=found.filter(x=>x.days!=null).length;
+ $('inativos').textContent=found.filter(x=>asNumber(x.days)===0).length;
+ $('desligados').textContent=found.filter(x=>x.linked===false).length;
+ $('totalDiamonds').textContent=found.reduce((sum,x)=>sum+asNumber(x.diamonds),0).toLocaleString('pt-BR',{maximumFractionDigits:2});
+ $('totalHours').textContent=found.reduce((sum,x)=>sum+hoursValue(x.hours),0).toLocaleString('pt-BR',{maximumFractionDigits:2})+' h';
 }
 async function consult(){
  const key=recruiter?norm(access.nome_agente):$('agente').value;const todos=!recruiter&&key==='__todos__';if(!key){msg('Selecione um recrutador.');return}
