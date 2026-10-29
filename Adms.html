@@ -18,7 +18,7 @@
 .hosts-table th:nth-child(n+5),.hosts-table td:nth-child(n+5){text-align:center}
 .hosts-table th:nth-child(n+5) .sort-head{text-align:center;white-space:normal}
 .hosts-table th:nth-child(5),.hosts-table td:nth-child(5){white-space:nowrap}
-@media(max-width:850px){.hosts-table{min-width:960px;table-layout:fixed}}.risk-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}.risk-modal.open{display:flex}.risk-panel{background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:12px;width:min(1200px,100%);max-height:90vh;display:flex;flex-direction:column;padding:18px}.risk-scroll{overflow:auto;min-height:0}.risk-table{min-width:850px}.risk-table td,.risk-table th{padding:9px;vertical-align:middle}.risk-modal .form-select{max-width:260px}</style></head>
+@media(max-width:850px){.hosts-table{min-width:960px;table-layout:fixed}}.risk-modal{position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:99999;display:none;align-items:center;justify-content:center;padding:16px}.risk-modal.open{display:flex}.risk-panel{background:#1e293b;color:#fff;border:1px solid #64748b;border-radius:12px;width:min(1200px,100%);max-height:90vh;display:flex;flex-direction:column;padding:18px}.risk-scroll{overflow:auto;min-height:0}.risk-table{min-width:850px}.risk-table td,.risk-table th{padding:9px;vertical-align:middle}.risk-modal .form-select{max-width:100%;width:min(420px,100%);min-width:0;flex:0 1 420px}.risk-modal .d-flex.flex-wrap{min-width:0}.risk-modal label{flex-shrink:0}</style></head>
 <body><div id="menu-placeholder"></div><main>
 <h1>Recrutadores — Hosts vinculados</h1>
 <p class="muted">Consulta dos hosts atuais e históricos por recrutador, com dados mensais do Voyager.</p>
@@ -197,8 +197,8 @@ async function consult(){
 }
 const riskModal=$('modalRiscos');
 let riskData=[];
-const dateOnly=value=>{if(!value)return null;const m=String(value).match(/^(\\d{4})-(\\d{2})-(\\d{2})/);if(!m)return null;return Date.UTC(+m[1],+m[2]-1,+m[3])/86400000};
-const dateBR=value=>{const m=String(value||'').match(/^(\\d{4})-(\\d{2})-(\\d{2})/);return m?m[3]+'/'+m[2]+'/'+m[1]:'—'};
+const dateOnly=value=>{if(!value)return null;const m=String(value).match(/^(\d{4})-(\d{2})-(\d{2})/);if(!m)return null;return Date.UTC(+m[1],+m[2]-1,+m[3])/86400000};
+const dateBR=value=>{const m=String(value||'').match(/^(\d{4})-(\d{2})-(\d{2})/);return m?m[3]+'/'+m[2]+'/'+m[1]:'—'};
 const diasRestantes=(dias,prazo)=>{const n=prazo-dias;return n>0?n+' dias restantes':n===0?'Vence hoje':Math.abs(n)+' dias vencidos'};
 function renderRiscos(){
  const filtro=$('riskFiltro').value;
