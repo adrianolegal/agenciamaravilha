@@ -10,7 +10,32 @@ let current=null,records=[],agent='',uidHost='',lastEligibility=null;
 async function load(){const {data,error}=await supabase.from('agencia_solicitacoes_ingresso').select('id,created_at,solicitante_id,kwai_id,nome_host,plataforma_origem,id_plataforma,seguidores_plataforma,informacoes_adicionais,status,retorno_verificacao').order('created_at',{ascending:false}).limit(300);if(error){say('Erro: '+error.message);return}records=data||[];const ids=[...new Set(records.map(r=>r.solicitante_id))];const people=new Map();if(ids.length){const p=await supabase.from('agencia_usuarios').select('user_id,email,nome_agente').in('user_id',ids);if(!p.error)for(const x of p.data||[])people.set(x.user_id,normalizarAgente(x.nome_agente)||(String(x.email||'').trim().toLowerCase()==='adrianotni2017@gmail.com'?'Adm Adriano':'Nome não cadastrado'))}const tbody=$('rows');tbody.replaceChildren();for(const r of records){const tr=document.createElement('tr');const date=new Date(r.created_at).toLocaleString('pt-BR');for(const v of [date,people.get(r.solicitante_id)||'Conta '+String(r.solicitante_id).slice(0,8),r.kwai_id,r.nome_host||'—',r.plataforma_origem||'—',(r.retorno_verificacao?.startsWith('Voyager —')?r.retorno_verificacao:r.status)]){const td=document.createElement('td');td.textContent=v;tr.append(td)}const td=document.createElement('td');const btn=document.createElement('button');btn.className='btn btn-sm btn-outline-warning';btn.textContent='Detalhes';btn.onclick=()=>select(r,people.get(r.solicitante_id)||'Não identificado');td.append(btn);tr.append(td);tbody.append(tr)}$('counter').textContent=records.length+' solicitações';say('Pedidos atualizados. Nenhuma operação foi executada no Kwai.')}
 function summary(){return ['Recrutador: '+agent,'Kwai ID: '+current.kwai_id,'Nome: '+(current.nome_host||''),'UID Kwai: '+(uidHost||'Não localizado em consulta concluída'),'Situação da consulta: '+(lastEligibility===true?'Liberado para convite':lastEligibility===false?'Impedido pelo Kwai':'Não confirmada'),'Prazo: indeterminado','Tipo: entretenimento','Preenchimento: agência','Contato: +55 41991161317','Origem: '+(current.plataforma_origem||''),'ID origem: '+(current.id_plataforma||''),'Seguidores: '+(current.seguidores_plataforma??''),'Observações: '+(current.informacoes_adicionais||'')].join('\n')}
 async function select(r,name){current=r;agent=normalizarAgente(name);instalarEnvioKwai({supabase,getSolicitacao:()=>current,getRecrutador:()=>agent,destino:document.querySelector('#detail .d-flex.flex-wrap')});
-uidHost='';lastEligibility=null;$('detail').hidden=false;$('details').textContent=summary();const q=await supabase.from('agencia_consultas_voyager').select('uid_host,nome_host,liberado,mensagem').eq('kwai_id',r.kwai_id).eq('status','concluida').order('criado_em',{ascending:false}).limit(1);if(current?.id!==r.id)return;if(q.error)say('Erro ao consultar UID: '+q.error.message);else if(q.data?.length){const item=q.data[0];uidHost=String(item.uid_host||'');lastEligibility=item.liberado;if(!current.nome_host&&item.nome_host)current.nome_host=item.nome_host}else say('Não existe consulta concluída para este Kwai ID. Faça a consulta pelo formulário.');$('details').textContent=summary();$('detail').scrollIntoView({behavior:'smooth'})}
+uidHost='';lastEligibility=null;$('detail').hidden=false;$('details').textContent=summary();const q=await supabase.from('agencia_consultas_voyager').select('uid_host,nome_host,liberado,mensagem').eq('kwai_id',r.kwai_id).eq('status','concluida').order('criado_em',{ascending:false}).limit(1);if(current?.id!==r.id)return;if(q.error)say('Erro ao consultar UID: '+q.error.message);else if(q.data?.length){const item=q.data[0];uidHost=String(item.uid_host||'');lastEligibility=item.liberado;if(!current.nome_host&&item.nome_host)current.nome_host=item.nome_host}else say('Não existe consulta concluída para este Kwai ID.');$('details').textContent=summary();$('detail').scrollIntoView({behavior:'smooth'});if(!uidHost){await recuperarUidVoyager(r)}}
+async function recuperarUidVoyager(solicitacao){
+ const id=solicitacao.kwai_id;
+ const {data:recent,error:recentError}=await supabase.from('agencia_consultas_voyager').select('id,status,criado_em,mensagem').eq('kwai_id',id).order('criado_em',{ascending:false}).limit(1);
+ if(recentError){say('Não foi possível verificar a fila: '+recentError.message);return}
+ const last=recent?.[0];const fresh=last&&Date.now()-new Date(last.criado_em).getTime()<120000;
+ let queryId;
+ if(fresh&&['pendente','processando'].includes(last.status))queryId=last.id;
+ else{
+  const {data,error}=await supabase.from('agencia_consultas_voyager').insert({solicitante_id:user.id,kwai_id:id}).select('id').single();
+  if(error){say('Não foi possível solicitar nova identificação: '+error.message);return}queryId=data.id;
+ }
+ say('UID ausente. Nova identificação solicitada automaticamente ao Voyager.');
+ for(let attempt=0;attempt<25;attempt++){
+  await new Promise(resolve=>setTimeout(resolve,2000));
+  if(current?.id!==solicitacao.id)return;
+  const {data:q,error}=await supabase.from('agencia_consultas_voyager').select('status,uid_host,nome_host,liberado,mensagem').eq('id',queryId).maybeSingle();
+  if(error){say('Erro ao acompanhar identificação: '+error.message);return}
+  if(q?.status==='concluida'||q?.status==='erro'){
+   if(q.uid_host&&/^\\d{6,20}$/.test(String(q.uid_host))){uidHost=String(q.uid_host);lastEligibility=q.liberado;if(q.nome_host)current.nome_host=q.nome_host;$('details').textContent=summary();say('Identificação atualizada. UID '+uidHost+'. '+(q.liberado?'Host liberado para análise de convite.':'Convite impedido: '+(q.mensagem||'verificação negativa')))}
+   else say('Voyager não retornou UID válido: '+(q.mensagem||'verifique a resposta da extensão no computador administrativo'));
+   return;
+  }
+ }
+ say('Identificação ainda pendente. Mantenha a ponte e o Voyager abertos no computador administrativo.');
+}}
 $('copy').onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summary());say('Dados copiados. Confira e conclua no Kwai.')}catch(e){say('Não foi possível copiar: '+e.message)}};
 async function status(next){if(!current)return;if(next==='enviado'&&!window.confirm('Você confirmou manualmente este convite no Kwai?'))return;const {error}=await supabase.from('agencia_solicitacoes_ingresso').update({status:next,updated_at:new Date().toISOString()}).eq('id',current.id);if(error){say('Erro ao salvar: '+error.message);return}$('detail').hidden=true;current=null;await load()}
 
