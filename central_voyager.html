@@ -37,7 +37,10 @@ async function sincronizarRespostasVoyager(membros,convites){
  await load();
  say('Voyager: '+membros.length+' membros e '+convites.length+' convites consultados; '+atualizados+' solicitações atualizadas.'+(erros.length?' Erros: '+erros.slice(0,5).join(' | '):''));
 }
-$('syncVoyager').onclick=async()=>{
+let sincronizacaoEmCurso=false;
+async function sincronizarConvitesAutomaticamente(){
+ if(sincronizacaoEmCurso)return;
+ sincronizacaoEmCurso=true;
  const btn=$('syncVoyager');btn.disabled=true;say('Consultando Voyager pela extensão (100 registros por página)...');
  const requestId=crypto.randomUUID();
  try{
@@ -58,8 +61,12 @@ $('syncVoyager').onclick=async()=>{
   if(!Array.isArray(membros)||!Array.isArray(convites)||!resposta.completo)throw Error('Extensão retornou dados incompletos; nenhuma alteração feita.');
   await sincronizarRespostasVoyager(membros,convites);
  }catch(e){say('Sincronização não concluída: '+e.message)}
- finally{btn.disabled=false}
-};
+ finally{btn.disabled=false;sincronizacaoEmCurso=false}
+}
+$('syncVoyager').onclick=sincronizarConvitesAutomaticamente;
+setTimeout(sincronizarConvitesAutomaticamente,5000);
+const intervaloConvites=setInterval(sincronizarConvitesAutomaticamente,5*60*1000);
+window.addEventListener('pagehide',()=>clearInterval(intervaloConvites));
 $('approve').onclick=()=>status('aguardando_aprovacao');$('sent').onclick=()=>status('enviado');$('linked').onclick=()=>status('vinculo_existente');$('reject').onclick=()=>status('recusado');$('refresh').onclick=load;
 const channel=supabase.channel('central-ingressos-admin').on('postgres_changes',{event:'INSERT',schema:'public',table:'agencia_solicitacoes_ingresso'},()=>load()).subscribe();window.addEventListener('pagehide',()=>supabase.removeChannel(channel));await load();
 </script><script type="module" src="menu-acessos.js"></script><script type="module" src="ponte-admin.js"></script></body></html>
