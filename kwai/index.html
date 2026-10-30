@@ -17,6 +17,28 @@
 
 .halloween-original .halloween-vote-copy{position:absolute;left:2%;right:23%;bottom:3%;z-index:2;display:flex;flex-direction:column;gap:5px;padding:12px 16px;border-radius:12px;background:linear-gradient(90deg,rgba(21,5,33,.96),rgba(31,5,49,.87));color:white;text-align:left;text-shadow:0 2px 3px #000;box-shadow:0 4px 16px #0007}.halloween-vote-head{color:#ffbf64;font-size:12px;font-weight:800;letter-spacing:.08em}.halloween-vote-title{font-size:clamp(17px,2vw,27px);font-weight:900;color:#fff}.halloween-vote-names{font-size:clamp(12px,1.3vw,17px);font-weight:700}.halloween-vote-date{color:#ffcd3d;font-size:clamp(16px,1.9vw,24px);font-weight:900}.halloween-vote-cta{font-size:clamp(11px,1.15vw,15px);font-weight:700;color:#ffe1a2}@media(max-width:680px){.halloween-original .halloween-vote-copy{position:static;right:auto;left:auto;bottom:auto;border-radius:0;padding:14px 12px;text-align:center}.halloween-vote-title{font-size:19px}.halloween-vote-date{font-size:20px}}
 </style>
+<style>
+/* Votação Kwai: composição aprovada, fotos reais e logotipo oficial */
+.halloween-voto.halloween-publicado{display:block!important;min-height:0!important;padding:0!important;overflow:hidden;border:2px solid #c65cff;border-radius:20px;background:#160622;color:#fff!important;text-decoration:none!important;box-shadow:0 0 24px #7d25b755}
+.halloween-publicado .hv-arte{position:relative;background:#190724}
+.halloween-publicado .hv-arte>img{display:block;width:100%;height:auto}
+.halloween-publicado .hv-marcas{position:absolute;top:3%;left:3%;display:flex;align-items:center;gap:12px;background:#13091cbb;padding:5px 12px;border-radius:12px;font-weight:900;text-shadow:0 2px 5px #000}
+.halloween-publicado .hv-marcas img{width:45px;height:45px;object-fit:contain;border-radius:6px}
+.halloween-publicado .hv-marcas span{color:#fff;font-size:clamp(12px,1.5vw,20px)}
+.halloween-publicado .hv-corpo{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(240px,1fr);gap:16px;align-items:center;padding:20px 25px;background:radial-gradient(circle at 90% 0%,#5c146f 0%,transparent 52%),linear-gradient(115deg,#180622,#350b4d 65%,#210825)}
+.halloween-publicado .hv-faixa{display:inline-block;transform:skew(-6deg);padding:9px 16px;background:#ff8a14;color:#160821;font-size:clamp(17px,2.35vw,32px);font-weight:1000;font-style:italic;line-height:1.12;box-shadow:5px 5px 0 #6b145d}
+.halloween-publicado .hv-data{font-size:clamp(18px,2.1vw,29px);font-weight:800;margin:14px 0;color:#fff}
+.halloween-publicado .hv-data strong{color:#ffc32d;font-size:1.3em}
+.halloween-publicado .hv-cta{display:block;background:linear-gradient(90deg,#360e75,#6b0eb0);border:2px solid #bc60ff;border-radius:22px;padding:12px 16px;box-shadow:0 0 16px #9d31e988;text-align:center;font-weight:800;font-size:clamp(13px,1.4vw,20px)}
+.halloween-publicado .hv-cta strong{display:block;color:#ffe83b;font-size:clamp(12px,1.6vw,23px);overflow-wrap:anywhere}
+.halloween-publicado .hv-pessoas{display:flex;gap:16px;justify-content:center;align-items:start}
+.halloween-publicado .hv-pessoa{flex:1;min-width:0;text-align:center}
+.halloween-publicado .hv-pessoa img{display:block;width:clamp(85px,11vw,150px);height:clamp(85px,11vw,150px);max-width:100%;border-radius:50%;object-fit:cover;border:4px solid #ffb62f;box-shadow:0 0 18px #ff8b2a77;margin:0 auto 8px;background:#301443}
+.halloween-publicado .hv-nome{display:block;padding:6px 8px;transform:skew(-7deg);background:linear-gradient(100deg,#5a0caa,#a525dd);font-weight:1000;font-size:clamp(13px,1.55vw,20px);line-height:1.12}
+.halloween-publicado .hv-pessoa:nth-child(2) .hv-nome{background:linear-gradient(100deg,#8c0c22,#e22635)}
+.halloween-publicado .hv-pessoa small{display:block;margin-top:6px;font-size:11px;color:#f7e7ff}
+@media(max-width:700px){.halloween-publicado .hv-corpo{grid-template-columns:1fr;padding:15px 12px}.halloween-publicado .hv-pessoas{gap:12px}.halloween-publicado .hv-marcas{gap:5px;padding:3px 6px}.halloween-publicado .hv-marcas img{width:25px;height:25px}.halloween-publicado .hv-marcas span{font-size:10px}.halloween-publicado .hv-pessoa img{width:108px;height:108px}.halloween-publicado .hv-nome{font-size:15px}}
+</style>
 </head>
 <body>
 
@@ -50,9 +72,15 @@
     </div>
   </div>
 </nav>
-<!-- Evento Kwai: Dia das Bruxas — imagens reais dos perfis no Supabase -->
+<!-- Evento Kwai: arte original, marca oficial e avatares reais carregados do Supabase -->
 <section class="container my-4" aria-label="Votação Dia das Bruxas Kwai">
- <a class="halloween-voto halloween-original" href="https://forms.gle/pRQc5Ay1gmJuKUXw6" target="_blank" rel="noopener noreferrer" aria-label="Votar nas fantasias de Iris e Mulher Maravilha"><img class="halloween-arte-original" src="/assets/banner-dia-das-bruxas-kwai.jpg" alt="Banner original Dia das Bruxas do Kwai" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><div class="halloween-fallback" style="display:none;flex-direction:column;gap:8px"><strong>DIA DAS BRUXAS KWAI</strong><span>Votem nas melhores fantasias! Até 30/10 — votem quantas vezes quiserem.</span></div><div class="halloween-vote-copy"><div class="halloween-vote-head">KWAI · AGÊNCIA MARAVILHA</div><div class="halloween-vote-title">VOTEM NAS MELHORES FANTASIAS!</div><div class="halloween-vote-names">NOSSAS REPRESENTANTES: IRIS E MULHER MARAVILHA</div><div class="halloween-vote-date">VOTOS ATÉ DIA 30/10</div><div class="halloween-vote-cta">VOTEM QUANTAS VEZES QUISEREM · CLIQUE PARA VOTAR</div></div><div class="halloween-participantes"><div class="halloween-pessoa"><img data-kwai-avatar="iristhainara" alt="Iris"><b>IRIS</b></div><div class="halloween-pessoa"><img data-kwai-avatar="ofmulhermaravilha" alt="Mulher Maravilha"><b>MULHER MARAVILHA</b></div></div></a>
+ <a class="halloween-voto halloween-publicado" href="https://forms.gle/pRQc5Ay1gmJuKUXw6" target="_blank" rel="noopener noreferrer" aria-label="Votar nas fantasias de Iris e Mulher Maravilha">
+  <div class="hv-arte"><img src="/assets/banner-dia-das-bruxas-kwai.jpg" alt="Dia das Bruxas Kwai — arte original" loading="eager"><div class="hv-marcas"><img src="/assets/logo.jpg" alt="Logo oficial da Agência Maravilha"><span>KWAI | AGÊNCIA MARAVILHA</span></div></div>
+  <div class="hv-corpo">
+   <div class="hv-info"><div class="hv-faixa">VOTEM NAS MELHORES FANTASIAS!</div><div class="hv-data">▣ VOTOS ATÉ DIA <strong>30/10</strong></div><div class="hv-cta">🔗 VOTEM QUANTAS VEZES QUISEREM!<strong>forms.gle/pRQc5Ay1gmJuKUXw6</strong></div></div>
+   <div class="hv-pessoas"><div class="hv-pessoa"><img data-kwai-avatar="iristhainara" alt="Foto real de Iris, perfil Kwai"><span class="hv-nome">IRIS</span><small>NOSSA REPRESENTANTE</small></div><div class="hv-pessoa"><img data-kwai-avatar="ofmulhermaravilha" alt="Foto real de Mulher Maravilha, perfil Kwai"><span class="hv-nome">MULHER MARAVILHA</span><small>NOSSA REPRESENTANTE</small></div></div>
+  </div>
+ </a>
 </section>
 
 
