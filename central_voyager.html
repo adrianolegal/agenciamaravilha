@@ -29,13 +29,13 @@ async function recuperarUidVoyager(solicitacao){
   const {data:q,error}=await supabase.from('agencia_consultas_voyager').select('status,uid_host,nome_host,liberado,mensagem').eq('id',queryId).maybeSingle();
   if(error){say('Erro ao acompanhar identificação: '+error.message);return}
   if(q?.status==='concluida'||q?.status==='erro'){
-   if(q.uid_host&&/^\\d{6,20}$/.test(String(q.uid_host))){uidHost=String(q.uid_host);lastEligibility=q.liberado;if(q.nome_host)current.nome_host=q.nome_host;$('details').textContent=summary();say('Identificação atualizada. UID '+uidHost+'. '+(q.liberado?'Host liberado para análise de convite.':'Convite impedido: '+(q.mensagem||'verificação negativa')))}
+   if(q.uid_host&&/^\d{6,20}$/.test(String(q.uid_host))){uidHost=String(q.uid_host);lastEligibility=q.liberado;if(q.nome_host)current.nome_host=q.nome_host;$('details').textContent=summary();say('Identificação atualizada. UID '+uidHost+'. '+(q.liberado?'Host liberado para análise de convite.':'Convite impedido: '+(q.mensagem||'verificação negativa')))}
    else say('Voyager não retornou UID válido: '+(q.mensagem||'verifique a resposta da extensão no computador administrativo'));
    return;
   }
  }
  say('Identificação ainda pendente. Mantenha a ponte e o Voyager abertos no computador administrativo.');
-}}
+}
 $('copy').onclick=async()=>{if(!current)return;try{await navigator.clipboard.writeText(summary());say('Dados copiados. Confira e conclua no Kwai.')}catch(e){say('Não foi possível copiar: '+e.message)}};
 async function status(next){if(!current)return;if(next==='enviado'&&!window.confirm('Você confirmou manualmente este convite no Kwai?'))return;const {error}=await supabase.from('agencia_solicitacoes_ingresso').update({status:next,updated_at:new Date().toISOString()}).eq('id',current.id);if(error){say('Erro ao salvar: '+error.message);return}$('detail').hidden=true;current=null;await load()}
 
